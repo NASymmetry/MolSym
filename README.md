@@ -20,8 +20,8 @@ A python package for handling molecular symmetry!
       <a href=https://github.com/FermiQC/Fermi.jl/actions/workflows/CI.yml>
       <img src=https://github.com/FermiQC/Fermi.jl/actions/workflows/CI.yml/badge.svg>
       </a> 
-      <a href=https://codecov.io/gh/FermiQC/Fermi.jl>
-      <img src=https://codecov.io/gh/FermiQC/Fermi.jl/branch/master/graph/badge.svg?token=EWRG6Q7FK9>
+      <a href=https://codecov.io/gh/CCQC/MolSym>
+      <img src=https://codecov.io/gh/CCQC/MolSym/branch/master/graph/badge.svg?token=EWRG6Q7FK9>
       </a> 
     </td>
     <td align="center">
