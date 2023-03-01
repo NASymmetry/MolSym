@@ -9,7 +9,6 @@ def find_point_group(mol):
     saxis = [0,0,0]
     moit = calcmoit(mol)
     Ia_mol, Ib_mol, Ic_mol = np.sort(np.linalg.eigh(moit)[0])
-    eat_shit("Nate")
     if Ia_mol == 0.0:
         if isequivalent(mol, mol.transform(inversion_matrix())):
             pg = "Dinfh"
@@ -81,17 +80,11 @@ def find_point_group(mol):
                     else:
                         pg = "C1"
         else:
-            print("Beebus1")
             rots = find_rotations(mol, rot_set)
-            print("Beebus2")
             Cn = highest_order_axis(rots)
-            print("Beebus3")
             paxis = rots[0].axis
-            print("Beebus4")
             ortho_c2_chk, c2_ortho = is_there_ortho_c2(mol, seas, paxis)
-            print("Beebus5")
             sigmah_chk = is_there_sigmah(mol, paxis)
-            print("Beebus6")
             sigmav_chk, sigmav = is_there_sigmav(mol, seas, paxis)
             if ortho_c2_chk:
                 saxis = c2_ortho
@@ -115,17 +108,3 @@ def find_point_group(mol):
                 else:
                     pg = "C"+str(Cn)
     return pg, (paxis, saxis)
-
-
-if __name__ == "__main__":
-    #from input import Settings
-    #mool = psi4.geometry(Settings["molecule"])
-    with open("sxyz/Ci.xyz", "r") as fn:
-        strang = fn.read()
-    mool = psi4.core.Molecule.from_string(strang)
-    beebus = mool.to_schema("psi4")
-    mol = Molecule.from_schema(beebus)
-    #mol.translate(mol.find_com())
-    print("Molecule at COM: ", mol.is_at_com())
-    pg, (paxis, saxis) = find_point_group(mol)
-    print(pg, paxis, saxis)
