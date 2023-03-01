@@ -171,16 +171,11 @@ def calcmoit(atoms):
                     I[i,j] -= atoms.masses[k]*atoms.coords[k,i]*atoms.coords[k,j]
     return I
 
-def eat_shit(a):
-    pass
-
-if __name__ == "__main__":
-    with open("xyz/water.xyz", "r") as fn:
-        strang = fn.read()
-    psimol = psi4.core.Molecule.from_string(strang)
-    beebus = psimol.to_schema("psi4")
-    mol = Molecule.from_schema(beebus)
-    #print(mol.coords)
-    #print(mol.find_com())
-    seas = mol.find_SEAs()
-    print(seas)
+#if __name__ == "__main__":
+#    with open("xyz/water.xyz", "r") as fn:
+#        strang = fn.read()
+#    psimol = psi4.core.Molecule.from_string(strang)
+#    schema = psimol.to_schema("psi4")
+#    mol = Molecule.from_schema(schema)
+#    seas = mol.find_SEAs()
+#    print(seas)
