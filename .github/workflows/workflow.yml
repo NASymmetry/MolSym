@@ -7,14 +7,29 @@ jobs:
       OS: ubuntu-latest
       PYTHON: '3.9'
     steps:
-    - uses: checkout@v2
+    - uses: actions/checkout@v2
       with:
         fetch-depth: ‘2’
 
     - name: Setup Python
       uses: actions/setup-python@master
       with:
-        python-version: 3.7
+        python-version: 3.9
+    - name: Add conda to system path
+      run: |
+        # $CONDA is an environment variable pointing to the root of the miniconda directory
+        echo $CONDA/bin >> $GITHUB_PATH
+    - name: Install dependencies
+      shell: bash -l {0}
+      run: |
+        conda install python=3.9
+        conda install numpy
+        conda install psi4 python=3.9 -c psi4
+        pip install -e .
+    - name: Test with pytest
+      run: |
+        conda install pytest
+        pytest
     - name: Generate Report
       run: |
         pip install coverage
