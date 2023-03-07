@@ -3,21 +3,23 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [metadata]
-name = MolSym
-version = 0.2.1
+name = "MolSym"
+version = "0.2.1"
 authors = [
     "Stephen Goodlett <smg13363@uga.edu>",
     "Nate Kitzmiller <nathaniel.kitzmiller@uga.edu>",
     ]
-description = A program for molecular symmetry detection and SALC construction
-long_description = file: README.md
+description = "A program for molecular symmetry detection and SALC construction"
+long_description = "file: README.md"
 license = "MIT"
-classifiers =
-    Programming Language :: Python :: 3
-
+classifiers = [
+    "Programming Language :: Python :: 3"
+    ]
+readme = "README.md"
+requires-python = ">=3.9"
 [options]
-install_requires =
-    numpy >= 1.23.4
-    psi4 >= 1.6.1
-
+install_requires = [
+    "numpy >= 1.23.4",
+    "psi4 >= 1.6.1"
+    ]
 
