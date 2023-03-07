@@ -3,7 +3,7 @@
 </p>
 <table align="center">
   <tr>
-    <th>Docs<th>
+    <th>Documentation</th>
     <th>CI</th>
     <th>Coverage</th>
   </tr>
@@ -12,10 +12,11 @@
       <a href=https://ccqc.github.io/MolSym/>
       <img src=https://img.shields.io/badge/docs-dev-blue.svg>
       </a>
-    </td>    <td align="center">
+    </td>
+    <td align="center">
       <a href=https://github.com/FermiQC/Molecules.jl/actions/workflows/CI.yml>
       <img src=https://github.com/FermiQC/Molecules.jl/actions/workflows/CI.yml/badge.svg>
-      </a> 
+      </a>
     </td>
     <td align="center">
       <a href=https://codecov.io/gh/FermiQC/Molecules.jl>
