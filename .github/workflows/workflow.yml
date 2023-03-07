@@ -25,7 +25,9 @@ jobs:
         conda install python=3.9
         conda install numpy
         conda install psi4 python=3.9 -c psi4
-        pip install -e .
+        pip install -e .    
+    - name: Install requirements
+      run: pip install -r requirements.txt
     - name: Test with pytest
       run: |
         conda install pytest
