@@ -12,13 +12,14 @@ authors = [
 description = "A program for molecular symmetry detection and SALC construction"
 long_description = "file: README.md"
 license = "MIT"
-classifiers =
+classifiers = [
     "Programming Language :: Python :: 3"
+    ]
 readme = "README.md"
 requires-python = ">=3.9"
 [options]
-install_requires =
+install_requires = [
     "numpy >= 1.23.4"
     "psi4 >= 1.6.1"
-
+    ]
 
