@@ -24,7 +24,7 @@ jobs:
       run: |
         conda install python=3.9
         conda install numpy
-        conda install psi4
+        conda install psi4 python=3.9 -c psi4
         pip install -e .
     - name: Test with pytest
       run: |
