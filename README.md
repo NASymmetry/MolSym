@@ -3,19 +3,8 @@
 </p>
 
 # MolSym
-A python package for handling molecular symmetry!
-<table align="center">
-  <tr>
-    <th>Documentation</th>
-  </tr>
-  <tr>
-    <td align="center">
-      <a href=https://FermiQC.github.io/Fermi.jl/dev>
-      <img src=https://img.shields.io/badge/docs-dev-blue.svg>
-      </a> 
-    </td>
-  </tr>
-</table>
+A python package for handling molecular symmetry.
+
 
 ## Capabilities
 - Point group detection
