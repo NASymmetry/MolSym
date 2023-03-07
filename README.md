@@ -14,13 +14,13 @@
       </a>
     </td>
     <td align="center">
-      <a href=https://github.com/FermiQC/Molecules.jl/actions/workflows/CI.yml>
-      <img src=https://github.com/FermiQC/Molecules.jl/actions/workflows/CI.yml/badge.svg>
+      <a href=https://github.com/CCQC/MolSym/actions/workflows/workflow.yml>
+      <img src=https://github.com/CCQC.MolSym/actions/workflows/workflow.yml/badge.svg>
       </a>
     </td>
     <td align="center">
-      <a href=https://codecov.io/gh/FermiQC/Molecules.jl>
-      <img src=https://codecov.io/gh/FermiQC/Molecules.jl/branch/main/graph/badge.svg?token=NQDJ0QYLB0>
+      <a href=https://codecov.io/gh/CCQC/MolSym>
+      <img src=https://codecov.io/gh/CCQC/MolSym/branch/main/graph/badge.svg?token=NQDJ0QYLB0>
       </a> 
     </td>
   </tr>
