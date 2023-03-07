@@ -15,7 +15,7 @@
     </td>
     <td align="center">
       <a href=https://github.com/CCQC/MolSym/actions/workflows/workflow.yml>
-      <img src=https://github.com/CCQC.MolSym/actions/workflows/workflow.yml/badge.svg>
+      <img src=https://github.com/CCQC/MolSym/actions/workflows/workflow.yml/badge.svg>
       </a>
     </td>
     <td align="center">
