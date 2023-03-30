@@ -31,10 +31,6 @@ jobs:
     - name: Test with pytest
       run: |
         conda install pytest
-        pytest --cov .
-    - name: Generate Report
-      run: |
-        pip install coverage
-        coverage run -m unittest
+        pytest --cov="molsym" --color=yes --cov-report=xml test/
     - name: Upload Coverage to Codecov
       uses: codecov/codecov-action@v2
