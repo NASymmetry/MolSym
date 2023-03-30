@@ -27,11 +27,11 @@ jobs:
         python-version: ${{ matrix.cfg.python-version }}
         auto-activate-base: false
     - name: Install
-      shell: bash
+      shell: bash -l {0}
       run: | # Install molsym
         python -m pip install . --no-deps
     - name: Test with pytest
-      shell: bash
+      shell: bash -l {0}
       run: |
         pytest --cov="molsym" --color=yes --cov-report=xml test/
     - name: Upload Coverage to Codecov
