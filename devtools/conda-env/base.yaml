@@ -1,0 +1,11 @@
+name: test
+channels:
+  - defaults
+  - conda-forge
+  - psi4
+dependencies:
+    # Base
+  - numpy
+  - python
+  - qcelemental
+  - psi4
