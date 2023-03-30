@@ -8,3 +8,5 @@ dependencies:
   - python
   - qcelemental
   - psi4
+  - pytest
+  - pytest-cov
