@@ -10,3 +10,4 @@ dependencies:
   - psi4
   - pytest
   - pytest-cov
+  - coverage
