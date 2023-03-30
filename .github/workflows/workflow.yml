@@ -17,8 +17,6 @@ jobs:
       CONDA_ENV: ${{ matrix.cfg.conda-env }}
     steps:
     - uses: actions/checkout@v2
-      with:
-        fetch-depth: ‘2’
     
     - name: Create Environment
       uses: conda-incubator/setup-miniconda@v2
@@ -33,8 +31,8 @@ jobs:
       run: | # Install molsym
         python -m pip install . --no-deps
     - name: Test with pytest
+      shell: bash
       run: |
-        conda install pytest
         pytest --cov="molsym" --color=yes --cov-report=xml test/
     - name: Upload Coverage to Codecov
       uses: codecov/codecov-action@v2
