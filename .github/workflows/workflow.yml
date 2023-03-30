@@ -31,8 +31,8 @@ jobs:
       run: | # Install molsym
         python -m pip install . --no-deps
     - name: Test with pytest
-      run: |
       shell: bash -l {0}
+      run: |
         pytest --cov="molsym" --color=yes --cov-report=xml test/
     - name: Upload Coverage to Codecov
       uses: codecov/codecov-action@v2
