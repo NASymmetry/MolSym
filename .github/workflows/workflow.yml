@@ -23,7 +23,7 @@ jobs:
       with:
         installer-url: https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
         activate-environment: test
-        environment-file: devtools/conda-envs/${{ matrix.cfg.conda-env }}.yaml
+        environment-file: ${{ matrix.cfg.conda-env }}.yaml
         python-version: ${{ matrix.cfg.python-version }}
         auto-activate-base: false
     - name: Install
