@@ -1,0 +1,13 @@
+name: test
+channels:
+  - defaults
+  - psi4
+dependencies:
+    # Base
+  - numpy
+  - python
+  - qcelemental
+  - psi4
+  - pytest
+  - pytest-cov
+  - coverage
