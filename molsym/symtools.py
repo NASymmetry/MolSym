@@ -216,12 +216,10 @@ def c2b(mol, sea, axis=None, all=False):
     out = []
     for i in range(length):
         c2_axis = normalize(mol.coords[sea.subset[i],:])
-        print("Jimbo")
         if c2_axis is None:
             continue
         if axis is not None and issame_axis(c2_axis, axis):
             continue
-        print("Bimbo")
         c2 = Cn(c2_axis, 2)
         molB = mol.transform(c2)
         if isequivalent(mol, molB):

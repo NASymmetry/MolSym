@@ -57,7 +57,7 @@ def find_point_group(mol):
                     else:
                         if sigmav_chk:
                             if sigmav.any():
-                                saxis = sigmav
+                                saxis = np.cross(paxis,sigmav)
                             pg = "C2v"
                         else:
                             S4 = Sn(c2, 4)

@@ -375,9 +375,12 @@ def cn_class_map(class_map, n, idx_offset, cls_offset):
     return class_map
 
 def rotate_mol_to_symels(mol, paxis, saxis):
-    phi, theta, chi = get_euler_angles(paxis, saxis)
-    dc = dc_mat(phi, theta, chi)
-    new_mol = mol.transform(dc)
+    z = paxis
+    x = saxis
+    y = np.cross(z,x)
+    rmat = np.column_stack((x,y,z)) # This matrix rotates z to paxis, etc., ...
+    rmat_inv = rmat.T # ... so invert it so it takes paxis to z, etc.
+    new_mol = mol.transform(rmat_inv)
     return new_mol
 
 def rotate_symels_to_mol(symels, paxis, saxis):
@@ -433,7 +436,6 @@ def get_atom_mapping(mol, symels):
     for (a, atom) in enumerate(mol):
         for (s, symel) in enumerate(symels):
             w = where_you_go(mol, a, symel)
-            print(w)
             if w is not None:
                 amap[a,s] = w
             else:
@@ -451,10 +453,10 @@ def where_you_go(mol, atom, symel):
 def symtext_from_file(fn):
     with open(fn, "r") as lfn:
         strang = lfn.read()
-    mool = psi4.core.Molecule.from_string(strang)
-    beebus = mool.to_schema("psi4")
-    mol = Molecule.from_schema(beebus)
-    return symtext_from_mol(mol)
+    mol = psi4.core.Molecule.from_string(strang)
+    schema = mol.to_schema("psi4")
+    mol2 = Molecule.from_schema(schema)
+    return symtext_from_mol(mol2)
 
 def symtext_from_mol(mol):
     mol.translate(mol.find_com())
