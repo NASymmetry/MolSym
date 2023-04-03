@@ -1,5 +1,6 @@
 import numpy as np
-import psi4
+#import psi4
+import qcelemental as qcel
 import json
 from dataclasses import dataclass
 from copy import deepcopy
@@ -28,10 +29,14 @@ class Molecule():
 
     @classmethod
     def from_schema(cls, schema):
-        atoms = schema["elem"]
+        atoms = schema["symbols"]
         natoms = len(atoms)
-        coords = np.reshape(schema["geom"], (natoms,3))
-        masses = schema["mass"]
+        coords = np.reshape(schema["geometry"], (natoms,3))
+        # As of now, QCElemental seems to have issues assigning masses, so I do it
+        masses = np.zeros(natoms)
+        for (idx, symb) in enumerate(atoms):
+            masses[idx] = qcel.periodictable.to_mass(symb)
+        #masses = schema["masses"]
         return cls(atoms, coords, masses)
 
     def __getitem__(self, i):

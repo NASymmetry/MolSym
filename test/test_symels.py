@@ -20,22 +20,22 @@ pgs = [
 
 def test_Symel():
     for pg in pgs:
-        symels_a = pg_to_symels(pg)
-        symels_b = eval(pg+"s")
+        symels = pg_to_symels(pg)
+        symels_ans = eval(pg+"s")
         beans = True
-        a_len = len(symels_a)
-        b_len = len(symels_b)
-        if a_len != b_len:
+        slen = len(symels)
+        slen_ans = len(symels_ans)
+        if slen != slen_ans:
             beans = False
-        for i in range(a_len):
-            if symels_a[i] == symels_b[i]:
+        for i in range(slen):
+            if symels[i] == symels_ans[i]:
                 continue
             else:
-                print(f"{pg} Symels {symels_a[i]} and {symels_b[i]} do not match!")
+                print(f"{pg} Symels {symels[i]} and {symels_ans[i]} do not match!")
                 print("Calculated:")
-                print(symels_a)
+                print(symels)
                 print("Ref:")
-                print(symels_b)
+                print(symels_ans)
                 beans = False
         assert beans
 

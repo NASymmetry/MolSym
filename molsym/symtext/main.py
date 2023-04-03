@@ -2,7 +2,7 @@ from .symtext import *
 from .symel_generators import *
 from .character_table_generators import *
 from molsym.symtools import normalize
-import psi4
+#import psi4
 from molsym.flowchart import find_point_group
 from .multiplication_table import *
 
@@ -453,8 +453,10 @@ def where_you_go(mol, atom, symel):
 def symtext_from_file(fn):
     with open(fn, "r") as lfn:
         strang = lfn.read()
-    mol = psi4.core.Molecule.from_string(strang)
-    schema = mol.to_schema("psi4")
+    #mol = psi4.core.Molecule.from_string(strang)
+    schema = qcel.models.Molecule.from_data(strang).dict()
+    print(schema)
+    #schema = mol.to_schema("psi4")
     mol2 = Molecule.from_schema(schema)
     return symtext_from_mol(mol2)
 
