@@ -1,7 +1,7 @@
 name: test
 channels:
   - defaults
-  #- psi4
+  - psi4
 dependencies:
     # Base
   - numpy
