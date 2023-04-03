@@ -1,5 +1,5 @@
 import numpy as np
-import psi4
+#import psi4
 from math import isclose
 from molsym.molecule import *
 from molsym.symtools import *
