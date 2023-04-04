@@ -20,6 +20,6 @@ requires-python = ">=3.9"
 [options]
 install_requires = [
     "numpy >= 1.23.4",
-    "psi4 >= 1.6.1"
+    "qcelemental >= 0.25.1"
     ]
 

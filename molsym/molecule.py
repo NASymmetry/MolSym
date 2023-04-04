@@ -1,5 +1,6 @@
 import numpy as np
-import psi4
+#import psi4
+import qcelemental as qcel
 import json
 from dataclasses import dataclass
 from copy import deepcopy
@@ -27,11 +28,15 @@ class Molecule():
         self.masses = np.asarray(masses)
 
     @classmethod
-    def from_schema(cls, squeema):
-        atoms = squeema["elem"]
+    def from_schema(cls, schema):
+        atoms = schema["symbols"]
         natoms = len(atoms)
-        coords = np.reshape(squeema["geom"], (natoms,3))
-        masses = squeema["mass"]
+        coords = np.reshape(schema["geometry"], (natoms,3))
+        # As of now, QCElemental seems to have issues assigning masses, so I do it
+        masses = np.zeros(natoms)
+        for (idx, symb) in enumerate(atoms):
+            masses[idx] = qcel.periodictable.to_mass(symb)
+        #masses = schema["masses"]
         return cls(atoms, coords, masses)
 
     def __getitem__(self, i):
@@ -79,7 +84,6 @@ class Molecule():
     def find_SEAs(self):
         dm = self.distance_matrix()
         out = []
-        nate_thang = []
         for i in range(self.natoms):
             for j in range(i+1,self.natoms):
                 a_idx = np.argsort(dm[i,:])
@@ -93,10 +97,10 @@ class Molecule():
                         chk = False
                 if chk:
                     out.append((i,j))
-        nonos = []
+        skip = []
         SEAs = []
         for i in range(self.natoms):
-            if i in nonos:
+            if i in skip:
                 continue
             else:
                 biggun = [i]
@@ -105,10 +109,10 @@ class Molecule():
                 if i in k:
                     if i == k[0]:
                         biggun.append(k[1])
-                        nonos.append(k[1])
+                        skip.append(k[1])
                     else:
                         biggun.append(k[0])
-                        nonos.append(k[0])
+                        skip.append(k[0])
             SEAs.append(SEA("", biggun, np.zeros(3)))
         return SEAs
 
@@ -170,12 +174,3 @@ def calcmoit(atoms):
                 for k in range(atoms.natoms):
                     I[i,j] -= atoms.masses[k]*atoms.coords[k,i]*atoms.coords[k,j]
     return I
-
-#if __name__ == "__main__":
-#    with open("xyz/water.xyz", "r") as fn:
-#        strang = fn.read()
-#    psimol = psi4.core.Molecule.from_string(strang)
-#    schema = psimol.to_schema("psi4")
-#    mol = Molecule.from_schema(schema)
-#    seas = mol.find_SEAs()
-#    print(seas)

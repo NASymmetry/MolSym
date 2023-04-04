@@ -64,7 +64,7 @@ class Symtext():
         self.mult_table = mult_table
         self.order = len(symels)
     def __repr__(self):
-        return f"\n{self.chartable}\n{self.symels}\n{self.class_map}\n{self.atom_map}\n{self.mult_table}"
+        return f"\n{self.chartable}\n{self.symels}\nClass map:\n{self.class_map}\nAtom map:\n{self.atom_map}\nMultiplication Table\n{self.mult_table}"
 def reduce(n, i):
     g = gcd(n, i)
     return n//g, i//g # floor divide to get an int, there should never be a remainder since we are dividing by the gcd

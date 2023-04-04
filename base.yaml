@@ -7,7 +7,7 @@ dependencies:
   - numpy
   - python
   - qcelemental
-  - psi4
+  #- psi4
   - pytest
   - pytest-cov
   - coverage

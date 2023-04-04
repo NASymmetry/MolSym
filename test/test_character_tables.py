@@ -13,22 +13,22 @@ from test_symels import pgs
 
 def test_CharTable():
     for pg in pgs:
-        ctab_a = pg_to_chartab(pg)
-        ctab_b = CharTable(pg,np.array(eval(pg+"irr")),np.array(eval(pg+"cn")),None,eval(pg+"ct"),None)
-        beans = ctab_a == ctab_b
+        ctab = pg_to_chartab(pg)
+        ctab_ans = CharTable(pg,np.array(eval(pg+"irr")),np.array(eval(pg+"cn")),None,eval(pg+"ct"),None)
+        beans = ctab == ctab_ans
         if not beans:
-            print(ctab_a)
+            print(ctab)
             print("Ref.")
-            print(ctab_b)
-            tab_chk = ctab_a.characters == ctab_b.characters
-            irr_chk = ctab_a.irreps == ctab_b.irreps
-            name_chk = ctab_a.classes == ctab_b.classes
+            print(ctab_ans)
+            tab_chk = ctab.characters == ctab_ans.characters
+            irr_chk = ctab.irreps == ctab_ans.irreps
+            name_chk = ctab.classes == ctab_ans.classes
             print(f"Table Check: {tab_chk.all()}")
             print(f"Irrep. Check: {irr_chk.all()}")
             print(f"Name Check: {name_chk.all()}")
             if not tab_chk.all():
                 print(tab_chk)
-                print(ctab_a.characters-ctab_b.characters)
+                print(ctab.characters-ctab_ans.characters)
             elif not name_chk.all():
                 print(name_chk)
         assert beans
