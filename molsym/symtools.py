@@ -256,6 +256,7 @@ def is_there_sigmah(mol, paxis):
 
 def is_there_sigmav(mol, SEAs, paxis):
     axes = []
+    print(SEAs)
     for sea in SEAs:
         length = len(sea.subset)
         if length < 2:
@@ -307,3 +308,76 @@ def planar_mol_axis(mol):
                 if not np.isclose(chk, 1.0, atol=tol):
                     return normalize(np.cross(a,b))
     return None
+
+def find_C3s_for_Ih(mol):
+    """
+    Finds the twenty C3 axes for an Ih point group so the paxis and saxis can be defined
+    """
+    c3_axes = []
+    for i in range(mol.natoms):
+        for j in range(mol.natoms):
+            for k in range(mol.natoms):
+                if i != j and i != k:
+                    rij = mol.coords[i,:] - mol.coords[j,:]
+                    rjk = mol.coords[j,:] - mol.coords[k,:]
+                    rik = mol.coords[i,:] - mol.coords[k,:]
+                    nij = np.linalg.norm(rij)
+                    njk = np.linalg.norm(rjk)
+                    nik = np.linalg.norm(rik)
+                    if isclose(nij, njk, abs_tol=tol) and isclose(nij, nik, abs_tol=tol):
+                        c3_axis = normalize(np.cross(rij, rjk))
+                        c3 = Cn(c3_axis, 3)
+                        molB = mol.transform(c3)
+                        if isequivalent(mol, molB):
+                            c3_axes.append(c3_axis)
+    unique_axes = [c3_axes[0]]
+    for i in c3_axes:
+        check = True
+        for j in unique_axes:
+            if issame_axis(i,j):
+                check = False
+                break
+        if check:
+            unique_axes.append(i)
+    chk = len(unique_axes)
+    if chk != 10:
+        raise Exception(f"Unexpected number of C3 axes for Ih point group: Found {chk} unique C3 axes")
+    return unique_axes
+
+def find_C4s_for_Oh(mol):
+    """
+    Finds the three C4 axes for an Oh point group so the paxis and saxis can be defined
+    """
+    c4_axes = []
+    for i in mol:
+        for j in mol:
+            for k in mol:
+                for l in mol:
+                    if i != j and k != l and i != k:
+                        rij = i.xyz - j.xyz
+                        rjk = j.xyz - k.xyz
+                        rkl = k.xyz - l.xyz
+                        ril = i.xyz - l.xyz
+                        nij = np.linalg.norm(rij)
+                        njk = np.linalg.norm(rjk)
+                        nkl = np.linalg.norm(rkl)
+                        nil = np.linalg.norm(ril)
+                        if isclose(nij, njk, atol=tol) and isclose(nkl, nil, atol=tol) and isclose(nij, nkl, atol=tol):
+                            c4_axis = normalize(np.cross(rij, rjk))
+                            c4 = Cn(c4_axis, 4)
+                            molB = mol.transform(c4)
+                            if isequivalent(mol, molB):
+                                c4_axes.append(c4_axis)
+    unique_axes = [c4_axes[0]]
+    for i in c4_axes:
+        check = True
+        for j in unique_axes:
+            if issame_axis(i,j):
+                check = False
+                break
+        if check:
+            unique_axes.append(i)
+    chk = len(unique_axes)
+    if chk != 3:
+        raise Exception("Unexpected number of C4 axes for Oh point group: Found $(chk) unique C4 axes")
+    return unique_axes
