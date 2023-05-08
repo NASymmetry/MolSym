@@ -126,11 +126,11 @@ def pg_to_chartab(PG):
         if pg.subfamily == "s":
             irreps = ["A'","A''"]
             classes = ["E", "sigma_h"]
-            chars = np.array([[1, 1], [1 -1]])
+            chars = np.array([[1.0, 1.0], [1.0, -1.0]])
         elif pg.subfamily == "i":
             irreps = ["Ag","Au"]
             classes = ["E", "i"]
-            chars = np.array([[1, 1], [1, -1]])
+            chars = np.array([[1.0, 1.0], [1.0, -1.0]])
         elif pg.subfamily == "v":
             irreps, classes, chars = Cnv_irr(pg.n)
         elif pg.subfamily == "h":
@@ -154,30 +154,34 @@ def pg_to_chartab(PG):
             if pg.subfamily == "h":
                 irreps, classes, chars = (["Ag","Au","Eg","Eu","Tg","Tu"],
                  ["E", "4C_3", "4C_3^2", "3C_2", "i", "S_6", "S_6^5", "3sigma_h"],
+                 np.array(
                  [[1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0],
                   [1.0,  1.0,  1.0,  1.0, -1.0, -1.0, -1.0, -1.0],
                   [2.0,  cp3,  cp3,  2.0,  2.0,  cp3,  cp3,  1.0],
                   [2.0,  cp3,  cp3,  2.0, -2.0, -cp3, -cp3, -1.0],
                   [3.0,  0.0,  0.0, -1.0,  1.0,  0.0,  0.0, -1.0],
-                  [3.0,  0.0,  0.0, -1.0, -1.0,  0.0,  0.0,  1.0]])
+                  [3.0,  0.0,  0.0, -1.0, -1.0,  0.0,  0.0,  1.0]]))
             elif pg.subfamily == "d":
                 irreps, classes, chars = (["A1","A2","E","T1","T2"],
                  ["E", "8C_3", "3C_2", "6S_4", "6sigma_d"],
+                 np.array(
                  [[1.0,  1.0,  1.0,  1.0,  1.0],
                   [1.0,  1.0,  1.0, -1.0, -1.0],
                   [2.0, -1.0,  2.0,  0.0,  0.0],
                   [3.0,  1.0, -1.0,  1.0, -1.0],
-                  [3.0, -1.0, -1.0, -1.0,  1.0]])
+                  [3.0, -1.0, -1.0, -1.0,  1.0]]))
             else:
                 irreps, classes, chars = (["A","E","T"],
                  ["E", "4C_3", "4C_3^2", "3C_2"],
+                 np.array(
                  [[1.0,  1.0,  1.0,  1.0],
                   [2.0,  cp3,  cp3,  2.0],
-                  [3.0,  0.0,  0.0, -1.0]])
+                  [3.0,  0.0,  0.0, -1.0]]))
         elif pg.family == "O":
             if pg.subfamily == "h":
                 irreps, classes, chars = (["A1g","A2g","Eg","T1g","T2g","A1u","A2u","Eu","T1u","T2u"],
                  ["E", "8C_3", "6C_2", "6C_4", "3C_2", "i", "6S_4", "8S_6", "3sigma_h", "6sigma_d"],
+                 np.array(
                  [[1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0],
                   [1.0,  1.0, -1.0, -1.0,  1.0,  1.0, -1.0,  1.0,  1.0, -1.0],
                   [2.0, -1.0,  0.0,  0.0,  2.0,  2.0,  0.0, -1.0,  2.0,  0.0],
@@ -187,41 +191,46 @@ def pg_to_chartab(PG):
                   [1.0,  1.0, -1.0, -1.0,  1.0, -1.0,  1.0, -1.0, -1.0,  1.0],
                   [2.0, -1.0,  0.0,  0.0,  2.0, -2.0,  0.0,  1.0, -2.0,  0.0],
                   [3.0,  0.0, -1.0,  1.0, -1.0, -3.0, -1.0,  0.0,  1.0,  1.0],
-                  [3.0,  0.0,  1.0, -1.0, -1.0, -3.0,  1.0,  0.0,  1.0, -1.0]])
+                  [3.0,  0.0,  1.0, -1.0, -1.0, -3.0,  1.0,  0.0,  1.0, -1.0]]))
             else:
                 irreps, classes, chars = (["A1","A2","E","T1","T2"],
                  ["E", "6C_4", "3C_2", "8C_3", "6C_2"],
+                 np.array(
                  [[1.0,  1.0,  1.0,  1.0,  1.0],
                   [1.0, -1.0,  1.0,  1.0, -1.0],
                   [2.0,  0.0,  2.0, -1.0,  0.0],
                   [3.0,  1.0, -1.0,  0.0, -1.0],
-                  [3.0, -1.0, -1.0,  0.0,  1.0]])
+                  [3.0, -1.0, -1.0,  0.0,  1.0]]))
         elif pg.family == "I":
             if pg.subfamily == "h":
                 irreps, classes, chars = (["Ag","T1g","T2g","Gg","Hg","Au","T1u","T2u","Gu","Hu"],
                  ["E", "12C_5", "12C_5^2", "20C_3", "15C_2", "i", "12S_10", "12S_10^3", "20S_6", "15sigma_"],
+                 np.array(
                  [[1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0],
                   [3.0,  pr5,  mr5,  0.0, -1.0,  3.0,  mr5,  pr5,  0.0, -1.0],
                   [3.0,  mr5,  pr5,  0.0, -1.0,  5.0,  0.0,  0.0, -1.0,  1.0],
+                  [4.0, -1.0, -1.0,  1.0,  0.0,  4.0, -1.0, -1.0,  1.0,  0.0],
+                  [5.0,  0.0,  0.0, -1.0,  1.0,  5.0,  0.0,  0.0, -1.0,  1.0],
                   [1.0,  1.0,  1.0,  1.0,  1.0, -1.0, -1.0, -1.0, -1.0, -1.0],
                   [3.0,  pr5,  mr5,  0.0, -1.0, -3.0, -mr5, -pr5,  0.0,  1.0],
                   [3.0,  mr5,  pr5,  0.0, -1.0, -3.0, -pr5, -mr5,  0.0,  1.0],
                   [4.0, -1.0, -1.0,  1.0,  0.0, -4.0,  1.0,  1.0, -1.0,  0.0],
-                  [5.0,  0.0,  0.0, -1.0,  1.0, -5.0,  0.0,  0.0,  1.0, -1.0]])
+                  [5.0,  0.0,  0.0, -1.0,  1.0, -5.0,  0.0,  0.0,  1.0, -1.0]]))
             else:
                 irreps, classes, chars = (["A","T1","T2","G","H"],
                  ["E", "12C_5", "12C_5^2", "20C_3", "15C_2"],
+                 np.array(
                  [[1.0,  1.0,  1.0,  1.0,  1.0],
                   [3.0,  pr5,  mr5,  0.0, -1.0],
                   [3.0,  mr5,  pr5,  0.0, -1.0],
                   [4.0, -1.0, -1.0,  1.0,  0.0],
-                  [5.0,  0.0,  0.0, -1.0,  1.0]])
+                  [5.0,  0.0,  0.0, -1.0,  1.0]]))
         else:
             raise Exception(f"An invalid point group has been given or unexpected parsing of the point group string has occured: {pg.str}")
     class_orders = grab_class_orders(classes)
     irr_dims = {}
     for (irr_idx,irrep) in enumerate(irreps):
-        irr_dims[irrep] = chars[irr_idx, 1]
+        irr_dims[irrep] = chars[irr_idx, 0]
     return CharTable(PG, irreps, classes, class_orders, chars, irr_dims)
 
 def grab_class_orders(classes):
@@ -432,14 +441,14 @@ def dc_mat(phi, theta, chi):
 
 def get_atom_mapping(mol, symels):
     # symels after transformation
-    amap = np.zeros((len(mol), len(symels)))
-    for (a, atom) in enumerate(mol):
+    amap = np.zeros((mol.natoms, len(symels)))
+    for atom in range(mol.natoms):
         for (s, symel) in enumerate(symels):
-            w = where_you_go(mol, a, symel)
+            w = where_you_go(mol, atom, symel)
             if w is not None:
-                amap[a,s] = w
+                amap[atom,s] = w
             else:
-                raise Exception("Atom $(atom) not mapped to another atom under symel $(symel)")
+                raise Exception(f"Atom {atom} not mapped to another atom under symel {symel}")
     return amap
 
 def where_you_go(mol, atom, symel):
@@ -463,10 +472,12 @@ def symtext_from_file(fn):
 def symtext_from_mol(mol):
     mol.translate(mol.find_com())
     pg, (paxis, saxis) = find_point_group(mol)
+    print(f"Point Group: {pg}")
     symels = pg_to_symels(pg)
     mol = rotate_mol_to_symels(mol, paxis, saxis)
     ctab = pg_to_chartab(pg)
     class_map = generate_symel_to_class_map(symels, ctab)
+    print(mol.coords)
     atom_map = get_atom_mapping(mol, symels)
     mtable = build_mult_table(symels)
     return mol, Symtext(pg, symels, ctab, class_map, atom_map, mtable)
