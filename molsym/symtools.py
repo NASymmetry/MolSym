@@ -256,7 +256,6 @@ def is_there_sigmah(mol, paxis):
 
 def is_there_sigmav(mol, SEAs, paxis):
     axes = []
-    print(SEAs)
     for sea in SEAs:
         length = len(sea.subset)
         if length < 2:
@@ -269,6 +268,7 @@ def is_there_sigmav(mol, SEAs, paxis):
             if n is not None:
                 sigma = reflection_matrix(n)
                 molB = mol.transform(sigma)
+                print(mol.coords, molB.coords)
                 if isequivalent(mol, molB):
                     axes.append(n)
     if len(axes) < 1:
