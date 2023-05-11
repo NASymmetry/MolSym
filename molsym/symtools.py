@@ -256,7 +256,6 @@ def is_there_sigmah(mol, paxis):
 
 def is_there_sigmav(mol, SEAs, paxis):
     axes = []
-    print(SEAs)
     for sea in SEAs:
         length = len(sea.subset)
         if length < 2:
@@ -269,6 +268,7 @@ def is_there_sigmav(mol, SEAs, paxis):
             if n is not None:
                 sigma = reflection_matrix(n)
                 molB = mol.transform(sigma)
+                print(mol.coords, molB.coords)
                 if isequivalent(mol, molB):
                     axes.append(n)
     if len(axes) < 1:
@@ -324,12 +324,13 @@ def find_C3s_for_Ih(mol):
                     nij = np.linalg.norm(rij)
                     njk = np.linalg.norm(rjk)
                     nik = np.linalg.norm(rik)
-                    if isclose(nij, njk, abs_tol=tol) and isclose(nij, nik, abs_tol=tol):
+                    if np.isclose(nij, njk, atol=tol) and np.isclose(nij, nik, atol=tol):
                         c3_axis = normalize(np.cross(rij, rjk))
-                        c3 = Cn(c3_axis, 3)
-                        molB = mol.transform(c3)
-                        if isequivalent(mol, molB):
-                            c3_axes.append(c3_axis)
+                        if c3_axis is not None:
+                            c3 = Cn(c3_axis, 3)
+                            molB = mol.transform(c3)
+                            if isequivalent(mol, molB):
+                                c3_axes.append(c3_axis)
     unique_axes = [c3_axes[0]]
     for i in c3_axes:
         check = True
@@ -349,25 +350,26 @@ def find_C4s_for_Oh(mol):
     Finds the three C4 axes for an Oh point group so the paxis and saxis can be defined
     """
     c4_axes = []
-    for i in mol:
-        for j in mol:
-            for k in mol:
-                for l in mol:
+    for i in range(mol.natoms):
+        for j in range(mol.natoms):
+            for k in range(mol.natoms):
+                for l in range(mol.natoms):
                     if i != j and k != l and i != k:
-                        rij = i.xyz - j.xyz
-                        rjk = j.xyz - k.xyz
-                        rkl = k.xyz - l.xyz
-                        ril = i.xyz - l.xyz
+                        rij = mol.coords[i,:] - mol.coords[j,:]
+                        rjk = mol.coords[j,:] - mol.coords[k,:]
+                        rkl = mol.coords[k,:] - mol.coords[l,:]
+                        ril = mol.coords[i,:] - mol.coords[l,:]
                         nij = np.linalg.norm(rij)
                         njk = np.linalg.norm(rjk)
                         nkl = np.linalg.norm(rkl)
                         nil = np.linalg.norm(ril)
-                        if isclose(nij, njk, atol=tol) and isclose(nkl, nil, atol=tol) and isclose(nij, nkl, atol=tol):
+                        if np.isclose(nij, njk, atol=tol) and np.isclose(nkl, nil, atol=tol) and np.isclose(nij, nkl, atol=tol):
                             c4_axis = normalize(np.cross(rij, rjk))
-                            c4 = Cn(c4_axis, 4)
-                            molB = mol.transform(c4)
-                            if isequivalent(mol, molB):
-                                c4_axes.append(c4_axis)
+                            if c4_axis is not None:
+                                c4 = Cn(c4_axis, 4)
+                                molB = mol.transform(c4)
+                                if isequivalent(mol, molB):
+                                    c4_axes.append(c4_axis)
     unique_axes = [c4_axes[0]]
     for i in c4_axes:
         check = True

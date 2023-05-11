@@ -230,7 +230,10 @@ def pg_to_chartab(PG):
     class_orders = grab_class_orders(classes)
     irr_dims = {}
     for (irr_idx,irrep) in enumerate(irreps):
-        irr_dims[irrep] = chars[irr_idx, 0]
+        if pg.n == 1:
+            irr_dims[irrep] = chars[0]
+        else:
+            irr_dims[irrep] = chars[irr_idx, 0]
     return CharTable(PG, irreps, classes, class_orders, chars, irr_dims)
 
 def grab_class_orders(classes):
