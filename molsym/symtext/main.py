@@ -388,8 +388,15 @@ def cn_class_map(class_map, n, idx_offset, cls_offset):
 
 def rotate_mol_to_symels(mol, paxis, saxis):
     z = paxis
-    x = saxis
-    y = np.cross(z,x)
+    if np.isclose(np.linalg.norm(saxis), 0.0, atol=tol):
+        trial_vec = np.array([1.0,0.0,0.0])
+        if np.isclose(np.dot(trial_vec, z), 0.0, atol=tol):
+            trial_vec = np.array([0.0,1.0,0.0])
+        x = normalize(np.cross(trial_vec, z))
+        y = normalize(np.cross(z, x))
+    else:
+        x = saxis
+        y = np.cross(z,x)
     rmat = np.column_stack((x,y,z)) # This matrix rotates z to paxis, etc., ...
     rmat_inv = rmat.T # ... so invert it so it takes paxis to z, etc.
     new_mol = mol.transform(rmat_inv)
@@ -455,9 +462,10 @@ def get_atom_mapping(mol, symels):
     return amap
 
 def where_you_go(mol, atom, symel):
+    print(mol.coords[atom,:])
     ratom = np.dot(symel.rrep, mol.coords[atom,:].T)
-    length = mol.natoms
-    for i in range(length):
+    print(ratom)
+    for i in range(mol.natoms):
         if np.isclose(mol.coords[i,:], ratom, atol=tol).all():
             return i
     return None
