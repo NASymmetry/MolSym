@@ -462,9 +462,7 @@ def get_atom_mapping(mol, symels):
     return amap
 
 def where_you_go(mol, atom, symel):
-    print(mol.coords[atom,:])
     ratom = np.dot(symel.rrep, mol.coords[atom,:].T)
-    print(ratom)
     for i in range(mol.natoms):
         if np.isclose(mol.coords[i,:], ratom, atol=tol).all():
             return i
@@ -475,7 +473,6 @@ def symtext_from_file(fn):
         strang = lfn.read()
     #mol = psi4.core.Molecule.from_string(strang)
     schema = qcel.models.Molecule.from_data(strang).dict()
-    print(schema)
     #schema = mol.to_schema("psi4")
     mol2 = Molecule.from_schema(schema)
     return symtext_from_mol(mol2)
@@ -483,12 +480,10 @@ def symtext_from_file(fn):
 def symtext_from_mol(mol):
     mol.translate(mol.find_com())
     pg, (paxis, saxis) = find_point_group(mol)
-    print(f"Point Group: {pg}")
     symels = pg_to_symels(pg)
     mol = rotate_mol_to_symels(mol, paxis, saxis)
     ctab = pg_to_chartab(pg)
     class_map = generate_symel_to_class_map(symels, ctab)
-    print(mol.coords)
     atom_map = get_atom_mapping(mol, symels)
     mtable = build_mult_table(symels)
     return mol, Symtext(pg, symels, ctab, class_map, atom_map, mtable)
