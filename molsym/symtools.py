@@ -268,7 +268,6 @@ def is_there_sigmav(mol, SEAs, paxis):
             if n is not None:
                 sigma = reflection_matrix(n)
                 molB = mol.transform(sigma)
-                print(mol.coords, molB.coords)
                 if isequivalent(mol, molB):
                     axes.append(n)
     if len(axes) < 1:
