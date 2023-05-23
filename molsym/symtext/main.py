@@ -1,10 +1,11 @@
-from .symtext import *
+#from .symtext import *
 from .symel_generators import *
 from .character_table_generators import *
 from molsym.symtools import normalize
 #import psi4
 from molsym.flowchart import find_point_group
 from .multiplication_table import *
+import re
 
 def pg_to_symels(PG):
     pg = PointGroup.from_string(PG)
@@ -468,25 +469,25 @@ def where_you_go(mol, atom, symel):
             return i
     return None
 
-def symtext_from_file(fn):
-    with open(fn, "r") as lfn:
-        strang = lfn.read()
-    #mol = psi4.core.Molecule.from_string(strang)
-    schema = qcel.models.Molecule.from_data(strang).dict()
-    #schema = mol.to_schema("psi4")
-    mol2 = Molecule.from_schema(schema)
-    return symtext_from_mol(mol2)
+#def symtext_from_file(fn):
+#    with open(fn, "r") as lfn:
+#        strang = lfn.read()
+#    #mol = psi4.core.Molecule.from_string(strang)
+#    schema = qcel.models.Molecule.from_data(strang).dict()
+#    #schema = mol.to_schema("psi4")
+#    mol2 = Molecule.from_schema(schema)
+#    return symtext_from_mol(mol2)
 
-def symtext_from_mol(mol):
-    mol.translate(mol.find_com())
-    pg, (paxis, saxis) = find_point_group(mol)
-    symels = pg_to_symels(pg)
-    mol = rotate_mol_to_symels(mol, paxis, saxis)
-    ctab = pg_to_chartab(pg)
-    class_map = generate_symel_to_class_map(symels, ctab)
-    atom_map = get_atom_mapping(mol, symels)
-    mtable = build_mult_table(symels)
-    return mol, Symtext(pg, symels, ctab, class_map, atom_map, mtable)
+#def symtext_from_mol(mol):
+#    mol.translate(mol.find_com())
+#    pg, (paxis, saxis) = find_point_group(mol)
+#    symels = pg_to_symels(pg)
+#    mol = rotate_mol_to_symels(mol, paxis, saxis)
+#    ctab = pg_to_chartab(pg)
+#    class_map = generate_symel_to_class_map(symels, ctab)
+#    atom_map = get_atom_mapping(mol, symels)
+#    mtable = build_mult_table(symels)
+#    return mol, Symtext(pg, symels, ctab, class_map, atom_map, mtable)
 
 def irrep_sort_idx(irrep_str):
     rsult = 0

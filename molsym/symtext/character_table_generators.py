@@ -1,5 +1,5 @@
 import numpy as np
-from .symtext import *
+from .symel import *
 
 def c_class_string(classes, pre, r, s):
     "Pushes class string to 'classes' for rotations, but ignores superscript if s is one"

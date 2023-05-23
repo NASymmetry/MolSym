@@ -1,5 +1,5 @@
 import numpy as np
-from molsym.symtext.symtext import CharTable
+from molsym.symtext.symel import CharTable
 from pgs.Cn import *
 from pgs.Cnh import *
 from pgs.Cnv import *
