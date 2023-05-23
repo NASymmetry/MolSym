@@ -39,6 +39,13 @@ class Molecule():
         #masses = schema["masses"]
         return cls(atoms, coords, masses)
 
+    @classmethod
+    def from_file(cls, fn):
+        with open(fn, "r") as lfn:
+            strang = lfn.read()
+        schema = qcel.models.Molecule.from_data(strang).dict()
+        return cls.from_schema(schema)
+
     def __getitem__(self, i):
         return Molecule(self.atoms[i], self.coords[i,:], self.masses[i])
 
@@ -115,6 +122,38 @@ class Molecule():
                         skip.append(k[0])
             SEAs.append(SEA("", biggun, np.zeros(3)))
         return SEAs
+
+    def symmetrize(self, asym_tol=0.05):
+        dm = self.distance_matrix()
+        SEAs = self.find_SEAs()
+        new_dm = deepcopy(dm)
+        # Symmetrize interatomic distance matrix
+        for sea in SEAs:
+            if len(sea.subset) < 2:
+                continue
+            for dm_el_0 in range(self.natoms):
+                matches = [(sea.subset[0], dm_el_0)]
+                for sea_i in sea.subset[1:]:
+                    for dm_el_i in range(self.natoms):
+                        if np.isclose(dm[sea.subset[0], dm_el_0], dm[sea_i, dm_el_i], atol=asym_tol):
+                            matches.append((sea_i, dm_el_i))
+                suum = 0.0
+                for idxs in matches:
+                    suum += dm[idxs]
+                avg_dm = suum / len(matches)
+                for idxs in matches:
+                    new_dm[idxs[0],idxs[1]] = avg_dm
+                    new_dm[idxs[1],idxs[0]] = avg_dm
+        
+        # Transform back to Cartesian coordinates, shout out to @Legendre17 on Math Stack Exchange
+        M = np.array([[(new_dm[0,j]**2 + new_dm[i,0]**2 - new_dm[i,j]**2)/2 for j in range(self.natoms)] for i in range(self.natoms)])
+        evals, evecs = np.linalg.eigh(M)
+        evalMat = np.zeros((self.natoms, self.natoms))
+        for i in range(self.natoms):
+            print(evals[i])
+            evalMat[i,i] = np.sqrt(evals[i])
+        X = np.dot(evecs, evalMat)
+        self.coords = X[:,-3:]
 
 def rotation_matrix(axis, theta):
     cos_t = np.cos(theta)

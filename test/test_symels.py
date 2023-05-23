@@ -1,5 +1,4 @@
 import numpy as np
-from molsym.symtext.symtext import CharTable
 from pgs.Cn import *
 from pgs.Cnh import *
 from pgs.Cnv import *
@@ -7,7 +6,8 @@ from pgs.Dn import *
 from pgs.Dnh import *
 from pgs.Dnd import *
 from pgs.Sn import *
-from molsym.symtext.main import pg_to_symels, pg_to_chartab, symtext_from_file, cn_class_map, generate_symel_to_class_map
+from molsym.symtext.main import pg_to_symels, pg_to_chartab, cn_class_map, generate_symel_to_class_map
+from molsym import Symtext
 
 pgs = [
     "C2","C3","C4","C5","C6",
@@ -44,4 +44,4 @@ def test_symtext():
     #    pg = f"D{i}h"
     #    beans = generate_symel_to_class_map(pg_to_symels(pg),pg_to_chartab(pg))
     #    print(f"pg: {pg}, {beans}")
-    print(symtext_from_file("test/sxyz/D6h.xyz")[1])
+    print(Symtext.from_file("test/sxyz/D6h.xyz"))

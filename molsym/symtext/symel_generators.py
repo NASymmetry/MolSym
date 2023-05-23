@@ -1,5 +1,5 @@
 from molsym.molecule import *
-from .symtext import Symel, reduce
+from .symel import Symel, reduce
 import numpy as np
 from numpy.linalg import matrix_power
 from ..symtools import normalize
