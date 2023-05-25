@@ -326,11 +326,11 @@ def generate_symel_to_class_map(symels, ctab):
                     class_map[-pg.n:-ns] = ncls-1 # σv
                     class_map[-ns:] = ncls-2 # σd
             else:
-                class_map[2] = (ncls>>1)+1
+                class_map[1] = (ncls>>1)
                 cn_class_map(class_map, pg.n, 1, 0)
-                class_map[pg.n+2:2*pg.n+1] = ns+2
+                class_map[pg.n+1:2*pg.n+1] = ns+1
                 cn_class_map(class_map, pg.n, 2*pg.n, ns+2)
-                class_map[-1-pg.n+1:-1] = ncls
+                class_map[-1-pg.n+1:] = ncls-1
         elif pg.subfamily == "d":
             if pg.n % 2 == 0:
                 cn_class_map(class_map, pg.n, 0, 0) # Cn

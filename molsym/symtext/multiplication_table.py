@@ -122,7 +122,7 @@ def identify_subgroup(subgroup, symels):
     else:
         if inversion:
             pg = "Ci"
-        elif sigma:
+        elif sigma or sigma_h:
             pg = "Cs"
         else:
             pg = "C1"
