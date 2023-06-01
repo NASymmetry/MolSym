@@ -19,7 +19,7 @@ class SEA():
 
 class Molecule():
     def __init__(self, atoms, coords, masses) -> None:
-        self.tol = 1e-8
+        self.tol = 1e-5
         self.atoms = np.asarray(atoms)
         try:
             self.natoms = len(self.atoms)

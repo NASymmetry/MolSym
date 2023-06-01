@@ -10,16 +10,16 @@ z = np.array([0,0,1])
 c52 = 2*np.cos(2*np.pi/5)
 c54 = 2*np.cos(4*np.pi/5)
 
-D2s = [Symel("E",np.identity(3)), Symel("C_2^1",Cn(z,2)), Symel("C_2'(1)",Cn(x,2)), Symel("C_2''(1)",Cn(y,2))]
-D3s = [Symel("E",np.identity(3)), Symel("C_3^1",Cn(z,3)),Symel("C_3^2",matrix_power(Cn(z,3),2)),
-       Symel("C_2'(1)",Cn(x,2)), Symel("C_2'(2)",Cn(np.dot(Cn(z,3),x.T),2)), Symel("C_2'(3)",Cn(np.dot(matrix_power(Cn(z,3),2),x.T),2))]
-D4s = [Symel("E",np.identity(3)), Symel("C_4^1",Cn(z,4)),Symel("C_2^1",Cn(z,2)),Symel("C_4^3",matrix_power(Cn(z,4),3)),
-       Symel("C_2'(1)",Cn(x,2)), Symel("C_2'(2)",Cn(np.dot(Cn(z,4),x.T),2)), Symel("C_2''(1)",Cn(np.dot(matrix_power(Cn(z,8),1),x.T),2)), Symel("C_2''(2)",Cn(np.dot(matrix_power(Cn(z,8),3),x.T),2))]
-D5s = [Symel("E",np.identity(3)), Symel("C_5^1",Cn(z,5)),Symel("C_5^2",matrix_power(Cn(z,5),2)),Symel("C_5^3",matrix_power(Cn(z,5),3)), Symel("C_5^4",matrix_power(Cn(z,5),4)),
-       Symel("C_2'(1)",Cn(x,2)), Symel("C_2'(2)",Cn(np.dot(Cn(z,5),x.T),2)), Symel("C_2'(3)",Cn(np.dot(matrix_power(Cn(z,5),2),x.T),2)), Symel("C_2'(4)",Cn(np.dot(matrix_power(Cn(z,5),3),x.T),2)), Symel("C_2'(5)",Cn(np.dot(matrix_power(Cn(z,5),4),x.T),2))]
-D6s = [Symel("E",np.identity(3)), Symel("C_6^1",Cn(z,6)),Symel("C_3^1",Cn(z,3)),Symel("C_2^1",Cn(z,2)),Symel("C_3^2",matrix_power(Cn(z,3),2)), Symel("C_6^5",matrix_power(Cn(z,6),5)),
-       Symel("C_2'(1)",Cn(x,2)), Symel("C_2'(2)",Cn(np.dot(Cn(z,6),x.T),2)), Symel("C_2'(3)",Cn(np.dot(Cn(z,3),x.T),2)),
-       Symel("C_2''(1)",Cn(np.dot(Cn(z,12),x.T),2)), Symel("C_2''(2)",Cn(np.dot(matrix_power(Cn(z,12),3),x.T),2)), Symel("C_2''(3)",Cn(np.dot(matrix_power(Cn(z,12),5),x.T),2))]
+D2s = [Symel("E",None,np.identity(3)), Symel("C_2^1",z,Cn(z,2)), Symel("C_2'(1)",x,Cn(x,2)), Symel("C_2''(1)",y,Cn(y,2))]
+D3s = [Symel("E",None,np.identity(3)), Symel("C_3^1",z,Cn(z,3)),Symel("C_3^2",z,matrix_power(Cn(z,3),2)),
+       Symel("C_2'(1)",x,Cn(x,2)), Symel("C_2'(2)",np.dot(Cn(z,3),x.T),Cn(np.dot(Cn(z,3),x.T),2)), Symel("C_2'(3)",np.dot(matrix_power(Cn(z,3),2),x.T),Cn(np.dot(matrix_power(Cn(z,3),2),x.T),2))]
+D4s = [Symel("E",None,np.identity(3)), Symel("C_4^1",z,Cn(z,4)),Symel("C_2^1",z,Cn(z,2)),Symel("C_4^3",z,matrix_power(Cn(z,4),3)),
+       Symel("C_2'(1)",x,Cn(x,2)), Symel("C_2'(2)",np.dot(Cn(z,4),x.T),Cn(np.dot(Cn(z,4),x.T),2)), Symel("C_2''(1)",np.dot(matrix_power(Cn(z,8),1),x.T),Cn(np.dot(matrix_power(Cn(z,8),1),x.T),2)), Symel("C_2''(2)",np.dot(matrix_power(Cn(z,8),3),x.T),Cn(np.dot(matrix_power(Cn(z,8),3),x.T),2))]
+D5s = [Symel("E",None,np.identity(3)), Symel("C_5^1",z,Cn(z,5)),Symel("C_5^2",z,matrix_power(Cn(z,5),2)),Symel("C_5^3",z,matrix_power(Cn(z,5),3)), Symel("C_5^4",z,matrix_power(Cn(z,5),4)),
+       Symel("C_2'(1)",x,Cn(x,2)), Symel("C_2'(2)",np.dot(Cn(z,5),x.T),Cn(np.dot(Cn(z,5),x.T),2)), Symel("C_2'(3)",np.dot(matrix_power(Cn(z,5),2),x.T),Cn(np.dot(matrix_power(Cn(z,5),2),x.T),2)), Symel("C_2'(4)",np.dot(matrix_power(Cn(z,5),3),x.T),Cn(np.dot(matrix_power(Cn(z,5),3),x.T),2)), Symel("C_2'(5)",np.dot(matrix_power(Cn(z,5),4),x.T),Cn(np.dot(matrix_power(Cn(z,5),4),x.T),2))]
+D6s = [Symel("E",None,np.identity(3)), Symel("C_6^1",z,Cn(z,6)),Symel("C_3^1",z,Cn(z,3)),Symel("C_2^1",z,Cn(z,2)),Symel("C_3^2",z,matrix_power(Cn(z,3),2)), Symel("C_6^5",z,matrix_power(Cn(z,6),5)),
+       Symel("C_2'(1)",x,Cn(x,2)), Symel("C_2'(2)",np.dot(Cn(z,6),x.T),Cn(np.dot(Cn(z,6),x.T),2)), Symel("C_2'(3)",np.dot(Cn(z,3),x.T),Cn(np.dot(Cn(z,3),x.T),2)),
+       Symel("C_2''(1)",np.dot(Cn(z,12),x.T),Cn(np.dot(Cn(z,12),x.T),2)), Symel("C_2''(2)",np.dot(matrix_power(Cn(z,12),3),x.T),Cn(np.dot(matrix_power(Cn(z,12),3),x.T),2)), Symel("C_2''(3)",np.dot(matrix_power(Cn(z,12),5),x.T),Cn(np.dot(matrix_power(Cn(z,12),5),x.T),2))]
 
 D2irr = ["A", "B1", "B2", "B3"]
 D2cn = ["E","C_2(z)","C_2(y)","C_2(x)"]
