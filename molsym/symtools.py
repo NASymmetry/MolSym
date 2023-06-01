@@ -12,7 +12,7 @@ class RotationElement():
 
 def normalize(a):
     n = np.linalg.norm(a)
-    if n <= tol:
+    if n <= global_tol:
         return None
     return a / np.linalg.norm(a)
 
@@ -22,7 +22,7 @@ def issame_axis(a, b):
     if A is None or B is None:
         return False
     d = abs(np.dot(A,B))
-    return isclose(d, 1.0, abs_tol=tol)
+    return isclose(d, 1.0, abs_tol=global_tol)
 
 def intersect(a, b):
     out = []
@@ -57,12 +57,12 @@ def find_rotation_sets(mol, SEAs):
             idx = evals.argsort()
             Ia, Ib, Ic = evals[idx]
             Iav, Ibv, Icv = [evecs[:,i] for i in idx]
-            if np.isclose(Ia, Ib, atol=tol) and np.isclose(Ia, Ic, atol=tol):
+            if np.isclose(Ia, Ib, atol=mol.tol) and np.isclose(Ia, Ic, atol=mol.tol):
                 sea.label = "Spherical"
-            elif np.isclose(Ia+Ib, Ic, atol=tol):
+            elif np.isclose(Ia+Ib, Ic, atol=mol.tol):
                 axis = Icv
                 sea.axis = axis
-                if np.isclose(Ia, Ib, atol=tol):
+                if np.isclose(Ia, Ib, atol=mol.tol):
                     sea.label = "Regular Polygon"
                     for i in range(2,length+1):
                         if isfactor(length,i):
@@ -75,13 +75,13 @@ def find_rotation_sets(mol, SEAs):
                             re = RotationElement(axis, i)
                             out_per_SEA.append(re)
             else:
-                if not (np.isclose(Ia, Ib, atol=tol) or np.isclose(Ib, Ic, atol=tol)):
+                if not (np.isclose(Ia, Ib, atol=mol.tol) or np.isclose(Ib, Ic, atol=mol.tol)):
                     sea.label = "Asymmetric Rotor"
                     for i in [Iav, Ibv, Icv]:
                         re = RotationElement(i, 2)
                         out_per_SEA.append(re)
                 else:
-                    if np.isclose(Ia, Ib, atol=tol):
+                    if np.isclose(Ia, Ib, atol=mol.tol):
                         sea.label = "Oblate Symmetric Top"
                         axis = Icv
                         sea.axis = Icv
@@ -109,7 +109,7 @@ def find_rotations(mol, rotation_set):
         return []
     molmoit = calcmoit(mol)
     evals = np.sort(np.linalg.eigh(molmoit)[0])
-    if evals[0] == 0.0 and np.isclose(evals[1], evals[2], atol=tol):
+    if evals[0] == 0.0 and np.isclose(evals[1], evals[2], atol=mol.tol):
         for i in range(np.shape(mol.coords)[0]):
             if normalize(mol.coords[i,:]) is not None:
                 axis = normalize(mol.coords[0,:])
@@ -194,7 +194,7 @@ def c2a(mol, sea, axis=None, all=False):
     for i in range(length):
         for j in range(i+1,length):
             midpoint = mol.coords[sea.subset[i],:] + mol.coords[sea.subset[j],:]
-            if np.isclose(midpoint, [0,0,0], atol=tol).all():
+            if np.isclose(midpoint, [0,0,0], atol=mol.tol).all():
                 continue
             else:
                 midpoint = normalize(midpoint)
@@ -235,7 +235,9 @@ def c2c(mol, sea1, sea2, axis=None):
     rij = mol.coords[sea1.subset[0],:] - mol.coords[sea1.subset[1],:]
     rkl = mol.coords[sea2.subset[0],:] - mol.coords[sea2.subset[1],:]
     c2_axis = normalize(np.cross(rij, rkl))
-    if axis is not None and issame_axis(c2_axis, axis) or c2_axis is None:
+    if c2_axis is None:
+        return None
+    if axis is not None and issame_axis(c2_axis, axis):
         return None
     c2 = Cn(c2_axis,2)
     molB = mol.transform(c2)
@@ -304,7 +306,7 @@ def planar_mol_axis(mol):
             b = normalize(mol.coords[j,:])
             if a is not None and b is not None:
                 chk = np.dot(a,b)
-                if not np.isclose(chk, 1.0, atol=tol):
+                if not np.isclose(chk, 1.0, atol=mol.tol):
                     return normalize(np.cross(a,b))
     return None
 
@@ -323,7 +325,7 @@ def find_C3s_for_Ih(mol):
                     nij = np.linalg.norm(rij)
                     njk = np.linalg.norm(rjk)
                     nik = np.linalg.norm(rik)
-                    if np.isclose(nij, njk, atol=tol) and np.isclose(nij, nik, atol=tol):
+                    if np.isclose(nij, njk, atol=mol.tol) and np.isclose(nij, nik, atol=mol.tol):
                         c3_axis = normalize(np.cross(rij, rjk))
                         if c3_axis is not None:
                             c3 = Cn(c3_axis, 3)
@@ -362,7 +364,7 @@ def find_C4s_for_Oh(mol):
                         njk = np.linalg.norm(rjk)
                         nkl = np.linalg.norm(rkl)
                         nil = np.linalg.norm(ril)
-                        if np.isclose(nij, njk, atol=tol) and np.isclose(nkl, nil, atol=tol) and np.isclose(nij, nkl, atol=tol):
+                        if np.isclose(nij, njk, atol=mol.tol) and np.isclose(nkl, nil, atol=mol.tol) and np.isclose(nij, nkl, atol=mol.tol):
                             c4_axis = normalize(np.cross(rij, rjk))
                             if c4_axis is not None:
                                 c4 = Cn(c4_axis, 4)

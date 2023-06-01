@@ -14,7 +14,7 @@ def find_point_group(mol):
             pg = "Dinfh"
         else:
             pg = "Cinfv"
-    elif isclose(Ia_mol,Ib_mol,abs_tol=tol) and isclose(Ia_mol, Ic_mol, abs_tol=tol):
+    elif isclose(Ia_mol,Ib_mol,abs_tol=mol.tol) and isclose(Ia_mol, Ic_mol, abs_tol=mol.tol):
         seas = mol.find_SEAs()
         n, axes = num_C2(mol, seas)
         invertable = isequivalent(mol, mol.transform(inversion_matrix()))

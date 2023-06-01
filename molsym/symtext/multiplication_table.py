@@ -1,5 +1,4 @@
 import numpy as np
-from .symtext import *
 import itertools
 import re
 
@@ -112,7 +111,10 @@ def identify_subgroup(subgroup, symels):
             else:
                 pg = f"D{highest_Cn}"
         elif sigma_h:
-            pg = f"C{highest_Cn}h"
+            if inversion or Sn:
+                pg = f"C{highest_Cn}h"
+            else:
+                pg = f"C{highest_Cn}v"
         elif Sn:
             pg = f"S{highest_Cn*2}"
         elif sigma:
@@ -180,6 +182,8 @@ def subgroups(symels, mtable, restrict_comb=None):
             if len(subgroup_candidate) not in possible_subgroup_orders:
                 continue
             if is_subgroup(subgroup_candidate, mtable):
-                subgroups.append(list(subgroup_candidate))
-                subgroup_pgs.append(identify_subgroup(subgroup_candidate, symels))
+                accepted_subgroup = list(subgroup_candidate)
+                accepted_subgroup.sort()
+                subgroups.append(accepted_subgroup)
+                subgroup_pgs.append(identify_subgroup(accepted_subgroup, symels))
     return subgroups, subgroup_pgs

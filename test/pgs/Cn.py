@@ -10,15 +10,15 @@ z = np.array([0,0,1])
 c52 = 2*np.cos(2*np.pi/5)
 c54 = 2*np.cos(4*np.pi/5)
 
-C1s = [Symel("E",np.identity(3))]
-Cis = [Symel("E",np.identity(3)), Symel("i",inversion_matrix())]
-Css = [Symel("E",np.identity(3)), Symel("sigma_h",reflection_matrix(z))]
+C1s = [Symel("E",None,np.identity(3))]
+Cis = [Symel("E",None,np.identity(3)), Symel("i",None,inversion_matrix())]
+Css = [Symel("E",z,np.identity(3)), Symel("sigma_h",z,reflection_matrix(z))]
 
-C2s = [Symel("E",np.identity(3)), Symel("C_2^1",Cn(z,2))]
-C3s = [Symel("E",np.identity(3)), Symel("C_3^1",Cn(z,3)),Symel("C_3^2",matrix_power(Cn(z,3),2))]
-C4s = [Symel("E",np.identity(3)), Symel("C_4^1",Cn(z,4)),Symel("C_2^1",Cn(z,2)),Symel("C_4^3",matrix_power(Cn(z,4),3))]
-C5s = [Symel("E",np.identity(3)), Symel("C_5^1",Cn(z,5)),Symel("C_5^2",matrix_power(Cn(z,5),2)),Symel("C_5^3",matrix_power(Cn(z,5),3)),Symel("C_5^4",matrix_power(Cn(z,5),4))]
-C6s = [Symel("E",np.identity(3)), Symel("C_6^1",Cn(z,6)),Symel("C_3^1",Cn(z,3)),Symel("C_2^1",Cn(z,2)),Symel("C_3^2",matrix_power(Cn(z,3),2)),Symel("C_6^5",matrix_power(Cn(z,6),5))]
+C2s = [Symel("E",z,np.identity(3)), Symel("C_2^1",z,Cn(z,2))]
+C3s = [Symel("E",z,np.identity(3)), Symel("C_3^1",z,Cn(z,3)),Symel("C_3^2",z,matrix_power(Cn(z,3),2))]
+C4s = [Symel("E",z,np.identity(3)), Symel("C_4^1",z,Cn(z,4)),Symel("C_2^1",z,Cn(z,2)),Symel("C_4^3",z,matrix_power(Cn(z,4),3))]
+C5s = [Symel("E",z,np.identity(3)), Symel("C_5^1",z,Cn(z,5)),Symel("C_5^2",z,matrix_power(Cn(z,5),2)),Symel("C_5^3",z,matrix_power(Cn(z,5),3)),Symel("C_5^4",z,matrix_power(Cn(z,5),4))]
+C6s = [Symel("E",z,np.identity(3)), Symel("C_6^1",z,Cn(z,6)),Symel("C_3^1",z,Cn(z,3)),Symel("C_2^1",z,Cn(z,2)),Symel("C_3^2",z,matrix_power(Cn(z,3),2)),Symel("C_6^5",z,matrix_power(Cn(z,6),5))]
 
 C1irr = ["A"]
 C1cn = ["E"]

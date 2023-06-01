@@ -27,6 +27,7 @@ class PointGroup():
 @dataclass
 class Symel():
     symbol:str
+    vector:np.array # Not defined for E or i, axis vector for Cn and Sn, plane normal vector for sigma
     rrep:np.array
     def __str__(self) -> str:
         with np.printoptions(precision=5, suppress=True, formatter={"all":lambda x: f"{x:8.5f}"}):

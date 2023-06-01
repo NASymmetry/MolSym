@@ -1,22 +1,20 @@
-#from .symtext import *
 from .symel_generators import *
 from .character_table_generators import *
 from molsym.symtools import normalize
-#import psi4
-from molsym.flowchart import find_point_group
 from .multiplication_table import *
 import re
 
 def pg_to_symels(PG):
     pg = PointGroup.from_string(PG)
     argerr = f"An invalid point group has been given or unexpected parsing of the point group string has occured: {pg.str}"
-    symels = [Symel("E", np.asarray([[1,0,0],[0,1,0],[0,0,1]]))]
+    symels = [Symel("E", None, np.asarray([[1,0,0],[0,1,0],[0,0,1]]))]
+    z_axis = np.array([0,0,1])
     sigma_h = np.asarray([[1,0,0],[0,1,0],[0,0,-1]])
     if pg.family == "C":
         if pg.subfamily == "h":
-            symels.append(Symel("sigma_h", sigma_h))
+            symels.append(Symel("sigma_h", z_axis, sigma_h))
             if pg.n % 2 == 0:
-                symels.append(Symel("i", inversion_matrix()))
+                symels.append(Symel("i", None, inversion_matrix()))
             cns = generate_Cn(pg.n)
             sns = generate_Sn(pg.n)
             symels = symels + cns + sns
@@ -31,9 +29,9 @@ def pg_to_symels(PG):
             sigma_vs = generate_sigma_v(pg.n)
             symels = symels + cns + sigma_vs + sigma_ds
         elif pg.subfamily == "s":
-            symels.append(Symel("sigma_h", sigma_h))
+            symels.append(Symel("sigma_h", z_axis, sigma_h))
         elif pg.subfamily == "i":
-            symels.append(Symel("i", inversion_matrix()))
+            symels.append(Symel("i", None, inversion_matrix()))
         elif pg.subfamily is None:
             cns = generate_Cn(pg.n)
             symels = symels + cns
@@ -41,9 +39,9 @@ def pg_to_symels(PG):
             raise Exception(argerr)
     elif pg.family == "D":
         if pg.subfamily == "h":
-            symels.append(Symel("sigma_h", sigma_h))
+            symels.append(Symel("sigma_h", z_axis, sigma_h))
             if pg.n % 2 == 0:
-                symels.append(Symel("i", inversion_matrix()))
+                symels.append(Symel("i", None, inversion_matrix()))
                 n = pg.n >> 1
                 sigma_ds = generate_sigma_d(n)
                 c2ps = generate_C2p(pg.n)
@@ -65,7 +63,7 @@ def pg_to_symels(PG):
                 c2s = c2ps + c2pps
             else:
                 c2s = generate_C2p(pg.n)
-                symels.append(Symel("i", inversion_matrix()))
+                symels.append(Symel("i", None, inversion_matrix()))
             cns = generate_Cn(pg.n)
             sns = generate_Sn(pg.n * 2, S2n=True)
             sigma_ds = generate_sigma_d(pg.n)
@@ -85,7 +83,7 @@ def pg_to_symels(PG):
         if pg.subfamily is None and (pg.n % 2 == 0):
             n = pg.n >> 1
             if n % 2 != 0:
-                symels.append(Symel("i", inversion_matrix()))
+                symels.append(Symel("i", None, inversion_matrix()))
             cns = generate_Cn(n)
             sns = generate_Sn(pg.n, S2n=True)
             symels = symels + cns + sns
@@ -389,9 +387,9 @@ def cn_class_map(class_map, n, idx_offset, cls_offset):
 
 def rotate_mol_to_symels(mol, paxis, saxis):
     z = paxis
-    if np.isclose(np.linalg.norm(saxis), 0.0, atol=tol):
+    if np.isclose(np.linalg.norm(saxis), 0.0, atol=global_tol): 
         trial_vec = np.array([1.0,0.0,0.0])
-        if np.isclose(np.dot(trial_vec, z), 0.0, atol=tol):
+        if np.isclose(np.dot(trial_vec, z), 1.0, atol=global_tol):
             trial_vec = np.array([0.0,1.0,0.0])
         x = normalize(np.cross(trial_vec, z))
         y = normalize(np.cross(z, x))
@@ -465,7 +463,7 @@ def get_atom_mapping(mol, symels):
 def where_you_go(mol, atom, symel):
     ratom = np.dot(symel.rrep, mol.coords[atom,:].T)
     for i in range(mol.natoms):
-        if np.isclose(mol.coords[i,:], ratom, atol=tol).all():
+        if np.isclose(mol.coords[i,:], ratom, atol=mol.tol).all():
             return i
     return None
 

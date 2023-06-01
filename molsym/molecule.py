@@ -4,7 +4,7 @@ import qcelemental as qcel
 import json
 from dataclasses import dataclass
 from copy import deepcopy
-tol = 1e-4
+global_tol = 1e-6
 @dataclass
 class Atom():
     Z:int
@@ -19,6 +19,7 @@ class SEA():
 
 class Molecule():
     def __init__(self, atoms, coords, masses) -> None:
+        self.tol = 1e-5
         self.atoms = np.asarray(atoms)
         try:
             self.natoms = len(self.atoms)
@@ -53,8 +54,13 @@ class Molecule():
         return self.natoms
 
     def __eq__(self, other):
+        # Select higher tolerance
+        if self.tol >= other.tol:
+            eq_tol = self.tol
+        else:
+            eq_tol = other.tol
         if isinstance(other, Molecule):
-            return (other.atoms == self.atoms).all() and (other.masses == self.masses).all() and np.allclose(other.coords, self.coords, atol=tol)
+            return (other.atoms == self.atoms).all() and (other.masses == self.masses).all() and np.allclose(other.coords, self.coords, atol=eq_tol)
 
     def find_com(self):
         com = np.zeros(3)
@@ -67,7 +73,7 @@ class Molecule():
             self.coords[i,:] -= r
         
     def is_at_com(self):
-        if sum(abs(self.find_com())) < tol:
+        if sum(abs(self.find_com())) < self.tol:
             return True
         else:
             return False
@@ -98,7 +104,7 @@ class Molecule():
                 z = dm[i,a_idx] - dm[j,b_idx]
                 chk = True
                 for k in z:
-                    if abs(k) < tol:
+                    if abs(k) < self.tol:
                         continue
                     else:
                         chk = False
@@ -189,12 +195,16 @@ def Sn(axis, n):
     return np.dot(Cn(axis, n), reflection_matrix(axis))
 
 def isequivalent(A,B):
+    if A.tol >= B.tol:
+        eq_tol = A.tol
+    else:
+        eq_tol = B.tol
     h = []
     for i in range(A.natoms):
         for j in range(B.natoms):
             if A.masses[i] == B.masses[j]:
                 zs = abs(A.coords[i,:]-B.coords[j,:])
-                if np.allclose(zs, [0,0,0], atol=tol):
+                if np.allclose(zs, [0,0,0], atol=eq_tol):
                     h.append(j)
                     break
     if len(h) == A.natoms:

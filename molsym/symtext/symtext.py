@@ -1,8 +1,5 @@
-import re
-from dataclasses import dataclass
-import numpy as np
-import math
 from molsym.molecule import *
+from molsym import find_point_group
 from .main import *
 from .multiplication_table import build_mult_table
 
