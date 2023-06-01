@@ -12,7 +12,7 @@ def generate_Cn(n):
     cn_r = Cn(axis, n)
     for i in range(1,n):
         a, b = reduce(n, i)
-        symels.append(Symel(f"C_{a:d}^{b:d}", matrix_power(cn_r,i))) # Cns
+        symels.append(Symel(f"C_{a:d}^{b:d}", axis, matrix_power(cn_r,i))) # Cns
     return symels
 
 #def generate_Sn(n):
@@ -32,7 +32,7 @@ def generate_Sn(n, S2n=False):
                 if a == 2:
                     continue
                 else:
-                    symels.append(Symel(f"S_{a}^{b}", np.dot(matrix_power(cn_r,i),sigma_h)))
+                    symels.append(Symel(f"S_{a}^{b}", axis, np.dot(matrix_power(cn_r,i),sigma_h)))
         return symels
     for i in range(1,n):
         a, b = reduce(n, i)
@@ -41,7 +41,7 @@ def generate_Sn(n, S2n=False):
         if a == 2:
             continue
         else:
-            symels.append(Symel(f"S_{a}^{b}", np.dot(matrix_power(cn_r,i),sigma_h))) # Sns
+            symels.append(Symel(f"S_{a}^{b}", axis, np.dot(matrix_power(cn_r,i),sigma_h))) # Sns
     return symels
 
 def generate_sigma_v(n):
@@ -55,7 +55,7 @@ def generate_sigma_v(n):
     rot_mat = Cn(z_axis, n)
     for i in range(nsigma_vs):
         axis = np.cross(np.dot(matrix_power(rot_mat,i), x_axis),z_axis)
-        symels.append(Symel(f"sigma_v({i+1})", reflection_matrix(axis)))
+        symels.append(Symel(f"sigma_v({i+1})", axis, reflection_matrix(axis)))
     return symels
 
 def generate_sigma_d(n):
@@ -66,7 +66,7 @@ def generate_sigma_d(n):
     base_axis = np.dot(Cn(z_axis, 4*n),x_axis) # Rotate x-axis by Cn/2 to produce an axis for sigma_d's
     for i in range(n):
         axis = np.cross(np.dot(matrix_power(rot_mat,i), base_axis),z_axis)
-        symels.append(Symel(f"sigma_d({i+1})", reflection_matrix(axis)))
+        symels.append(Symel(f"sigma_d({i+1})", axis, reflection_matrix(axis)))
     return symels
 
 def generate_C2p(n):
@@ -79,7 +79,7 @@ def generate_C2p(n):
     rot_mat = Cn([0,0,1], n)
     for i in range(nn):
         axis = np.dot(matrix_power(rot_mat,i), x_axis)
-        symels.append(Symel(f"C_2'({i+1})", Cn(axis, 2)))
+        symels.append(Symel(f"C_2'({i+1})", axis, Cn(axis, 2)))
     return symels
 
 def generate_C2pp(n):
@@ -90,7 +90,7 @@ def generate_C2pp(n):
     base_axis = np.dot(Cn([0,0,1], 2*n),x_axis)
     for i in range(nn):
         axis = np.dot(matrix_power(rot_mat,i), base_axis)
-        symels.append(Symel(f"C_2''({i+1})", Cn(axis, 2)))
+        symels.append(Symel(f"C_2''({i+1})", axis, Cn(axis, 2)))
     return symels
 
 def generate_T():
@@ -109,8 +109,8 @@ def generate_T():
     for i in range(4):
         C3 = Cn(C3list[i], 3)
         C3s = matrix_power(C3,2)
-        symels.append(Symel(f"C_3({namelist[i]})",C3))
-        symels.append(Symel(f"C_3^2({namelist[i]})",C3s))
+        symels.append(Symel(f"C_3({namelist[i]})", C3list[i], C3))
+        symels.append(Symel(f"C_3^2({namelist[i]})", C3list[i], C3s))
     # Generate C2's
     C2_x = np.array([1.0, 0.0, 0.0])
     C2_y = np.array([0.0, 1.0, 0.0])
@@ -119,7 +119,7 @@ def generate_T():
     namelist = ["x", "y", "z"]
     for i in range(3):
         C2 = Cn(C2list[i], 2)
-        symels.append(Symel(f"C_2({namelist[i]})", C2))
+        symels.append(Symel(f"C_2({namelist[i]})", C2list[i], C2))
     return symels
 
 def generate_Td():
@@ -135,7 +135,7 @@ def generate_Td():
     namelist = ["xyp","xym","xzp","xzm","yzp","yzm"]
     for i in range(6):
         sigma_d = reflection_matrix(sigmas[i])
-        symels.append(Symel(f"sigma_d({namelist[i]})", sigma_d))
+        symels.append(Symel(f"sigma_d({namelist[i]})", sigmas[i], sigma_d))
     # S4's
     S4_1v = np.array([1.0, 0.0, 0.0])
     S4_2v = np.array([0.0, 1.0, 0.0])
@@ -145,14 +145,14 @@ def generate_Td():
     for i in range(3):
         S4 = Sn(S4vlist[i], 4)
         S43 = matrix_power(S4,3)
-        symels.append(Symel(f"S_4({namelist[i]})", S4))
-        symels.append(Symel(f"S_4^3({namelist[i]})", S43))
+        symels.append(Symel(f"S_4({namelist[i]})", S4vlist[i], S4))
+        symels.append(Symel(f"S_4^3({namelist[i]})", S4vlist[i], S43))
     return symels
 
 def generate_Th():
     symels = generate_T()
     # i
-    symels.append(Symel("i", i()))
+    symels.append(Symel("i", None, i()))
     # S6
     S6_1v = normalize(np.array([ 1.0, 1.0, 1.0]))
     S6_2v = normalize(np.array([-1.0, 1.0,-1.0]))
@@ -163,8 +163,8 @@ def generate_Th():
     for i in range(4):
         S6 = Sn(S6list[i], 6)
         S65 = matrix_power(S6, 5)
-        symels.append(Symel(f"S_6({namelist[i]})", S6))
-        symels.append(Symel(f"S_6^5({namelist[i]})", S65))
+        symels.append(Symel(f"S_6({namelist[i]})", S6list[i], S6))
+        symels.append(Symel(f"S_6^5({namelist[i]})", S6list[i], S65))
     # 3sigma_h
     sigma_h_xv = np.array([1.0, 0.0, 0.0])
     sigma_h_yv = np.array([0.0, 1.0, 0.0])
@@ -173,7 +173,7 @@ def generate_Th():
     namelist = ["x", "y", "z"]
     for i in range(3):
         sigma_h = reflection_matrix(sigma_list[i])
-        symels.append(Symel(f"sigma_h({namelist[i]})", sigma_h))
+        symels.append(Symel(f"sigma_h({namelist[i]})", sigma_list[i], sigma_h))
     return symels
 
 def generate_O():
@@ -188,9 +188,9 @@ def generate_O():
         C4 = Cn(C4list[i], 4)
         C42 = matrix_power(C4,2)
         C43 = matrix_power(C4,3)
-        symels.append(Symel(f"C_4({namelist[i]})", C4))
-        symels.append(Symel(f"C_2({namelist[i]})", C42))
-        symels.append(Symel(f"C_4^3({namelist[i]})", C43))
+        symels.append(Symel(f"C_4({namelist[i]})", C4list[i], C4))
+        symels.append(Symel(f"C_2({namelist[i]})", C4list[i], C42))
+        symels.append(Symel(f"C_4^3({namelist[i]})", C4list[i], C43))
     # C3
     C3_1v = normalize(np.array([1.0, 1.0, 1.0]))
     C3_2v = normalize(np.array([1.0,-1.0, 1.0]))
@@ -201,8 +201,8 @@ def generate_O():
     for i in range(4):
         C3 = Cn(C3list[i], 3)
         C32 = matrix_power(C3,2)
-        symels.append(Symel(f"C_3({namelist[i]})", C3))
-        symels.append(Symel(f"C_3^2({namelist[i]})", C32))
+        symels.append(Symel(f"C_3({namelist[i]})", C3list[i], C3))
+        symels.append(Symel(f"C_3^2({namelist[i]})", C3list[i], C32))
     # C2
     C2_1v = normalize(np.array([1.0, 0.0, 1.0]))
     C2_2v = normalize(np.array([1.0, 0.0,-1.0]))
@@ -215,12 +215,12 @@ def generate_O():
     namelist = ["xzp", "xzm", "xyp", "xym", "yzp", "yzm"]
     for i in range(6):
         C2 = Cn(C2list[i],2)
-        symels.append(Symel(f"C_2({namelist[i]})", C2))
+        symels.append(Symel(f"C_2({namelist[i]})", C2list[i], C2))
     return symels
 
 def generate_Oh():
     symels = generate_O()
-    symels.append(Symel("i",inversion_matrix()))
+    symels.append(Symel("i", None, inversion_matrix()))
     # S4 and σh
     S4_xv = np.array([1.0, 0.0, 0.0])
     S4_yv = np.array([0.0, 1.0, 0.0])
@@ -231,9 +231,9 @@ def generate_Oh():
         S4 = Sn(S4list[i], 4)
         sigma_h = reflection_matrix(S4list[i])
         S43 = matrix_power(S4,3)
-        symels.append(Symel(f"S_4({namelist[i]})", S4))
-        symels.append(Symel(f"sigma_h({namelist[i]})", sigma_h))
-        symels.append(Symel(f"S_4^3({namelist[i]})", S43))
+        symels.append(Symel(f"S_4({namelist[i]})", S4list[i], S4))
+        symels.append(Symel(f"sigma_h({namelist[i]})", S4list[i], sigma_h))
+        symels.append(Symel(f"S_4^3({namelist[i]})", S4list[i], S43))
     # S6
     S6_1v = normalize(np.array([1.0, 1.0, 1.0]))
     S6_2v = normalize(np.array([1.0,-1.0, 1.0]))
@@ -244,8 +244,8 @@ def generate_Oh():
     for i in range(4):
         S6 = Sn(S6list[i], 6)
         S65 = matrix_power(S6,5)
-        symels.append(Symel(f"S_6({namelist[i]})", S6))
-        symels.append(Symel(f"S_6^5({namelist[i]})", S65))
+        symels.append(Symel(f"S_6({namelist[i]})", S6list[i], S6))
+        symels.append(Symel(f"S_6^5({namelist[i]})", S6list[i], S65))
     # C2
     sigma_d_1v = normalize(np.array([1.0, 0.0, 1.0]))
     sigma_d_2v = normalize(np.array([1.0, 0.0,-1.0]))
@@ -258,7 +258,7 @@ def generate_Oh():
     namelist = ["xzp", "xzm", "xyp", "xym", "yzp", "yzm"]
     for i in range(6):
         sigma_d = reflection_matrix(sigma_dlist[i])
-        symels.append(Symel(f"sigma_d({namelist[i]})", sigma_d))
+        symels.append(Symel(f"sigma_d({namelist[i]})", sigma_dlist[i], sigma_d))
     return symels
 
 def generate_I():
@@ -270,51 +270,51 @@ def generate_I():
         C52 = matrix_power(C5,2)
         C53 = matrix_power(C5,3)
         C54 = matrix_power(C5,4)
-        symels.append(Symel(f"C_5({i})", C5))
-        symels.append(Symel(f"C_5^2({i})", C52))
-        symels.append(Symel(f"C_5^3({i})", C53))
-        symels.append(Symel(f"C_5^4({i})", C54))
+        symels.append(Symel(f"C_5({i})", faces[i], C5))
+        symels.append(Symel(f"C_5^2({i})", faces[i], C52))
+        symels.append(Symel(f"C_5^3({i})", faces[i], C53))
+        symels.append(Symel(f"C_5^4({i})", faces[i], C54))
     
     # C3 (vertex vectors)
     for i in range(10):
         C3 = Cn(vertices[i],3)
         C32 = matrix_power(C3,2)
-        symels.append(Symel(f"C_3({i})", C3))
-        symels.append(Symel(f"C_3^2({i})", C32))
+        symels.append(Symel(f"C_3({i})", vertices[i], C3))
+        symels.append(Symel(f"C_3^2({i})", vertices[i], C32))
 
     # C2 (edge vectors)
     for i in range(15):
         C2 = Cn(edgecenters[i],2)
-        symels.append(Symel(f"C_2({i})", C2))
+        symels.append(Symel(f"C_2({i})", edgecenters[i], C2))
     
     return symels
 
 def generate_Ih():
     symels = generate_I()
     faces, vertices, edgecenters = generate_I_vectors()
-    symels.append(Symel("i", inversion_matrix()))
+    symels.append(Symel("i", None, inversion_matrix()))
     # S10 (face vectors)
     for i in range(6):
         S10 = Sn(faces[i],10)
         S103 = matrix_power(S10,3)
         S107 = matrix_power(S10,7)
         S109 = matrix_power(S10,9)
-        symels.append(Symel(f"S_10({i})", S10))
-        symels.append(Symel(f"S_10^3({i})", S103))
-        symels.append(Symel(f"S_10^7({i})", S107))
-        symels.append(Symel(f"S_10^9({i})", S109))
-    
+        symels.append(Symel(f"S_10({i})", faces[i], S10))
+        symels.append(Symel(f"S_10^3({i})", faces[i], S103))
+        symels.append(Symel(f"S_10^7({i})", faces[i], S107))
+        symels.append(Symel(f"S_10^9({i})", faces[i], S109))
+
     # S6 (vertex vectors)
     for i in range(10):
         S6 = Sn(vertices[i],6)
         S65 = matrix_power(S6,5)
-        symels.append(Symel(f"S_6({i})", S6))
-        symels.append(Symel(f"S_6^5({i})", S65))
+        symels.append(Symel(f"S_6({i})", vertices[i], S6))
+        symels.append(Symel(f"S_6^5({i})", vertices[i], S65))
 
     # σ (edge vectors)
     for i in range(15):
         sigma_i = reflection_matrix(edgecenters[i])
-        symels.append(Symel(f"sigma({i})", sigma_i))
+        symels.append(Symel(f"sigma({i})", edgecenters[i], sigma_i))
     
     return symels
 
