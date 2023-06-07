@@ -1,6 +1,8 @@
 import numpy as np
 import itertools
 import re
+import math
+from . import irrep_mats
 
 def multifly(symels, A, B):
     Crrep = np.dot(A.rrep,B.rrep)
@@ -38,7 +40,7 @@ def identify_subgroup(subgroup, symels):
     subgroup_symels = [symels[i] for i in subgroup]
     inversion = False
     highest_Cn = None
-    sigma_h = False
+    #sigma_h = False
     sigma = False
     Sn = False
     mult_C2s = False
@@ -50,8 +52,8 @@ def identify_subgroup(subgroup, symels):
     for symel in subgroup_symels:
         if symel.symbol == "i":
             inversion = True
-        elif symel.symbol[:7] == "sigma_h":
-            sigma_h = True
+        #elif symel.symbol[:7] == "sigma_h":
+        #    sigma_h = True
         #elif re.match(sigma_vd_re, symel.symbol):
         elif symel.symbol[:5] == "sigma":
             sigma = True
@@ -78,8 +80,8 @@ def identify_subgroup(subgroup, symels):
                     highest_Cn = n
                 if highest_Cn < n:
                     highest_Cn = n
-    
     if highest_Cn is not None:
+        highest_Cn_even = (highest_Cn % 2) == 0
         if nC3 == 20:
             if inversion:
                 pg = "Ih"
@@ -100,17 +102,17 @@ def identify_subgroup(subgroup, symels):
                     pg = "T"
         elif mult_C2s:
             if inversion:
-                if sigma_h:
+                if highest_Cn_even:
                     pg = f"D{highest_Cn}h"
                 else:
                     pg = f"D{highest_Cn}d"
-            elif sigma_h:
-                pg = f"D{highest_Cn}h"
-            elif sigma:
+            elif highest_Cn_even and Sn:
                 pg = f"D{highest_Cn}d"
+            elif Sn:
+                pg = f"D{highest_Cn}h"
             else:
                 pg = f"D{highest_Cn}"
-        elif sigma_h:
+        elif sigma:
             if inversion or Sn:
                 pg = f"C{highest_Cn}h"
             else:
@@ -124,14 +126,14 @@ def identify_subgroup(subgroup, symels):
     else:
         if inversion:
             pg = "Ci"
-        elif sigma or sigma_h:
+        elif sigma:
             pg = "Cs"
         else:
             pg = "C1"
 
     return pg
 
-def subgroups(symels, mtable, restrict_comb=None):
+def cycles(symels, mtable):
     # Find cycles of each element, only consider combinations of cycles
     h = len(symels)
     cycles = []
@@ -156,9 +158,13 @@ def subgroups(symels, mtable, restrict_comb=None):
                 break
         if chk:
             unique_cycles.append(ci)
+    return unique_cycles
 
+def subgroups(symels, mtable, restrict_comb=None):
+    # Naive implementation of subgroup search (by combinations of cycles)
+    h = len(symels)
+    unique_cycles = cycles(symels, mtable)
     possible_subgroup_orders = divisors(h)[1:-1] #Exclude 1 and h
-    #print(unique_cycles)
     
     subgroups = []
     subgroup_pgs = []
@@ -187,3 +193,83 @@ def subgroups(symels, mtable, restrict_comb=None):
                 subgroups.append(accepted_subgroup)
                 subgroup_pgs.append(identify_subgroup(accepted_subgroup, symels))
     return subgroups, subgroup_pgs
+
+def multiply(mtable, *args):
+    m = args[0]
+    for mi in args[1:]:
+        m = mtable[m, mi]
+    return m
+
+def subgroups_better(symels, mtable, max_subgroup_size=None, restrict_comb=None):
+    h = len(symels)
+    unique_cycles = cycles(symels, mtable)
+    possible_subgroup_orders = divisors(h)[1:-1] #Exclude 1 and h
+    if max_subgroup_size is not None:
+        mss = max_subgroup_size
+    else:
+        mss = h
+    if restrict_comb is not None:
+        nselect_limit = restrict_comb
+    else:
+        nselect_limit = len(unique_cycles)-1
+    subgroups = [[*i] for i in unique_cycles]
+    subgroup_pgs = [identify_subgroup(i, symels) for i in unique_cycles]
+    # Select n sets of unique cycles. Each cycle should be a subgroup, but all cycles comprise the group so skip
+    for nselect in range(2,nselect_limit+1): 
+        itercomb = itertools.combinations(unique_cycles, nselect)
+        for comb_i in itercomb:
+            s = math.prod([len(cycle) for cycle in comb_i])
+            if s > mss or s >= h or s not in possible_subgroup_orders:
+                continue
+            product = itertools.product(*comb_i)
+            grp = []
+            for p in product:
+                grp.append(multiply(mtable, *p))
+            grp = [*set(grp)]
+            grp.sort()
+            if grp not in subgroups and is_subgroup(grp, mtable):
+                subgroups.append(grp)
+                subgroup_pgs.append(identify_subgroup(grp, symels))
+    return subgroups, subgroup_pgs
+
+def mtable_check(irrm, mtable):
+    l = mtable.shape[0]
+    for irrep in irrm:
+        for i in range(l):
+            for j in range(l):
+                if mtable[i,j] in irrm_multifly(irrm[irrep], i, j):
+                    continue
+                else:
+                    #print(f"Irrep. {irrep}\nMat. 1: {irrm[i]}\nMat. 2: {irrm[j]}")
+                    #print(f"Multiplying {i} and {j}")
+                    #print(irrm_multifly(irrm, i, j))
+                    return False
+    return True
+
+def irrm_multifly(irrm, a, b):
+    l = irrm.shape[0]
+    out = []
+    errl = []
+    for i in range(l):
+        if irrm[a].shape[0] == 1:
+            r = [irrm[a][0]*irrm[b][0]]
+        else:
+            r = irrm[a]*irrm[b]
+        errl.append(r)
+        if np.isclose(irrm[i], r, atol = 1e-10).all:
+            out.append(i)
+    return out
+
+def orient_subgroup_to_irrmat(subgroup_symels, subgroup_pg):
+    irrm = eval(f"irrep_mats.irrm_{subgroup_pg}")
+    subgroup_mtable = build_mult_table(subgroup_symels)
+    # Assume E is always first
+    perm_idxs = itertools.permutations(range(1,len(subgroup_symels)))
+    for p in perm_idxs:
+        subgroup_perm_idx = [0] + list(p)
+        print(subgroup_perm_idx)
+        subgroup_perm = [subgroup_symels[i] for i in subgroup_perm_idx]
+        print(subgroup_mtable[np.ix_(subgroup_perm_idx, subgroup_perm_idx)])
+        if mtable_check(irrm, subgroup_mtable[np.ix_(subgroup_perm_idx, subgroup_perm_idx)]):
+            return subgroup_perm
+    return False
