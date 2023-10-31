@@ -6,7 +6,7 @@ from .multiplication_table import build_mult_table
 class Symtext():
     def __init__(self, mol, pg, symels, chartable, class_map, atom_map, mult_table) -> None:
         self.mol = mol
-        self.pg = pg
+        self.pg = PointGroup.from_string(pg) # TODO TODO TODO I CHANGED THIS AND IT MIGHT BREAK STUFF TODO TODO TODO
         self.symels = symels
         self.chartable = chartable
         self.class_map = class_map
@@ -36,3 +36,24 @@ class Symtext():
         schema = qcel.models.Molecule.from_data(strang).dict()
         mol = Molecule.from_schema(schema)
         return cls.from_molecule(mol)
+    
+    @property
+    def rotational_symmetry_number(self):
+        if self.pg.family == "C":
+            if self.pg.n == 0 or self.pg.n is None:
+                return 1
+            else:
+                return self.pg.n
+        elif self.pg.family == "D":
+            if self.pg.n == 0:
+                return 2
+            else:
+                return 2*self.pg.n
+        elif self.pg.family == "S":
+            return self.pg.n >> 1
+        elif self.pg.family == "T":
+            return 12
+        elif self.pg.family == "O":
+            return 24
+        elif self.pg.family == "I":
+            return 60
