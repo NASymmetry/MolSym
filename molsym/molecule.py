@@ -47,6 +47,15 @@ class Molecule():
         schema = qcel.models.Molecule.from_data(strang).dict()
         return cls.from_schema(schema)
 
+    def __repr__(self) -> str:
+        rstr = "MolSym Molecule:\n"
+        for i in range(self.natoms):
+            rstr += f"   {self.atoms[i]:3s}   {self.coords[i,0]:12.8f}   {self.coords[i,1]:12.8f}   {self.coords[i,2]:12.8f}\n"
+        return rstr
+
+    def __str__(self) -> str:
+        return self.__repr__()
+
     def __getitem__(self, i):
         return Molecule(self.atoms[i], self.coords[i,:], self.masses[i])
 

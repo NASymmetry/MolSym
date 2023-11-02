@@ -23,7 +23,20 @@ class PointGroup():
         return cls(s, family, n, subfamily)
 
     def __str__(self):
-        return "Family: "+self.family+"\nn: "+str(self.n)+"\nSubfamily: "+self.subfamily
+        nstr = self.n
+        sfstr = self.subfamily
+        if self.n is None:
+            nstr = ""
+        elif self.n == 0:
+            nstr = "inf"
+        else:
+            nstr = str(self.n)
+        if self.subfamily is None:
+            sfstr = ""
+        return self.family + nstr + sfstr
+
+    def __repr__(self) -> str:
+        return self.__str__()
 
     def dumb_pg(self):
         # Check if a dumb point group has been made (e.g. D1h, D0v, C2i)

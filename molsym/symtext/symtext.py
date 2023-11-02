@@ -14,6 +14,9 @@ class Symtext():
         self.mult_table = mult_table
         self.order = len(symels)
 
+    def __len__(self):
+        return len(self.symels)
+
     def __repr__(self):
         return f"\n{self.mol}\n{self.chartable}\n{self.symels}\nClass map:\n{self.class_map}\nAtom map:\n{self.atom_map}\nMultiplication Table\n{self.mult_table}"
 
