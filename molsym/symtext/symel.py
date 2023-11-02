@@ -8,7 +8,8 @@ class PointGroup():
         self.family = family
         self.n = n
         self.subfamily = subfamily
-    
+        self.dumb_pg()
+
     @classmethod
     def from_string(cls, s):
         regex = r"([A-Z]+)(\d+)?([a-z]+)?"
@@ -23,6 +24,44 @@ class PointGroup():
 
     def __str__(self):
         return "Family: "+self.family+"\nn: "+str(self.n)+"\nSubfamily: "+self.subfamily
+
+    def dumb_pg(self):
+        # Check if a dumb point group has been made (e.g. D1h, D0v, C2i)
+        argstr = f"You have generated a dumb point group: {self.str}. Family {self.family}, n {self.n}, subfamily {self.subfamily}. We aren't sure how you managed to do this but we aren't paid enough to proceed with any calculations. If you have any questions, feel free to email the CFOUR listserv."
+        if self.n is None:
+            if self.family == "C":
+                allowed = ["s", "i"]
+                if self.subfamily in allowed:
+                    return 0
+            elif self.family == "T":
+                allowed = [None, "h", "d"]
+                if self.subfamily in allowed:
+                    return 0
+            elif self.family == "O" or self.family == "I":
+                allowed = [None, "h"]
+                if self.subfamily in allowed:
+                    return 0
+        elif self.n == 0:
+            if self.family == "D" and self.subfamily == "h":
+                return 0
+            elif self.family == "C" and self.subfamily == "v":
+                return 0
+        elif self.n == 1:
+            if self.family == "C" and self.subfamily is None:
+                return 0
+        elif self.n >= 2:
+            if self.family == "C":
+                allowed = [None, "v", "h"]
+                if self.subfamily in allowed:
+                    return 0
+            elif self.family == "D":
+                allowed = [None, "d", "h"]
+                if self.subfamily in allowed:
+                    return 0
+            elif self.family == "S":
+                if self.subfamily is None and self.n % 2 == 0:
+                    return 0
+        raise Exception(argstr)
 
 @dataclass
 class Symel():

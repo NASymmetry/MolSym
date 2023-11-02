@@ -11,9 +11,9 @@ def find_point_group(mol):
     Ia_mol, Ib_mol, Ic_mol = np.sort(np.linalg.eigh(moit)[0])
     if Ia_mol == 0.0:
         if isequivalent(mol, mol.transform(inversion_matrix())):
-            pg = "Dinfh"
+            pg = "D0h"
         else:
-            pg = "Cinfv"
+            pg = "C0v"
     elif isclose(Ia_mol,Ib_mol,abs_tol=mol.tol) and isclose(Ia_mol, Ic_mol, abs_tol=mol.tol):
         seas = mol.find_SEAs()
         n, axes = num_C2(mol, seas)

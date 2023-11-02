@@ -267,9 +267,7 @@ def orient_subgroup_to_irrmat(subgroup_symels, subgroup_pg):
     perm_idxs = itertools.permutations(range(1,len(subgroup_symels)))
     for p in perm_idxs:
         subgroup_perm_idx = [0] + list(p)
-        print(subgroup_perm_idx)
         subgroup_perm = [subgroup_symels[i] for i in subgroup_perm_idx]
-        print(subgroup_mtable[np.ix_(subgroup_perm_idx, subgroup_perm_idx)])
         if mtable_check(irrm, subgroup_mtable[np.ix_(subgroup_perm_idx, subgroup_perm_idx)]):
             return subgroup_perm
     return False
