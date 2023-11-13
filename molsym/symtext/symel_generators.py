@@ -152,7 +152,7 @@ def generate_Td():
 def generate_Th():
     symels = generate_T()
     # i
-    symels.append(Symel("i", None, i()))
+    symels.append(Symel("i", None, inversion_matrix()))
     # S6
     S6_1v = normalize(np.array([ 1.0, 1.0, 1.0]))
     S6_2v = normalize(np.array([-1.0, 1.0,-1.0]))

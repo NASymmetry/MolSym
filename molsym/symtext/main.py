@@ -256,7 +256,7 @@ def generate_symel_to_class_map(symels, ctab):
         ns = pg.n>>1 # pg.n floor divided by 2
     ncls = len(ctab.classes)
     nsymel = len(symels)
-    class_map = np.zeros(nsymel)
+    class_map = np.zeros(nsymel, dtype=np.int32)
     class_map[0] = 0 # E is always first
     if pg.family == "C":
         if pg.subfamily == "s" or pg.subfamily == "i":
@@ -357,22 +357,22 @@ def generate_symel_to_class_map(symels, ctab):
     else:
         if pg.family == "T":
             if pg.subfamily == "h":
-                class_map = np.array([1,2,3,2,3,2,3,2,3,4,4,4,5,6,7,6,7,6,7,6,7,8,8,8])
+                class_map = np.array([0,1,2,1,2,1,2,1,2,3,3,3,4,5,6,5,6,5,6,5,6,7,7,7])
             elif pg.subfamily == "d":
-                class_map = np.array([1,2,2,2,2,2,2,2,2,3,3,3,5,5,5,5,5,5,4,4,4,4,4,4])
+                class_map = np.array([0,1,1,1,1,1,1,1,1,2,2,2,4,4,4,4,4,4,3,3,3,3,3,3])
             else:
-                class_map = np.array([1,2,3,2,3,2,3,2,3,4,4,4])
+                class_map = np.array([0,1,2,1,2,1,2,1,2,3,3,3])
         elif pg.family == "O":
             if pg.subfamily == "h":
-                class_map = np.array([1,4,5,4,4,5,4,4,5,4,2,2,2,2,2,2,2,2,3,3,3,3,3,3,6,7,9,7,7,9,7,7,9,7,8,8,8,8,8,8,8,8,10,10,10,10,10,10])
+                class_map = np.array([0,3,4,3,3,4,3,3,4,3,1,1,1,1,1,1,1,1,2,2,2,2,2,2,5,6,8,6,6,8,6,6,8,6,7,7,7,7,7,7,7,7,9,9,9,9,9,9])
             else:
-                class_map = np.array([1,2,3,2,2,3,2,2,3,2,4,4,4,4,4,4,4,4,5,5,5,5,5,5])
+                class_map = np.array([0,1,2,1,1,2,1,1,2,1,3,3,3,3,3,3,3,3,4,4,4,4,4,4])
         elif pg.family == "I":
             if pg.subfamily == "h":
-                class_map = np.array([1,2,3,3,2,2,3,3,2,2,3,3,2,2,3,3,2,2,3,3,2,2,3,3,2,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,
-                             6,7,8,8,7,7,8,8,7,7,8,8,7,7,8,8,7,7,8,8,7,7,8,8,7,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10])
+                class_map = np.array([0,1,2,2,1,1,2,2,1,1,2,2,1,1,2,2,1,1,2,2,1,1,2,2,1,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
+                             5,6,7,7,6,6,7,7,6,6,7,7,6,6,7,7,6,6,7,7,6,6,7,7,6,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9])
             else:
-                class_map = np.array([1,2,3,3,2,2,3,3,2,2,3,3,2,2,3,3,2,2,3,3,2,2,3,3,2,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5])
+                class_map = np.array([0,1,2,2,1,1,2,2,1,1,2,2,1,1,2,2,1,1,2,2,1,1,2,2,1,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4])
         else:
             raise Exception(f"An invalid point group has been given or unexpected parsing of the point group string has occured: {pg.str}")
     return class_map

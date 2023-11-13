@@ -24,6 +24,7 @@ def Cn_irrmat(n):
                 bi[i] *= -1
         chars = np.vstack((chars, bi))
     if 2 < n < 5:
+        # No label associated with E if n < 5
         names.append("E")
         theta = 2*np.pi / n
         v = np.zeros(n)
