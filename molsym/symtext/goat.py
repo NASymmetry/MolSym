@@ -41,7 +41,7 @@ def multifly(irrm, a, b, printem=False):
         if printem:
             print(irrm[i])
             print(r)
-        if np.isclose(irrm[i], r, atol = 1e-7).all():
+        if np.isclose(irrm[i], r, atol = 1e-12).all():
             out.append(i)
     return out
 
@@ -70,7 +70,7 @@ def goat_chk(irrm):
                                 expected = 0
                             if return_full_chk:
                                 gc[i,j,l,m] = gchk
-                            elif np.isclose(gchk, expected, atol=1e-7):
+                            elif np.isclose(gchk, expected, atol=1e-12):
                                 continue
                             else:
                                 #return false

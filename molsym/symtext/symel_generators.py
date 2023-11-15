@@ -15,9 +15,6 @@ def generate_Cn(n):
         symels.append(Symel(f"C_{a:d}^{b:d}", axis, matrix_power(cn_r,i))) # Cns
     return symels
 
-#def generate_Sn(n):
-#    generate_Sn(n, False)
-
 def generate_Sn(n, S2n=False):
     symels = []
     axis = np.asarray([0,0,1])

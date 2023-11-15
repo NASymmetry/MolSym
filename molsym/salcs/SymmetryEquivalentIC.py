@@ -2,6 +2,7 @@ import copy
 from dataclasses import dataclass
 import numpy as np
 from numpy import linalg as LA
+import warnings
 
 @dataclass
 class IC():
@@ -14,6 +15,7 @@ class SEIC():
 
 class InternalCoordinates():
     def __init__(self, int_coords, mol, ic_types):
+        warnings.warn("Using deprecated code")
         self.ic_list = int_coords
         self.mol = mol
         self.ic_types = ic_types

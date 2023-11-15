@@ -230,9 +230,9 @@ def pg_to_chartab(PG):
     irr_dims = {}
     for (irr_idx,irrep) in enumerate(irreps):
         if pg.n == 1:
-            irr_dims[irrep] = chars[0]
+            irr_dims[irrep] = int(chars[0])
         else:
-            irr_dims[irrep] = chars[irr_idx, 0]
+            irr_dims[irrep] = int(chars[irr_idx, 0])
     return CharTable(PG, irreps, classes, class_orders, chars, irr_dims)
 
 def grab_class_orders(classes):
@@ -466,26 +466,6 @@ def where_you_go(mol, atom, symel):
         if np.isclose(mol.coords[i,:], ratom, atol=mol.tol).all():
             return i
     return None
-
-#def symtext_from_file(fn):
-#    with open(fn, "r") as lfn:
-#        strang = lfn.read()
-#    #mol = psi4.core.Molecule.from_string(strang)
-#    schema = qcel.models.Molecule.from_data(strang).dict()
-#    #schema = mol.to_schema("psi4")
-#    mol2 = Molecule.from_schema(schema)
-#    return symtext_from_mol(mol2)
-
-#def symtext_from_mol(mol):
-#    mol.translate(mol.find_com())
-#    pg, (paxis, saxis) = find_point_group(mol)
-#    symels = pg_to_symels(pg)
-#    mol = rotate_mol_to_symels(mol, paxis, saxis)
-#    ctab = pg_to_chartab(pg)
-#    class_map = generate_symel_to_class_map(symels, ctab)
-#    atom_map = get_atom_mapping(mol, symels)
-#    mtable = build_mult_table(symels)
-#    return mol, Symtext(pg, symels, ctab, class_map, atom_map, mtable)
 
 def irrep_sort_idx(irrep_str):
     rsult = 0

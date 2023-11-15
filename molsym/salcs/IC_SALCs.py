@@ -1,17 +1,21 @@
 import numpy as np
 import molsym
-#from molsym.salcs.SymmetryEquivalentIC import *
 from .SymmetryEquivalentIC import *
 import molsym.symtext.irrep_mats as IrrepMats
+import warnings
 np.set_printoptions(suppress=True, linewidth=12000, precision=3)
 """
 SALCs for Internal Coordinate BFs. 
 """
 
+"""
+Deprecated!
+"""
 
 class SALCblock():
     def __init__(self, irrep) -> None:
         # Init with no SALCs
+        warnings.warn("Using deprecated code")
         self.irrep = irrep
         self.lcao = None
         if self.irrep[0] == "A" or self.irrep[0] == "B":
@@ -35,19 +39,13 @@ class SALCblock():
                     self.pfxn_idxs.append(pfxnidx)
                 self.lcao = molsym.symtools.normalize(new_salc[None,:])
             else:
-                #for y in self.lcao:
-                    #if np.allclose(new_salc, y, atol = 1e-6): #|| isapprox(s, -y, atol = 1e-6)
-                    #    check = False
-                    #    break
                 if self.lcao.shape[0] == 1:
                     rank = 1
                 else:
                     rank = np.linalg.matrix_rank(self.lcao, tol=1e-5)
                 if np.linalg.matrix_rank(np.vstack((self.lcao, new_salc)),tol = 1e-5) <= rank:
                     check = False
-                    #break
                 if check:
-                    print("BAH")
                     if self.pfxn_idxs is not None:
                         self.pfxn_idxs.append(pfxnidx)
                     S = molsym.symtools.normalize(new_salc)
@@ -61,15 +59,18 @@ class SALCblock():
             return self.lcao.shape
 
 def salc_irreps(ct, nbfxns):
+    warnings.warn("Using deprecated code")
     salcs = []
     for i in ct.irreps:
         salcs.append(SALCblock(i))#, np.zeros(nbfxns), []))
     return salcs
 
 def is_zeros(vec):
+    warnings.warn("Using deprecated code")
     return np.allclose(vec, np.zeros(vec.shape), atol=1e-6)
 
 def span(ics, symtext, icmap):
+    warnings.warn("Using deprecated code")
     chorker_loaf = np.zeros(icmap.shape)
     for i in range(icmap.shape[0]):
         for j in range(icmap.shape[1]):
@@ -89,6 +90,7 @@ def span(ics, symtext, icmap):
 def InternalProjectionOp(fn, coord_list, ic_types):
     #number of redundant internal coordinates
     #mol = Molecule.from_schema(qc_mol)
+    warnings.warn("Using deprecated code")
     mol = molsym.Molecule.from_file(fn)
     symtext = molsym.Symtext.from_molecule(mol)
     mole = symtext.mol
@@ -99,11 +101,11 @@ def InternalProjectionOp(fn, coord_list, ic_types):
     IC_obj = InternalCoordinates(coord_list, mole, ic_types)
 
     IC_obj.run(SEAs, symtext) 
-    print(IC_obj.ic_map)
     numred = len(IC_obj.ic_list)
     salcs = salc_irreps(symtext.chartable, numred)
     # Ignore coord_alignment!!!
     sea_chk = []
+    print(IC_obj.SEICs)
     #loop over Symmetry Equivalent Internal Coordinate Sets
     for seicidx, seic_set in enumerate(IC_obj.SEICs):
         #if degenerate selection isn't aligned, pick new equivcoord, 
@@ -111,11 +113,8 @@ def InternalProjectionOp(fn, coord_list, ic_types):
         #index of the equivcoord with respect to seic_set. This needs re-written
         equivcoord = seic_set.ICindices[0]
         spn = span(seic_set, symtext, IC_obj.ic_map)
-        print(spn)
         #for equivcoord in seic_set.ICindices:
         for ir, irrep in enumerate(symtext.chartable.irreps):
-            if spn[ir] >= 2:
-                print("FOOK")
             irrmat = getattr(IrrepMats, "irrm_" + str(symtext.pg))[irrep]
             dim = np.array(irrmat[0]).shape[0]
             salc = np.zeros((dim, dim, numred))
@@ -123,8 +122,6 @@ def InternalProjectionOp(fn, coord_list, ic_types):
                 ic2 = IC_obj.ic_map[equivcoord, sidx]
                 p   =     IC_obj.phase_map[equivcoord, sidx]
                 salc[:,:,ic2] += (irrmat[sidx, :, :]) * p
-            print(irrep)
-            print(salc)
             for i in range(dim):
                 for j in range(dim):
                     salcs[ir].addlcaonew(salc[i,j,:], i)

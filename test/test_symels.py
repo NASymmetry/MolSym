@@ -1,3 +1,4 @@
+import pytest
 import numpy as np
 from pgs.Cn import *
 from pgs.Cnh import *
@@ -18,26 +19,26 @@ pgs = [
     "D2d","D3d","D4d","D5d","D6d",
     "D2h","D3h","D4h","D5h","D6h"]
 
-def test_Symel():
-    for pg in pgs:
-        symels = pg_to_symels(pg)
-        symels_ans = eval(pg+"s")
-        beans = True
-        slen = len(symels)
-        slen_ans = len(symels_ans)
-        if slen != slen_ans:
+@pytest.mark.parametrize("pg", pgs)
+def test_Symel(pg):
+    symels = pg_to_symels(pg)
+    symels_ans = eval(pg+"s")
+    beans = True
+    slen = len(symels)
+    slen_ans = len(symels_ans)
+    if slen != slen_ans:
+        beans = False
+    for i in range(slen):
+        if symels[i] == symels_ans[i]:
+            continue
+        else:
+            print(f"{pg} Symels {symels[i]} and {symels_ans[i]} do not match!")
+            print("Calculated:")
+            print(symels)
+            print("Ref:")
+            print(symels_ans)
             beans = False
-        for i in range(slen):
-            if symels[i] == symels_ans[i]:
-                continue
-            else:
-                print(f"{pg} Symels {symels[i]} and {symels_ans[i]} do not match!")
-                print("Calculated:")
-                print(symels)
-                print("Ref:")
-                print(symels_ans)
-                beans = False
-        assert beans
+    assert beans
 
 def test_symtext():
     #for i in range(2,7):
