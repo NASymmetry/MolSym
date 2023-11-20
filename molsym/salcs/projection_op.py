@@ -23,10 +23,12 @@ def ProjectionOp(symtext, fxn_set):
                     # Needs to loop over all functions a Symel could take the operated function into
                     salc[:,:,ic2] += (irrmat[sidx, :, :]) * p
                 elif isinstance(fxn_set, CartesianCoordinates):
-                    atom_idx = symtext.atom_map[sidx, equivcoord//3]
+                    atom_idx = symtext.atom_map[equivcoord//3, sidx]
                     cfxn = equivcoord % 3
                     xyz = fxn_set.fxn_map[sidx,cfxn,:]
-                    salc[:,:,3*atom_idx:3*atom_idx+2] += irrmat[sidx, :, :] * xyz
+                    for i in range(3):
+                        salc[:,:,3*atom_idx+i] += irrmat[sidx, :, :] * xyz[i]
+                    #salc[:,:,3*atom_idx:3*atom_idx+2] += irrmat[sidx, :, :] * xyz
             salc *= dim/symtext.order
             for i in range(dim):
                 for j in range(dim):

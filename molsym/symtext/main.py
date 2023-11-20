@@ -450,7 +450,7 @@ def dc_mat(phi, theta, chi):
 
 def get_atom_mapping(mol, symels):
     # symels after transformation
-    amap = np.zeros((mol.natoms, len(symels)))
+    amap = np.zeros((mol.natoms, len(symels)), dtype=int)
     for atom in range(mol.natoms):
         for (s, symel) in enumerate(symels):
             w = where_you_go(mol, atom, symel)
