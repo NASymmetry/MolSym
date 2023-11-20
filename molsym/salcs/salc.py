@@ -11,6 +11,9 @@ class SALC():
     j:int
     gamma:float # Overlap coefficient of bfxn with SALC. <Salc_j|bfxn>
 
+    def __str__(self) -> str:
+        return f"SALC from P^{self.irrep}_{self.i}{self.j} ({self.bfxn})\n{self.coeffs}\n"
+
 class SALCs():
     def __init__(self, symtext, fxn_set) -> None:
         self.tol = 1e-12
@@ -25,6 +28,15 @@ class SALCs():
     
     def __len__(self):
         return len(self.salc_list)
+
+    def __str__(self) -> str:
+        out = ""
+        for i in self.salc_list:
+            out += str(i)
+        return out
+    
+    def __repr__(self) -> str:
+        return self.__str__()
 
     @property
     def shape(self, irrep_idx):
