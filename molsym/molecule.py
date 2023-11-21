@@ -177,7 +177,6 @@ class Molecule():
         evals, evecs = np.linalg.eigh(M)
         evalMat = np.zeros((self.natoms, self.natoms))
         for i in range(self.natoms):
-            print(evals[i])
             evalMat[i,i] = np.sqrt(evals[i])
         X = np.dot(evecs, evalMat)
         self.coords = X[:,-3:]

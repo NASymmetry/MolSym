@@ -14,7 +14,7 @@ class CartesianCoordinates(FunctionSet):
         fxn_map = np.zeros((len(self.symtext), 3, 3))
         phase_map = None
         for s in range(len(self.symtext)):
-            fxn_map[s, :, :] = self.symtext.symels[s].rrep
+            fxn_map[s, :, :] = self.symtext.symels[s].rrep.T
         return fxn_map, phase_map
  
     def get_symmetry_equiv_functions(self):
