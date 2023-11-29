@@ -386,6 +386,9 @@ def cn_class_map(class_map, n, idx_offset, cls_offset):
     return class_map
 
 def rotate_mol_to_symels(mol, paxis, saxis):
+    if np.isclose(np.linalg.norm(paxis), 0.0, atol=global_tol): 
+        # Symmetry is C1 and paxis not defined, just return mol
+        return mol
     z = paxis
     if np.isclose(np.linalg.norm(saxis), 0.0, atol=global_tol): 
         trial_vec = np.array([1.0,0.0,0.0])

@@ -151,6 +151,8 @@ class Molecule():
         return SEAs
 
     def symmetrize(self, asym_tol=0.05):
+        # This code might be bad. Consider removing. Interatomic distances ---> Cart. not always well defined
+        print("Warning! Using this symmetrize (the one in Molecule) may fail!")
         dm = self.distance_matrix()
         SEAs = self.find_SEAs()
         new_dm = deepcopy(dm)
