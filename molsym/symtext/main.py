@@ -392,10 +392,13 @@ def rotate_mol_to_symels(mol, paxis, saxis):
         return mol, rmat, rmat_inv
     z = paxis
     if np.isclose(np.linalg.norm(saxis), 0.0, atol=global_tol): 
-        trial_vec = np.array([1.0,0.0,0.0])
-        if np.isclose(np.dot(trial_vec, z), 1.0, atol=global_tol):
-            trial_vec = np.array([0.0,1.0,0.0])
-        x = normalize(np.cross(trial_vec, z))
+        # Find a trial vector that works
+        x = None
+        for trial_vec in np.eye(3):
+            x = np.cross(trial_vec, z)
+            if not np.isclose(np.linalg.norm(x), 0, atol=global_tol):
+                x = normalize(x)
+                break
         y = normalize(np.cross(z, x))
     else:
         x = saxis
