@@ -397,9 +397,9 @@ def rotate_mol_to_symels(mol, paxis, saxis):
         x = saxis
         y = np.cross(z,x)
     rmat = np.column_stack((x,y,z)) # This matrix rotates z to paxis, etc., ...
-    rmat_inv = rmat.T # ... so invert it so it takes paxis to z, etc.
+    rmat_inv = rmat.T # ... so invert it to take paxis to z, etc.
     new_mol = mol.transform(rmat_inv)
-    return new_mol
+    return new_mol, rmat, rmat_inv
 
 def rotate_symels_to_mol(symels, paxis, saxis):
     phi, theta, chi = get_euler_angles(paxis, saxis)
