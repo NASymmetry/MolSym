@@ -36,5 +36,5 @@ def symmetrize(mol_in, asym_tol=0.05):
                     mol.coords[atom_j,:] = np.dot(asym_symtext.symels[g].rrep, mol.coords[atom_i,:])
                     break
 
-    mol.tol = 1e-8
+    mol.tol = 1e-12
     return mol
