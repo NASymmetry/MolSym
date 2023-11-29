@@ -230,9 +230,9 @@ def pg_to_chartab(PG):
     irr_dims = {}
     for (irr_idx,irrep) in enumerate(irreps):
         if pg.n == 1:
-            irr_dims[irrep] = chars[0]
+            irr_dims[irrep] = int(chars[0])
         else:
-            irr_dims[irrep] = chars[irr_idx, 0]
+            irr_dims[irrep] = int(chars[irr_idx, 0])
     return CharTable(PG, irreps, classes, class_orders, chars, irr_dims)
 
 def grab_class_orders(classes):
@@ -256,7 +256,7 @@ def generate_symel_to_class_map(symels, ctab):
         ns = pg.n>>1 # pg.n floor divided by 2
     ncls = len(ctab.classes)
     nsymel = len(symels)
-    class_map = np.zeros(nsymel)
+    class_map = np.zeros(nsymel, dtype=np.int32)
     class_map[0] = 0 # E is always first
     if pg.family == "C":
         if pg.subfamily == "s" or pg.subfamily == "i":
@@ -357,22 +357,22 @@ def generate_symel_to_class_map(symels, ctab):
     else:
         if pg.family == "T":
             if pg.subfamily == "h":
-                class_map = np.array([1,2,3,2,3,2,3,2,3,4,4,4,5,6,7,6,7,6,7,6,7,8,8,8])
+                class_map = np.array([0,1,2,1,2,1,2,1,2,3,3,3,4,5,6,5,6,5,6,5,6,7,7,7])
             elif pg.subfamily == "d":
-                class_map = np.array([1,2,2,2,2,2,2,2,2,3,3,3,5,5,5,5,5,5,4,4,4,4,4,4])
+                class_map = np.array([0,1,1,1,1,1,1,1,1,2,2,2,4,4,4,4,4,4,3,3,3,3,3,3])
             else:
-                class_map = np.array([1,2,3,2,3,2,3,2,3,4,4,4])
+                class_map = np.array([0,1,2,1,2,1,2,1,2,3,3,3])
         elif pg.family == "O":
             if pg.subfamily == "h":
-                class_map = np.array([1,4,5,4,4,5,4,4,5,4,2,2,2,2,2,2,2,2,3,3,3,3,3,3,6,7,9,7,7,9,7,7,9,7,8,8,8,8,8,8,8,8,10,10,10,10,10,10])
+                class_map = np.array([0,3,4,3,3,4,3,3,4,3,1,1,1,1,1,1,1,1,2,2,2,2,2,2,5,6,8,6,6,8,6,6,8,6,7,7,7,7,7,7,7,7,9,9,9,9,9,9])
             else:
-                class_map = np.array([1,2,3,2,2,3,2,2,3,2,4,4,4,4,4,4,4,4,5,5,5,5,5,5])
+                class_map = np.array([0,1,2,1,1,2,1,1,2,1,3,3,3,3,3,3,3,3,4,4,4,4,4,4])
         elif pg.family == "I":
             if pg.subfamily == "h":
-                class_map = np.array([1,2,3,3,2,2,3,3,2,2,3,3,2,2,3,3,2,2,3,3,2,2,3,3,2,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,
-                             6,7,8,8,7,7,8,8,7,7,8,8,7,7,8,8,7,7,8,8,7,7,8,8,7,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10])
+                class_map = np.array([0,1,2,2,1,1,2,2,1,1,2,2,1,1,2,2,1,1,2,2,1,1,2,2,1,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
+                             5,6,7,7,6,6,7,7,6,6,7,7,6,6,7,7,6,6,7,7,6,6,7,7,6,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9])
             else:
-                class_map = np.array([1,2,3,3,2,2,3,3,2,2,3,3,2,2,3,3,2,2,3,3,2,2,3,3,2,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5])
+                class_map = np.array([0,1,2,2,1,1,2,2,1,1,2,2,1,1,2,2,1,1,2,2,1,1,2,2,1,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4])
         else:
             raise Exception(f"An invalid point group has been given or unexpected parsing of the point group string has occured: {pg.str}")
     return class_map
@@ -386,6 +386,9 @@ def cn_class_map(class_map, n, idx_offset, cls_offset):
     return class_map
 
 def rotate_mol_to_symels(mol, paxis, saxis):
+    if np.isclose(np.linalg.norm(paxis), 0.0, atol=global_tol): 
+        # Symmetry is C1 and paxis not defined, just return mol
+        return mol
     z = paxis
     if np.isclose(np.linalg.norm(saxis), 0.0, atol=global_tol): 
         trial_vec = np.array([1.0,0.0,0.0])
@@ -397,9 +400,9 @@ def rotate_mol_to_symels(mol, paxis, saxis):
         x = saxis
         y = np.cross(z,x)
     rmat = np.column_stack((x,y,z)) # This matrix rotates z to paxis, etc., ...
-    rmat_inv = rmat.T # ... so invert it so it takes paxis to z, etc.
+    rmat_inv = rmat.T # ... so invert it to take paxis to z, etc.
     new_mol = mol.transform(rmat_inv)
-    return new_mol
+    return new_mol, rmat, rmat_inv
 
 def rotate_symels_to_mol(symels, paxis, saxis):
     phi, theta, chi = get_euler_angles(paxis, saxis)
@@ -450,7 +453,7 @@ def dc_mat(phi, theta, chi):
 
 def get_atom_mapping(mol, symels):
     # symels after transformation
-    amap = np.zeros((mol.natoms, len(symels)))
+    amap = np.zeros((mol.natoms, len(symels)), dtype=int)
     for atom in range(mol.natoms):
         for (s, symel) in enumerate(symels):
             w = where_you_go(mol, atom, symel)
@@ -466,26 +469,6 @@ def where_you_go(mol, atom, symel):
         if np.isclose(mol.coords[i,:], ratom, atol=mol.tol).all():
             return i
     return None
-
-#def symtext_from_file(fn):
-#    with open(fn, "r") as lfn:
-#        strang = lfn.read()
-#    #mol = psi4.core.Molecule.from_string(strang)
-#    schema = qcel.models.Molecule.from_data(strang).dict()
-#    #schema = mol.to_schema("psi4")
-#    mol2 = Molecule.from_schema(schema)
-#    return symtext_from_mol(mol2)
-
-#def symtext_from_mol(mol):
-#    mol.translate(mol.find_com())
-#    pg, (paxis, saxis) = find_point_group(mol)
-#    symels = pg_to_symels(pg)
-#    mol = rotate_mol_to_symels(mol, paxis, saxis)
-#    ctab = pg_to_chartab(pg)
-#    class_map = generate_symel_to_class_map(symels, ctab)
-#    atom_map = get_atom_mapping(mol, symels)
-#    mtable = build_mult_table(symels)
-#    return mol, Symtext(pg, symels, ctab, class_map, atom_map, mtable)
 
 def irrep_sort_idx(irrep_str):
     rsult = 0

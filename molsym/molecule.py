@@ -30,9 +30,9 @@ class Molecule():
 
     @classmethod
     def from_schema(cls, schema):
-        atoms = schema["symbols"]
+        atoms = schema["symbols"] # was symbols
         natoms = len(atoms)
-        coords = np.reshape(schema["geometry"], (natoms,3))
+        coords = np.reshape(schema["geometry"], (natoms,3)) # was geometry
         # As of now, QCElemental seems to have issues assigning masses, so I do it
         masses = np.zeros(natoms)
         for (idx, symb) in enumerate(atoms):
@@ -46,6 +46,27 @@ class Molecule():
             strang = lfn.read()
         schema = qcel.models.Molecule.from_data(strang).dict()
         return cls.from_schema(schema)
+
+    @classmethod
+    def from_psi4_schema(cls, schema):
+        atoms = schema["elem"] # was symbols
+        natoms = len(atoms)
+        coords = np.reshape(schema["geom"], (natoms,3)) # was geometry
+        # As of now, QCElemental seems to have issues assigning masses, so I do it
+        masses = np.zeros(natoms)
+        for (idx, symb) in enumerate(atoms):
+            masses[idx] = qcel.periodictable.to_mass(symb)
+        #masses = schema["masses"]
+        return cls(atoms, coords, masses)
+
+    def __repr__(self) -> str:
+        rstr = "MolSym Molecule:\n"
+        for i in range(self.natoms):
+            rstr += f"   {self.atoms[i]:3s}   {self.coords[i,0]:12.8f}   {self.coords[i,1]:12.8f}   {self.coords[i,2]:12.8f}\n"
+        return rstr
+
+    def __str__(self) -> str:
+        return self.__repr__()
 
     def __getitem__(self, i):
         return Molecule(self.atoms[i], self.coords[i,:], self.masses[i])
@@ -130,6 +151,8 @@ class Molecule():
         return SEAs
 
     def symmetrize(self, asym_tol=0.05):
+        # This code might be bad. Consider removing. Interatomic distances ---> Cart. not always well defined
+        print("Warning! Using this symmetrize (the one in Molecule) may fail!")
         dm = self.distance_matrix()
         SEAs = self.find_SEAs()
         new_dm = deepcopy(dm)
@@ -156,7 +179,6 @@ class Molecule():
         evals, evecs = np.linalg.eigh(M)
         evalMat = np.zeros((self.natoms, self.natoms))
         for i in range(self.natoms):
-            print(evals[i])
             evalMat[i,i] = np.sqrt(evals[i])
         X = np.dot(evecs, evalMat)
         self.coords = X[:,-3:]

@@ -15,9 +15,6 @@ def generate_Cn(n):
         symels.append(Symel(f"C_{a:d}^{b:d}", axis, matrix_power(cn_r,i))) # Cns
     return symels
 
-#def generate_Sn(n):
-#    generate_Sn(n, False)
-
 def generate_Sn(n, S2n=False):
     symels = []
     axis = np.asarray([0,0,1])
@@ -152,7 +149,7 @@ def generate_Td():
 def generate_Th():
     symels = generate_T()
     # i
-    symels.append(Symel("i", None, i()))
+    symels.append(Symel("i", None, inversion_matrix()))
     # S6
     S6_1v = normalize(np.array([ 1.0, 1.0, 1.0]))
     S6_2v = normalize(np.array([-1.0, 1.0,-1.0]))
