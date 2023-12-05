@@ -294,7 +294,7 @@ def is_there_sigmav(mol, SEAs, paxis):
     return False, None
 
 def mol_is_planar(mol):
-    rank = np.linalg.matrix_rank(mol.coords)
+    rank = np.linalg.matrix_rank(mol.coords, tol=mol.tol)
     if rank < 3:
         return True
     return False
