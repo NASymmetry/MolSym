@@ -24,7 +24,7 @@ from molsym.salcs.projection_op import ProjectionOp
 np.set_printoptions(suppress=True, precision=3, linewidth=1500)
 mol = molsym.Molecule.from_file("/home/sgoodlett/MolSym/test/xyz/ammonia.xyz")
 #symtext = molsym.Symtext.from_file("/home/smg13363/MolSym/test/xyz/ammonia.xyz")
-mol.symmetrize()
+mol = molsym.symmetrize(mol)
 symtext = molsym.Symtext.from_molecule(mol)
 coords = molsym.salcs.CartesianCoordinates(symtext)
 salcs = ProjectionOp(symtext, coords)

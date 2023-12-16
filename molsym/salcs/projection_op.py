@@ -83,14 +83,18 @@ def ProjectionOp(symtext, fxn_set):
                 eckart_cond = eckart_conditions(symtext)
                 for i in range(dim):
                     for j in range(dim):
-                        if not np.allclose(salc[i,j,:], np.zeros(salc[i,j,:].shape), atol=1e-12):
+                        if not np.allclose(salc[i,j,:], np.zeros(salc[i,j,:].shape), atol=salcs.tol):
                             salc[i,j,:] = project_out_Eckart(eckart_cond, salc[i,j,:])
             for i in range(dim):
                 for j in range(dim):
-                    if not np.allclose(salc[i,j,:], np.zeros(salc[i,j,:].shape), atol=1e-12):
+                    if not np.allclose(salc[i,j,:], np.zeros(salc[i,j,:].shape), atol=salcs.tol):
                         gamma = 1.0/np.linalg.norm(salc[i,j,:])
                         salc[i,j,:] = molsym.symtools.normalize(salc[i,j,:])
                         s = SALC(salc[i,j,:], irrep, equivcoord, i, j, gamma)
                         salcs.addnewSALC(s, ir)
-    salcs.finish_building()
+    if isinstance(fxn_set, CartesianCoordinates):
+        orthogonalize = True
+    else:
+        orthogonalize = False
+    salcs.finish_building(orthogonalize=orthogonalize)
     return salcs

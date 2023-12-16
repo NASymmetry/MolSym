@@ -20,7 +20,7 @@ class SALC():
 
 class SALCs():
     def __init__(self, symtext, fxn_set) -> None:
-        self.tol = 1e-12
+        self.tol = symtext.mol.tol
         self.symtext = symtext
         self.fxn_set = fxn_set
         self.irreps = symtext.chartable.irreps
@@ -60,6 +60,7 @@ class SALCs():
                 rank = 1
             else:
                 rank = np.linalg.matrix_rank(self.salc_sets[irrep_idx], tol=self.tol)
+            # This logic seems to be unnecessary now that there is no outer loop
             if np.linalg.matrix_rank(np.vstack((self.salc_sets[irrep_idx], new_salc.coeffs)), tol=self.tol) <= rank:
                 check = False
             if check:
@@ -70,7 +71,15 @@ class SALCs():
 
     @property
     def basis_transformation_matrix(self):
+        btm = np.zeros((len(self.fxn_set), len(self)))
+        for idx, salc in enumerate(self.salc_list):
+            btm[:,idx] = salc.coeffs
+        return btm
+
+    @property
+    def sorted_basis_transformation_matrix(self):
         # Columns are SALCs of basis fxns (rows)
+        # DOES NOT HAVE SAME ORDER AS salc_list
         ctr = 0
         btm = np.zeros((len(self.fxn_set),len(self)))
         for irrep_idx, irrep in enumerate(self.irreps):
@@ -92,30 +101,82 @@ class SALCs():
         return False
 
     def sort_partner_functions(self):
-        # Group partner functions together
+        # Group partner functions together 
+        # Natively ordered by projection operator outer index
         out = [[(0,self.salc_list[0])]]
+        out2 = [[0]]
         groop = [0]
         for sidx, salc in enumerate(self.salc_list[1:]):
             chk = False
-            for done_salcs in out:
+            for idx, done_salcs in enumerate(out):
                 if self.ispartner(salc, done_salcs[0][1]):
                     done_salcs.append((sidx+1,salc))
+                    out2[idx].append(sidx+1)
                     groop.append(done_salcs[0][0])
                     chk = True
             if not chk:
                 out.append([(sidx+1,salc)])
+                out2.append([sidx+1])
                 groop.append(sidx+1)
-        return out, groop
+        return out, out2
 
-    def finish_building(self):
+    def finish_building(self, orthogonalize=False):
         """
             List of SALC indices grouped by irreps
             Partner functions
+            If doing Eckart projection, reorthogonalize SALCs
         """
         self.salcs_by_irrep = [[] for i in range(len(self.irreps))]
         for irrep_idx, irrep in enumerate(self.irreps):
             for salc_idx, salc in enumerate(self.salc_list):
                 if salc.irrep == irrep:
                     self.salcs_by_irrep[irrep_idx].append(salc_idx)
-        self.partner_functions = self.sort_partner_functions()
+
+        self.partner_functions, o2 = self.sort_partner_functions()
+
+        self.partner_function_sets_by_irrep = [[] for i in range(len(self.irreps))]
+        for irrep_idx, irrep in enumerate(self.irreps):
+            for pf_idx, pf_set in enumerate(o2):
+                if self.salc_list[pf_set[0]].irrep == irrep:
+                    self.partner_function_sets_by_irrep[irrep_idx].append(pf_set)
+        
+        if orthogonalize:
+            print("BEEBUS")
+            np.set_printoptions(suppress=True, precision=5, linewidth=1500)
+            for irrep_idx, irrep in enumerate(self.irreps):
+                partner_fxns = self.partner_function_sets_by_irrep[irrep_idx]
+                if self.symtext.chartable.irrep_dims[irrep] == 1:
+                    B = self.basis_transformation_matrix[:,self.salcs_by_irrep[irrep_idx]]
+                    cntr = 0
+                    for col in range(B.shape[1]):
+                        for gs_idx in range(cntr):
+                            proj = np.dot(B[:,gs_idx], B[:,col])
+                            B[:,col] -= proj * B[:,gs_idx]
+                        B[:,col] /= np.linalg.norm(B[:,col])
+                        cntr += 1
+                    print(B.T@B)
+                    #B /= np.linalg.norm(B,axis=0)
+                    for idx, salc in enumerate(self.salcs_by_irrep[irrep_idx]):
+                        self.salc_list[salc].coeffs = B[:,idx]
+                else:
+                    first_pfxns = [i[0] for i in partner_fxns]
+                    B1 = self.basis_transformation_matrix[:,first_pfxns]
+                    
+                    # Gram-Schmidt orthogonalize columns of B1
+                    trans_mat = np.eye(len(first_pfxns))
+                    cntr = 0
+                    for col_idx, salc in enumerate(first_pfxns):
+                        for gs_idx in range(cntr):
+                            proj = np.dot(B1[:,gs_idx],B1[:,col_idx])
+                            trans_mat[:,col_idx] -= proj * trans_mat[:,gs_idx]
+                        cntr += 1
+
+                    # Transform other partner function sets according to the Gram-Schmidt orthogonalization of B1
+                    for pf_idx in range(self.symtext.chartable.irrep_dims[irrep]):
+                        pfxn_set = [i[pf_idx] for i in partner_fxns]
+                        Bi = self.basis_transformation_matrix[:,pfxn_set]
+                        Bi_trans = Bi @ trans_mat
+                        for Bidx,salc_idx in enumerate(pfxn_set):
+                            self.salc_list[salc_idx].coeffs = Bi_trans[:,Bidx] / np.linalg.norm(Bi_trans[:,Bidx])
+                    
 
