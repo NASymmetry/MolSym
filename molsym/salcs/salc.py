@@ -147,30 +147,26 @@ class SALCs():
                 partner_fxns = self.partner_function_sets_by_irrep[irrep_idx]
                 if self.symtext.chartable.irrep_dims[irrep] == 1:
                     B = self.basis_transformation_matrix[:,self.salcs_by_irrep[irrep_idx]]
-                    cntr = 0
-                    for col in range(B.shape[1]):
-                        for gs_idx in range(cntr):
+                    for col in range(1,B.shape[1]):
+                        for gs_idx in range(col):
                             proj = np.dot(B[:,gs_idx], B[:,col])
                             B[:,col] -= proj * B[:,gs_idx]
                         B[:,col] /= np.linalg.norm(B[:,col])
-                        cntr += 1
-                    print(B.T@B)
-                    #B /= np.linalg.norm(B,axis=0)
                     for idx, salc in enumerate(self.salcs_by_irrep[irrep_idx]):
                         self.salc_list[salc].coeffs = B[:,idx]
                 else:
                     first_pfxns = [i[0] for i in partner_fxns]
                     B1 = self.basis_transformation_matrix[:,first_pfxns]
-                    
                     # Gram-Schmidt orthogonalize columns of B1
                     trans_mat = np.eye(len(first_pfxns))
-                    cntr = 0
-                    for col_idx, salc in enumerate(first_pfxns):
-                        for gs_idx in range(cntr):
+                    for col_idx in range(1,len(first_pfxns)):
+                        for gs_idx in range(col_idx):
                             proj = np.dot(B1[:,gs_idx],B1[:,col_idx])
+                            B1[:,col_idx] -= proj * B1[:,gs_idx]
                             trans_mat[:,col_idx] -= proj * trans_mat[:,gs_idx]
-                        cntr += 1
-
+                        nrm = np.linalg.norm(B1[:,col_idx])
+                        B1[:,col_idx] /= nrm
+                        trans_mat[:,col_idx] /= nrm
                     # Transform other partner function sets according to the Gram-Schmidt orthogonalization of B1
                     for pf_idx in range(self.symtext.chartable.irrep_dims[irrep]):
                         pfxn_set = [i[pf_idx] for i in partner_fxns]
