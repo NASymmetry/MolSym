@@ -81,9 +81,11 @@ def find_point_group(mol):
                         pg = "C2h"
                     else:
                         if sigmav_chk:
-                            if sigmav.any():
-                                saxis = np.cross(paxis,sigmav)
                             pg = "C2v"
+                            if mol_is_planar(mol):
+                                saxis = planar_mol_axis(mol)
+                            elif sigmav.any():
+                                saxis = np.cross(paxis,sigmav)
                         else:
                             S4 = Sn(c2, 4)
                             molB = mol.transform(S4)
@@ -122,9 +124,11 @@ def find_point_group(mol):
             elif sigmah_chk:
                 pg = "C"+str(Cn)+"h"
             elif sigmav_chk:
-                if sigmav.any():
-                    saxis = normalize(np.cross(paxis,sigmav))
                 pg = "C"+str(Cn)+"v"
+                if mol_is_planar(mol):
+                    saxis = planar_mol_axis(mol)
+                elif sigmav.any():
+                    saxis = normalize(np.cross(paxis,sigmav))
             else:
                 S2n = Sn(paxis, Cn*2)
                 molB = mol.transform(S2n)
