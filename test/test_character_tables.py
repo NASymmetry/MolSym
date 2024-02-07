@@ -20,7 +20,7 @@ def test_CharTable(pg):
         print(ctab)
         print("Ref.")
         print(ctab_ans)
-        tab_chk = ctab.characters == ctab_ans.characters
+        tab_chk = np.isclose(ctab.characters, ctab_ans.characters, atol=1e-14)
         irr_chk = ctab.irreps == ctab_ans.irreps
         name_chk = ctab.classes == ctab_ans.classes
         print(f"Table Check: {tab_chk.all()}")

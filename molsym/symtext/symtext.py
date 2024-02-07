@@ -1,7 +1,7 @@
 from molsym.molecule import *
 from molsym import find_point_group
 from .main import *
-from .multiplication_table import build_mult_table
+from .multiplication_table import build_mult_table, subgroup_by_name, subgroup_axes
 
 class Symtext():
     def __init__(self, mol, rotate_to_std, reverse_rotate, pg, symels, chartable, class_map, atom_map, mult_table) -> None:
@@ -9,6 +9,14 @@ class Symtext():
         self.rotate_to_std = rotate_to_std
         self.reverse_rotate = reverse_rotate
         self.pg = PointGroup.from_string(pg) # TODO TODO TODO I CHANGED THIS AND IT MIGHT BREAK STUFF TODO TODO TODO
+        self.complex = False
+        if self.pg.family == "C":
+            if self.pg.subfamily is None or self.pg.subfamily == "h":
+                self.complex = True
+        elif self.pg.family == "S":
+            self.complex = True
+        elif self.pg.str in ["T", "Th"]:
+            self.complex = True
         self.symels = symels
         self.chartable = chartable
         self.class_map = class_map
@@ -32,8 +40,8 @@ class Symtext():
         ctab = pg_to_chartab(pg)
         class_map = generate_symel_to_class_map(symels, ctab)
         atom_map = get_atom_mapping(mol, symels)
-        mtable = build_mult_table(symels)
-        return Symtext(mol, rotate_to_std, reverse_rotate, pg, symels, ctab, class_map, atom_map, mtable)
+        mult_table = build_mult_table(symels)
+        return Symtext(mol, rotate_to_std, reverse_rotate, pg, symels, ctab, class_map, atom_map, mult_table)
 
     @classmethod
     def from_file(cls, fn):
@@ -63,3 +71,15 @@ class Symtext():
             return 24
         elif self.pg.family == "I":
             return 60
+
+    def subgroup_symtext(self, subgroup):
+        subgroup_symels = main.pg_to_symels(subgroup)
+        subgroup_ctab = main.pg_to_chartab(subgroup)
+        class_map = generate_symel_to_class_map(subgroup_symels, subgroup_ctab)
+        mult_table = build_mult_table(subgroup_symels)
+        isomorphism = subgroup_by_name(self.symels, self.mult_table, subgroup)
+        sgp = [self.symels[i[1]] for i in isomorphism]
+        paxis, saxis = subgroup_axes(subgroup, sgp)
+        new_mol, reverse_rotate, rotate_to_std = main.rotate_mol_to_symels(self.mol, paxis, saxis)
+        atom_map = get_atom_mapping(new_mol, subgroup_symels)
+        return Symtext(new_mol, rotate_to_std, reverse_rotate, subgroup, subgroup_symels, subgroup_ctab, class_map, atom_map, mult_table)

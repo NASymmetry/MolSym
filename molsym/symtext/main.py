@@ -135,7 +135,8 @@ def pg_to_chartab(PG):
         elif pg.subfamily == "h":
             irreps, classes, chars = Cnh_irr(pg.n)
         else:
-            irreps, classes, chars = Cn_irrmat(pg.n)
+            #irreps, classes, chars = Cn_irrmat(pg.n)
+            irreps, classes, chars = Cn_irr_complex(pg.n)
     elif pg.family == "D":
         if pg.subfamily == "d":
             irreps, classes, chars = Dnd_irr(pg.n)
@@ -144,7 +145,7 @@ def pg_to_chartab(PG):
         else:
             irreps, classes, chars = Dn_irr(pg.n)
     elif pg.family == "S":
-        irreps, classes, chars = Sn_irr(pg.n)
+        irreps, classes, chars = Sn_irr_complex(pg.n)
     else:
         cp3 = np.cos(np.pi/3)
         pr5 = 0.5*(1.0+np.sqrt(5.0))
@@ -167,8 +168,8 @@ def pg_to_chartab(PG):
                  [[1.0,  1.0,  1.0,  1.0,  1.0],
                   [1.0,  1.0,  1.0, -1.0, -1.0],
                   [2.0, -1.0,  2.0,  0.0,  0.0],
-                  [3.0,  1.0, -1.0,  1.0, -1.0],
-                  [3.0, -1.0, -1.0, -1.0,  1.0]]))
+                  [3.0,  0.0, -1.0,  1.0, -1.0],
+                  [3.0,  0.0, -1.0, -1.0,  1.0]]))
             else:
                 irreps, classes, chars = (["A","E","T"],
                  ["E", "4C_3", "4C_3^2", "3C_2"],
@@ -203,11 +204,11 @@ def pg_to_chartab(PG):
         elif pg.family == "I":
             if pg.subfamily == "h":
                 irreps, classes, chars = (["Ag","T1g","T2g","Gg","Hg","Au","T1u","T2u","Gu","Hu"],
-                 ["E", "12C_5", "12C_5^2", "20C_3", "15C_2", "i", "12S_10", "12S_10^3", "20S_6", "15sigma_"],
+                 ["E", "12C_5", "12C_5^2", "20C_3", "15C_2", "i", "12S_10", "12S_10^3", "20S_6", "15sigma"],
                  np.array(
                  [[1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0],
                   [3.0,  pr5,  mr5,  0.0, -1.0,  3.0,  mr5,  pr5,  0.0, -1.0],
-                  [3.0,  mr5,  pr5,  0.0, -1.0,  5.0,  0.0,  0.0, -1.0,  1.0],
+                  [3.0,  mr5,  pr5,  0.0, -1.0,  3.0,  pr5,  mr5,  0.0, -1.0],
                   [4.0, -1.0, -1.0,  1.0,  0.0,  4.0, -1.0, -1.0,  1.0,  0.0],
                   [5.0,  0.0,  0.0, -1.0,  1.0,  5.0,  0.0,  0.0, -1.0,  1.0],
                   [1.0,  1.0,  1.0,  1.0,  1.0, -1.0, -1.0, -1.0, -1.0, -1.0],
@@ -232,7 +233,7 @@ def pg_to_chartab(PG):
         if pg.n == 1:
             irr_dims[irrep] = int(chars[0])
         else:
-            irr_dims[irrep] = int(chars[irr_idx, 0])
+            irr_dims[irrep] = int(np.real(chars[irr_idx, 0]))
     return CharTable(PG, irreps, classes, class_orders, chars, irr_dims)
 
 def grab_class_orders(classes):

@@ -141,7 +141,6 @@ class SALCs():
                     self.partner_function_sets_by_irrep[irrep_idx].append(pf_set)
         
         if orthogonalize:
-            print("BEEBUS")
             np.set_printoptions(suppress=True, precision=5, linewidth=1500)
             for irrep_idx, irrep in enumerate(self.irreps):
                 partner_fxns = self.partner_function_sets_by_irrep[irrep_idx]

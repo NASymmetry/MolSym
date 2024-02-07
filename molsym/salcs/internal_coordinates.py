@@ -3,7 +3,7 @@ import numpy as np
 from .function_set import FunctionSet
 
 class InternalCoordinates(FunctionSet):
-    def __init__(self, fxn_list, symtext) -> None:
+    def __init__(self, symtext, fxn_list) -> None:
         self.ic_list = [i[0] for i in fxn_list]
         self.ic_types = [i[1] for i in fxn_list]
         super().__init__(fxn_list, symtext)
@@ -11,10 +11,10 @@ class InternalCoordinates(FunctionSet):
     def operate_on_ic(self, ic_idx, symop):
         symbol = self.symtext.symels[symop].symbol
         ic_type = self.ic_types[ic_idx][0]
-        if symbol[0] == "i" or symbol[0] == "S" or symbol[0] == "s": # s is for sigma
+        #if symbol[0] == "i" or symbol[0] == "S" or symbol[0] == "s": # s is for sigma
             # Are we doing this twice??? TODO here
-            if ic_type in ["D", "O", "L"]: 
-                self.phase_map[ic_idx, symop] = -1.0
+            #if ic_type in ["D", "O", "L"]: 
+            #    self.phase_map[ic_idx, symop] = -1.0
             #if ic_type == "D" or ic_type == "O": 
             #    self.phase_map[ic_idx, symop] = -1.0
             #elif ic_type == "L":

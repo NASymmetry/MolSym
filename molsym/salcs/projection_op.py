@@ -65,6 +65,10 @@ def ProjectionOp(symtext, fxn_set):
         for se_fxn_set in fxn_set.SE_fxns:
             equivcoord = se_fxn_set[0]
             salc = np.zeros((dim, dim, numred))
+
+            if symtext.complex:
+                salc = np.zeros((dim, dim, numred), dtype=np.complex128)
+            
             for sidx in range(len(symtext)):
                 # For now, check type of fxn_set to determine how to build SALCs, eventually this should be handled within the fxn_set somehow
                 if isinstance(fxn_set, InternalCoordinates):
@@ -76,8 +80,12 @@ def ProjectionOp(symtext, fxn_set):
                     cfxn = equivcoord % 3
                     xyz = fxn_set.fxn_map[sidx,cfxn,:]
                     for i in range(3):
-                        salc[:,:,3*atom_idx+i] += irrmat[sidx, :, :] * xyz[i]
+                        if symtext.complex:
+                            salc[:,:,3*atom_idx+i] += np.conj(irrmat[sidx, :, :]) * xyz[i]
+                        else:
+                            salc[:,:,3*atom_idx+i] += irrmat[sidx, :, :] * xyz[i]
             salc *= dim/symtext.order
+
             if isinstance(fxn_set, CartesianCoordinates):
                 # Project out Eckart conditions when constructing SALCs of Cartesian displacements
                 eckart_cond = eckart_conditions(symtext)

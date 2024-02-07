@@ -42,6 +42,49 @@ def Cn_irrmat(n):
             chars = np.vstack((chars, v))
     return names, classes, chars
 
+def Cn_irr_complex(n):
+    names = ["A"]
+    classes = ["E"]
+    for c in range(1,n):
+        r,s = reduce(n,c)
+        c_class_string(classes, "C", r, s)
+    chars = np.ones(n)
+    if n % 2 == 0:
+        names.append("B")
+        bi = np.ones(n)
+        #for i=1:n:
+        for i in range(n):
+            if (i+1) % 2 == 0:
+                bi[i] *= -1
+        chars = np.vstack((chars, bi))
+    if 2 < n < 5:
+        # No label associated with E if n < 5
+        names.append("E_1")
+        names.append("E_2")
+        theta = np.exp(2*np.pi*1j / n)
+        v1 = np.zeros(n, dtype=np.complex128)
+        v2 = np.zeros(n, dtype=np.complex128)
+        for a in range(n):
+            v1[a] += theta**a
+            v2[a] += np.conj(theta**a)
+        chars = np.vstack((chars, v1))
+        chars = np.vstack((chars, v2))
+    elif n >= 5:
+        theta = 2*np.pi / n
+        l = round(((n-len(names))/2))
+        for a in range(l):#= 1:l:
+            names.append(f"E{a+1}_1")
+            names.append(f"E{a+1}_2")
+            theta = np.exp(2*np.pi*1j*(a+1) / n)
+            v1 = np.zeros(n, dtype=np.complex128)
+            v2 = np.zeros(n, dtype=np.complex128)
+            for b in range(n):
+                v1[b] += theta**b
+                v2[b] += np.conj(theta**b)
+            chars = np.vstack((chars, v1))
+            chars = np.vstack((chars, v2))
+    return names, classes, chars
+
 def Cnv_irr(n):
     names, classes, chars = Cn_irrmat(n)
     classes = ["E"]
@@ -87,7 +130,8 @@ def Cnv_irr(n):
     return names, classes, chars
 
 def Cnh_irr(n):
-    names, classes, cnchars = Cn_irrmat(n)
+    #names, classes, cnchars = Cn_irrmat(n)
+    names, classes, cnchars = Cn_irr_complex(n)
     if n % 2 == 0: 
         classes.append("i")
         for i in range(1,n): # = 1:n-1:
@@ -137,6 +181,36 @@ def Sn_irr(n):
     elif n % 2 == 0:
         ni = round(n/2)
         names, classes, cnchars = Cn_irrmat(ni)
+        classes = ["E"]
+        for i in range(1,n>>1): # = 1:n>>1-1:
+            r,s = reduce(n>>1, i)
+            c_class_string(classes, "C", r, s)
+        classes.append("i")
+        for i in range(1,n>>1): # = 1:n>>1-1:
+            r,s = reduce(n, ((i<<1)+(n>>1))%n)
+            c_class_string(classes, "S", r, s)
+        newnames = []
+        for i in range(len(names)): # = 1:length(names):
+            newnames.append(names[i]+"u")
+            names[i] = names[i]+"g"
+        names += newnames
+        cncharsi = -1 * cnchars
+        top = np.hstack((cnchars, cnchars))
+        bot = np.hstack((cnchars, cncharsi))
+        chars = np.vstack((top, bot))
+    else:
+        raise Exception("Odd number n for S group")
+    return names, classes, chars
+
+def Sn_irr_complex(n):
+    if n % 4 == 0:
+        names, classes, chars = Cn_irr_complex(n)
+        for i in range(n): # = 1:n:
+            if (i+1) % 2 == 0:
+                classes[i] = "S"+classes[i][1:]
+    elif n % 2 == 0:
+        ni = round(n/2)
+        names, classes, cnchars = Cn_irr_complex(ni)
         classes = ["E"]
         for i in range(1,n>>1): # = 1:n>>1-1:
             r,s = reduce(n>>1, i)
