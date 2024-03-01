@@ -282,6 +282,8 @@ def orient_subgroup_to_irrmat(subgroup_symels, subgroup_pg):
     return False
 
 def subgroup_by_name(symels, mult_table, subgroup):
+    if subgroup == "C1":
+        return [[0,0]]
     subgroup_symels = main.pg_to_symels(subgroup)
     subgroup_mult_table = build_mult_table(subgroup_symels)
     big_list = []
@@ -389,8 +391,8 @@ def order(mult_table, idx):
 
 def subgroup_axes(subgroup, symels):
     rgx = re.compile(r"_(\d*)\^?")
-    paxis = np.array([0,0,1])
-    saxis = np.array([1,0,0])
+    paxis = np.array([0,0,0])
+    saxis = np.array([0,0,0])
     
     # Cubic groups, UNTESTED TODO
     if subgroup[0] == "T":
@@ -470,7 +472,7 @@ def subgroup_axes(subgroup, symels):
         if c2p_chk:
             saxis = c2p
         elif any_sigma:
-            saxis = any_sigma.vector
+            saxis = np.cross(any_sigma.vector, paxis)
         else:
             pass
     elif sigma_chk:

@@ -123,9 +123,11 @@ def test_rotate_mol_to_symels(paxis, saxis, answer):
     assert np.isclose(rmat_inv, answer.T).all()
     
 # Water, symmetrized ammonia, methane, benzene
-fns = ["water", "ammonia", "methane", "benzene"]
-pgs = ["C2v", "C3v", "Td", "D6h"]
-mol_test_set = [(['O', 'H', 'H'], np.array([[0, 0, 0.128200553],[0, -1.47972489, -1.01731791],[0,  1.47972489, -1.01731791]])),
+fns = ["C1", "water", "ammonia", "methane", "benzene"]
+pgs = ["C1", "C2v", "C3v", "Td", "D6h"]
+mol_test_set = [(["H", "C", "N", "O"], np.array([[-0.52729414,-0.61531157,-0.70283540],[1.36243199,-0.61531157,-0.70283540],
+                                                  [-0.52729414, 1.27441455,-0.70283540],[-0.52729414,-0.61531157, 1.18689073]])),
+                (['O', 'H', 'H'], np.array([[0, 0, 0.128200553],[0, -1.47972489, -1.01731791],[0,  1.47972489, -1.01731791]])),
                 (['N', 'H', 'H', 'H'], np.array([[0, 0, 0.131258858],[-0.881225646, -1.52632759, -0.607918852],
                                                  [-0.881225646,  1.52632759, -0.607918852],[ 1.76245129, 0, -0.607918852]])),
                 (['C', 'H', 'H', 'H', 'H'], np.array([[0, 0, 0],[ 1.18465230, -1.18465230,  1.18465230],[-1.18465230,  1.18465230,  1.18465230],
@@ -136,7 +138,8 @@ mol_test_set = [(['O', 'H', 'H'], np.array([[0, 0, 0.128200553],[0, -1.47972489,
                            [ 2.33342248, -4.04160629, 0],[-2.33342248, -4.04160629, 0],[-4.66684496, 0, 0],[-2.33342248,  4.04160629, 0],
                            [ 2.33342248,  4.04160629, 0]]))]
 
-atom_map_test_set = [[[0,0,0,0],[1,2,2,1],[2,1,1,2]],
+atom_map_test_set = [[[0],[1],[2],[3]],
+                     [[0,0,0,0],[1,2,2,1],[2,1,1,2]],
                      [[0,0,0,0,0,0],[1,3,2,2,3,1],[2,1,3,1,2,3],[3,2,1,3,1,2]],
                      [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                       [1, 3, 2, 1, 1, 2, 4, 4, 3, 3, 4, 2, 1, 2, 4, 1, 1, 3, 4, 2, 3, 2, 3, 4],
@@ -156,8 +159,8 @@ atom_map_test_set = [[[0,0,0,0],[1,2,2,1],[2,1,1,2]],
                       [10, 10,  7,  9,  8,  7,  6, 11,  8,  6, 10,  7, 11,  9,  9,  8,  6, 11,  8,  6, 10,  7, 11,  9],
                       [11, 11,  8, 10,  9,  8,  7,  6,  7, 11,  9,  6, 10,  8, 10,  9,  7,  6,  7, 11,  9,  6, 10,  8]]]
 
-complex_test_set = [False, False, False, False]
-order_test_set = [4,6,24,24]
+complex_test_set = [False, False, False, False, False]
+order_test_set = [1,4,6,24,24]
 
 @pytest.mark.parametrize("i", [i for i in range(len(fns))])
 def test_Symtext(i):
@@ -172,3 +175,77 @@ def test_Symtext(i):
     assert complex_test_set[i] == symtext.complex
     assert order_test_set[i] == symtext.order
 
+fns_D2h_subgroups = ["C1", "water", "ammonia", "methane", "benzene"]
+D2h_subgroup_pgs = ["C1", "C2v", "Cs", "D2", "D2h"]
+D2h_subgroup_atom_map_test_set = [
+    [[0],[1],[2],[3]],
+    [[0,0,0,0],[1,2,1,2],[2,1,2,1]],
+    [[0,0],[1,2],[2,1],[3,3]],
+    [[0,0,0,0],[1,3,2,4],[2,4,1,3],[3,1,4,2],[4,2,3,1]],
+    [[0,0,3,3,3,0,3,0],[1,1,4,4,2,5,2,5],[2,2,5,5,1,4,1,4],[3,3,0,0,0,3,0,3],[4,4,1,1,5,2,5,2],[5,5,2,2,4,1,4,1],
+     [6,6,9,9,9,6,9,6],[7,7,10,10,8,11,8,11],[8,8,11,11,7,10,7,10],[9,9,6,6,6,9,6,9],[10,10,7,7,11,8,11,8],[11,11,8,8,10,7,10,7]]
+]
+D2h_subgroup_complex_test_set = [False, False, False, False, False]
+D2h_subgroup_order_test_set = [1,4,2,4,8]
+
+@pytest.mark.parametrize("i", [i for i in range(len(fns_D2h_subgroups))])
+def test_Symtext_largest_D2h_subgroup(i):
+    mol = molsym.Molecule.from_file("/home/smg13363/MolSym/test/xyz/"+fns_D2h_subgroups[i]+".xyz")
+    mol = molsym.symmetrize(mol)
+    symtext = molsym.Symtext.from_molecule(mol)
+    symtext = symtext.largest_D2h_subgroup()
+    #assert (mol_test_set[i][0] == mol.atoms).all()
+    #assert np.isclose(mol_test_set[i][1], mol.coords).all()
+    assert symtext.pg.str == D2h_subgroup_pgs[i]
+    assert (symtext.atom_map == D2h_subgroup_atom_map_test_set[i]).all()
+    assert D2h_subgroup_complex_test_set[i] == symtext.complex
+    assert D2h_subgroup_order_test_set[i] == symtext.order
+
+subgroup_fns = ["water", "benzene", "benzene", "benzene"]
+subgroup_pgs = ["C2", "D3h", "C3", "C4"]
+subgroup_atom_map_test_set = [
+    [[0,0],[1,2],[2,1]],
+    [[ 0,  0,  4,  2,  2,  4,  0,  4,  2,  2,  4,  0],
+     [ 1,  1,  5,  3,  1,  3,  5,  5,  3,  1,  3,  5],
+     [ 2,  2,  0,  4,  0,  2,  4,  0,  4,  0,  2,  4],
+     [ 3,  3,  1,  5,  5,  1,  3,  1,  5,  5,  1,  3],
+     [ 4,  4,  2,  0,  4,  0,  2,  2,  0,  4,  0,  2],
+     [ 5,  5,  3,  1,  3,  5,  1,  3,  1,  3,  5,  1],
+     [ 6,  6, 10,  8,  8, 10,  6, 10,  8,  8, 10,  6],
+     [ 7,  7, 11,  9,  7,  9, 11, 11,  9,  7,  9, 11],
+     [ 8,  8,  6, 10,  6,  8, 10,  6, 10,  6,  8, 10],
+     [ 9,  9,  7, 11, 11,  7,  9,  7, 11, 11,  7,  9],
+     [10, 10,  8,  6, 10,  6,  8,  8,  6, 10,  6,  8],
+     [11, 11,  9,  7,  9, 11,  7,  9,  7,  9, 11,  7]],
+    [[ 0,  4,  2],
+     [ 1,  5,  3],
+     [ 2,  0,  4],
+     [ 3,  1,  5],
+     [ 4,  2,  0],
+     [ 5,  3,  1],
+     [ 6, 10,  8],
+     [ 7, 11,  9],
+     [ 8,  6, 10],
+     [ 9,  7, 11],
+     [10,  8,  6],
+     [11,  9,  7]],
+    None
+]
+subgroup_complex_test_set = [False, False, True, None]
+subgroup_order_test_set = [2,12,3,None]
+
+@pytest.mark.parametrize("i", [i for i in range(len(subgroup_fns))])
+def test_Symtext_subgroup_symtext(i):
+    mol = molsym.Molecule.from_file("/home/smg13363/MolSym/test/xyz/"+subgroup_fns[i]+".xyz")
+    mol = molsym.symmetrize(mol)
+    symtext = molsym.Symtext.from_molecule(mol)
+    #assert (mol_test_set[i][0] == mol.atoms).all()
+    #assert np.isclose(mol_test_set[i][1], mol.coords).all()
+    try:
+        symtext = symtext.subgroup_symtext(subgroup_pgs[i])
+        assert symtext.pg.str == subgroup_pgs[i]
+        assert (symtext.atom_map == subgroup_atom_map_test_set[i]).all()
+        assert subgroup_complex_test_set[i] == symtext.complex
+        assert subgroup_order_test_set[i] == symtext.order
+    except Exception:
+        assert i == 3 # This being the test case that should fail

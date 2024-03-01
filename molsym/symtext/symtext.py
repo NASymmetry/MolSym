@@ -10,7 +10,7 @@ class Symtext():
         self.reverse_rotate = reverse_rotate
         self.pg = PointGroup.from_string(pg) # TODO TODO TODO I CHANGED THIS AND IT MIGHT BREAK STUFF TODO TODO TODO
         self.complex = False
-        if self.pg.family == "C":
+        if self.pg.family == "C" and self.pg.n and self.pg.n > 2:
             if self.pg.subfamily is None or self.pg.subfamily == "h":
                 self.complex = True
         elif self.pg.family == "S":
@@ -78,8 +78,20 @@ class Symtext():
         class_map = generate_symel_to_class_map(subgroup_symels, subgroup_ctab)
         mult_table = build_mult_table(subgroup_symels)
         isomorphism = subgroup_by_name(self.symels, self.mult_table, subgroup)
+        if isomorphism is None:
+            raise Exception(f"No {subgroup} subgroup found for {self.pg} group")
         sgp = [self.symels[i[1]] for i in isomorphism]
         paxis, saxis = subgroup_axes(subgroup, sgp)
         new_mol, reverse_rotate, rotate_to_std = main.rotate_mol_to_symels(self.mol, paxis, saxis)
+        new_mol.tol = 1e-10
         atom_map = get_atom_mapping(new_mol, subgroup_symels)
         return Symtext(new_mol, rotate_to_std, reverse_rotate, subgroup, subgroup_symels, subgroup_ctab, class_map, atom_map, mult_table)
+    
+    def largest_D2h_subgroup(self):
+        # Some groups may have equivalent order subgroups, if you want a specific one, don't use this function
+        D2h_subgroups = ["D2h", "D2", "C2v", "C2h", "Cs", "C2", "Ci", "C1"]
+        for i in D2h_subgroups:
+            try:
+                return self.subgroup_symtext(i)
+            except:
+                pass

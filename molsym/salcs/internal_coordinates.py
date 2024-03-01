@@ -6,7 +6,7 @@ class InternalCoordinates(FunctionSet):
     def __init__(self, symtext, fxn_list) -> None:
         self.ic_list = [i[0] for i in fxn_list]
         self.ic_types = [i[1] for i in fxn_list]
-        super().__init__(fxn_list, symtext)
+        super().__init__(symtext, fxn_list)
 
     def operate_on_ic(self, ic_idx, symop):
         symbol = self.symtext.symels[symop].symbol
@@ -35,7 +35,8 @@ class InternalCoordinates(FunctionSet):
                 index, phase = self.operate_on_ic(ic_idx, sidx)
                 ic_map[ic_idx, sidx] = index
                 phase_map[ic_idx, sidx] *= phase
-        return ic_map, phase_map
+        self.phase_map = phase_map
+        return ic_map#, phase_map
 
     def get_symmetry_equiv_functions(self):
         SEICs = []
@@ -89,3 +90,9 @@ class InternalCoordinates(FunctionSet):
             n = round(np.sum(rshorker_loaf * self.symtext.chartable.class_orders * self.symtext.chartable.characters[idx,:]) / self.symtext.order)
             span[idx] = n
         return span
+    
+    def special_function(self, salc, coord, sidx, irrmat):
+        ic2 = self.fxn_map[coord, sidx]
+        p = self.phase_map[coord, sidx]
+        salc[:,:,ic2] += (irrmat[sidx, :, :]) * p
+        return salc

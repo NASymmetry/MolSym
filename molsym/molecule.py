@@ -177,6 +177,9 @@ class Molecule():
         # Transform back to Cartesian coordinates, shout out to @Legendre17 on Math Stack Exchange
         M = np.array([[(new_dm[0,j]**2 + new_dm[i,0]**2 - new_dm[i,j]**2)/2 for j in range(self.natoms)] for i in range(self.natoms)])
         evals, evecs = np.linalg.eigh(M)
+        for i in range(len(evals)):
+            if abs(evals[i]) < 1e-10:
+                evals[i] = 0
         evalMat = np.zeros((self.natoms, self.natoms))
         for i in range(self.natoms):
             evalMat[i,i] = np.sqrt(evals[i])

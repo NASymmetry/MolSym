@@ -42,12 +42,12 @@ class SALCs():
     def __repr__(self) -> str:
         return self.__str__()
 
-    @property
-    def shape(self, irrep_idx):
-        if self.salc_sets[irrep_idx] is None:
-            return (0,0)
-        else:
-            return self.salc_sets.shape
+    #@property
+    #def shape(self, irrep_idx):
+    #    if self.salc_sets[irrep_idx] is None:
+    #        return (0,0)
+    #    else:
+    #        return self.salc_sets.shape
 
     def addnewSALC(self, new_salc, irrep_idx):
         check = True
@@ -71,7 +71,10 @@ class SALCs():
 
     @property
     def basis_transformation_matrix(self):
-        btm = np.zeros((len(self.fxn_set), len(self)))
+        if self.symtext.complex and not self.remove_complexity:
+            btm = np.zeros((len(self.fxn_set), len(self)), dtype=np.complex128)
+        else:
+            btm = np.zeros((len(self.fxn_set), len(self)))
         for idx, salc in enumerate(self.salc_list):
             btm[:,idx] = salc.coeffs
         return btm
@@ -91,7 +94,21 @@ class SALCs():
         return btm
 
     def ispartner(self, salc1, salc2):
-        chk1 = salc1.irrep == salc2.irrep
+        if self.symtext.complex and ("_1" in salc1.irrep or "_2" in salc1.irrep):
+            if "_1" in salc1.irrep:
+                if "_2" in salc2.irrep:
+                    chk1 = salc1.irrep.replace("_1", "") == salc2.irrep.replace("_2", "")
+                else:
+                    chk1 = False
+            elif "_2" in salc1.irrep:
+                if "_1" in salc2.irrep:
+                    chk1 = salc1.irrep.replace("_2", "") == salc2.irrep.replace("_1", "")
+                else:
+                    chk1 = False
+            else:
+                chk1 = False
+        else:
+            chk1 = salc1.irrep == salc2.irrep
         #chk2 = salc1.sh == salc2.sh
         #chk3 = salc1.atom == salc2.atom
         chk4 = salc1.bfxn == salc2.bfxn
@@ -110,7 +127,7 @@ class SALCs():
             chk = False
             for idx, done_salcs in enumerate(out):
                 if self.ispartner(salc, done_salcs[0][1]):
-                    done_salcs.append((sidx+1,salc))
+                    done_salcs.append([sidx+1,salc])
                     out2[idx].append(sidx+1)
                     groop.append(done_salcs[0][0])
                     chk = True
@@ -120,7 +137,7 @@ class SALCs():
                 groop.append(sidx+1)
         return out, out2
 
-    def finish_building(self, orthogonalize=False):
+    def finish_building(self, orthogonalize=False, remove_complexity=False):
         """
             List of SALC indices grouped by irreps
             Partner functions
@@ -133,13 +150,24 @@ class SALCs():
                     self.salcs_by_irrep[irrep_idx].append(salc_idx)
 
         self.partner_functions, o2 = self.sort_partner_functions()
-
-        self.partner_function_sets_by_irrep = [[] for i in range(len(self.irreps))]
+        self.partner_function_sets_by_irrep = [[] for i in range(len(self.irreps))] # This will have empty lists for complex groups
         for irrep_idx, irrep in enumerate(self.irreps):
             for pf_idx, pf_set in enumerate(o2):
                 if self.salc_list[pf_set[0]].irrep == irrep:
                     self.partner_function_sets_by_irrep[irrep_idx].append(pf_set)
-        
+        self.remove_complexity = remove_complexity
+        if remove_complexity: # TODO: Have symtext for groups with reduced complexity, handling irreps such as E2_1g, E2_2g ---> E2g
+            for pf in self.partner_functions:
+                if len(pf) == 2:
+                    nf = 1/np.sqrt(2.0) # This may affect salc.gamma as well!!!
+                    s1_save = self.salc_list[pf[0][0]].coeffs
+                    self.salc_list[pf[0][0]].coeffs = nf*(self.salc_list[pf[0][0]].coeffs + self.salc_list[pf[1][0]].coeffs)
+                    self.salc_list[pf[1][0]].coeffs = nf*(s1_save - self.salc_list[pf[1][0]].coeffs)/1.0j
+            for s in self.salc_list:
+                if not np.isclose(np.max(np.abs(np.imag(s.coeffs))), 0):
+                    raise Exception("Remove complexity procedure unable to remove imaginary components of SALCs")
+                s.coeffs = np.real(s.coeffs)
+
         if orthogonalize:
             np.set_printoptions(suppress=True, precision=5, linewidth=1500)
             for irrep_idx, irrep in enumerate(self.irreps):

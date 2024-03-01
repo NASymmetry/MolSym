@@ -63,7 +63,8 @@ def ProjectionOp(symtext, fxn_set):
         irrmat = getattr(IrrepMats, "irrm_" + str(symtext.pg))[irrep]
         dim = np.array(irrmat[0]).shape[0]
         for se_fxn_set in fxn_set.SE_fxns:
-            equivcoord = se_fxn_set[0]
+            #equivcoord = se_fxn_set[0]
+            equivcoord = min(se_fxn_set)
             salc = np.zeros((dim, dim, numred))
 
             if symtext.complex:
@@ -71,19 +72,20 @@ def ProjectionOp(symtext, fxn_set):
             
             for sidx in range(len(symtext)):
                 # For now, check type of fxn_set to determine how to build SALCs, eventually this should be handled within the fxn_set somehow
-                if isinstance(fxn_set, InternalCoordinates):
-                    ic2 = fxn_set.fxn_map[equivcoord, sidx]
-                    p = fxn_set.phase_map[equivcoord, sidx]
-                    salc[:,:,ic2] += (irrmat[sidx, :, :]) * p
-                elif isinstance(fxn_set, CartesianCoordinates):
-                    atom_idx = symtext.atom_map[equivcoord//3, sidx]
-                    cfxn = equivcoord % 3
-                    xyz = fxn_set.fxn_map[sidx,cfxn,:]
-                    for i in range(3):
-                        if symtext.complex:
-                            salc[:,:,3*atom_idx+i] += np.conj(irrmat[sidx, :, :]) * xyz[i]
-                        else:
-                            salc[:,:,3*atom_idx+i] += irrmat[sidx, :, :] * xyz[i]
+                #if isinstance(fxn_set, InternalCoordinates):
+                #    ic2 = fxn_set.fxn_map[equivcoord, sidx]
+                #    p = fxn_set.phase_map[equivcoord, sidx]
+                #    salc[:,:,ic2] += (irrmat[sidx, :, :]) * p
+                #elif isinstance(fxn_set, CartesianCoordinates):
+                #    atom_idx = symtext.atom_map[equivcoord//3, sidx]
+                #    cfxn = equivcoord % 3
+                #    xyz = fxn_set.fxn_map[sidx,cfxn,:]
+                #    for i in range(3):
+                #        if symtext.complex:
+                #            salc[:,:,3*atom_idx+i] += np.conj(irrmat[sidx, :, :]) * xyz[i]
+                #        else:
+                #            salc[:,:,3*atom_idx+i] += irrmat[sidx, :, :] * xyz[i]
+                salc = fxn_set.special_function(salc, equivcoord, sidx, irrmat)
             salc *= dim/symtext.order
 
             if isinstance(fxn_set, CartesianCoordinates):
@@ -93,6 +95,14 @@ def ProjectionOp(symtext, fxn_set):
                     for j in range(dim):
                         if not np.allclose(salc[i,j,:], np.zeros(salc[i,j,:].shape), atol=salcs.tol):
                             salc[i,j,:] = project_out_Eckart(eckart_cond, salc[i,j,:])
+            if symtext.complex and dim==2:
+                nf =  1/np.sqrt(2)
+                print(salc[:,0,:])
+                print(salc[:,1,:])
+                new_i = nf * salc[:,0,:]+salc[:,1,:]
+                new_j = nf * (salc[:,0,:]-salc[:,1,:])/1j
+                salc[:,0,:] = new_i
+                salc[:,1,:] = new_j
             for i in range(dim):
                 for j in range(dim):
                     if not np.allclose(salc[i,j,:], np.zeros(salc[i,j,:].shape), atol=salcs.tol):
@@ -104,5 +114,9 @@ def ProjectionOp(symtext, fxn_set):
         orthogonalize = True
     else:
         orthogonalize = False
-    salcs.finish_building(orthogonalize=orthogonalize)
+    if symtext.complex:
+        remove_complexity = True
+    else:
+        remove_complexity = False
+    salcs.finish_building(orthogonalize=orthogonalize, remove_complexity=remove_complexity)
     return salcs
