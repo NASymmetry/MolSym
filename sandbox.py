@@ -6,11 +6,11 @@ from molsym.salcs.spherical_harmonics import SphericalHarmonics
 from molsym.salcs.projection_op import ProjectionOp
 import timeit
 
-mol = molsym.Molecule.from_file("/home/smg13363/MolSym/nate.xyz")
-mol = molsym.symmetrize(mol, asym_tol=0.05)
-symtext = molsym.Symtext.from_molecule(mol)
-print(symtext.pg)
-print(mol)
+#mol = molsym.Molecule.from_file("/home/smg13363/MolSym/nate.xyz")
+#mol = molsym.symmetrize(mol, asym_tol=0.05)
+#symtext = molsym.Symtext.from_molecule(mol)
+#print(symtext.pg)
+#print(mol)
 
 #start_time = timeit.default_timer()
 #symels = molsym.symtext.main.pg_to_symels("D2h")
@@ -107,20 +107,24 @@ print(mol)
 #
 
 # Spherical harmonic salcs
-#mol = molsym.Molecule.from_file("/home/smg13363/MolSym/test/xyz/benzene.xyz")
+#mol = molsym.Molecule.from_file("/home/smg13363/MolSym/test/sxyz/dodecahedron.xyz")
 #mol = molsym.symmetrize(mol)
 #symtext = molsym.Symtext.from_molecule(mol)
-#symtext = symtext.subgroup_symtext("C3")
+##symtext = symtext.subgroup_symtext("C3")
 ##symtext = symtext.largest_D2h_subgroup()
 #print(symtext)
-#bset = [[0,0,0,0,1,1,1,2,2,3],[0,0,0,1,1,2],[0,0,0,1,1,2],[0,0,0,1,1,2]]
-#cbs = [0,0,1]
-#hbs = [0,1]
-#bset = sum([[cbs for i in range(6)],[hbs for i in range(6)]],[])
+##bset = [[0,0,0,0,1,1,1,2,2,3],[0,0,0,1,1,2],[0,0,0,1,1,2],[0,0,0,1,1,2]]
+##cbs = [0,0,1]
+#hbs = [0]
+#bset = [hbs for i in range(20)]
+##bset = sum([[cbs for i in range(6)],[hbs for i in range(6)]],[])
 #coords = SphericalHarmonics(symtext, bset)
 #salcs = ProjectionOp(symtext, coords)
 #np.set_printoptions(suppress=True, precision=3, linewidth=1500, threshold=np.inf)
-## nb on each C: 14
+#print(salcs)
+#print(salcs.sorted_basis_transformation_matrix.T @ salcs.sorted_basis_transformation_matrix)
+#print(np.linalg.matrix_rank(salcs.sorted_basis_transformation_matrix))
+# nb on each C: 14
 #nbfpa = 5
 #cidx = 3
 #select = [cidx +  nbfpa*i for i in range(6)] + [cidx+1 +  nbfpa*i for i in range(6)]
@@ -155,7 +159,20 @@ print(mol)
 #c = np.einsum("ijklmnop,mnop->ijkl", a, b)
 #print(c.reshape((9,25)))
 
-
-
-
+# Irrep. mats testing
+#import molsym.symtext.general_irrep_mats as gim
+#symels = molsym.symtext.main.pg_to_symels("C8h")
+#mt = molsym.symtext.multiplication_table.build_mult_table(symels)
+#a = gim.irrmat_gen_Cnh(8, mt)
+##a = gim.pibbis(mt, 8, 3, [2,1])
+#for key in a:
+#    print(key)
+#    print(a[key].squeeze())
+#Cn = gim.irrmat_gen_Cn(5)
+#name_map = [["A","A1g"],["E1_1","E1g"],["E2_1","E1u"],["E2_2","E2g"],["E1_2","E2u"]]
+#print(gim.rename_irreps(Cn, name_map))
+    
+from molsym.symtext.Ih_irrep_mats import *
+out = parse_to_string(Hg_str)[0:60]
+print(out[1])
 

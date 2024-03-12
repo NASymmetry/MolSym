@@ -33,6 +33,13 @@ def test_irrep_mats_Oh():
     assert mtab
 
 @pytest.mark.slow
+def test_irrep_mats_I():
+    print("I")
+    got, mtab = irrep_things("I")
+    assert got
+    assert mtab
+
+@pytest.mark.slow
 def test_irrep_mats_Ih():
     print("Ih")
     got, mtab = irrep_things("Ih")

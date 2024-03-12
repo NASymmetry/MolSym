@@ -1006,6 +1006,31 @@ def parse_Mathematica(strang):
     JIMMp = [JIMM[i-1] for i in allen_map_Ih]
     return np.array(JIMMp)
 
+import sympy
+def parse_to_string(strang):
+    # Remove List
+    lst = re.compile(r"List")
+    strang = lst.sub("", strang)
+    # Sqrt --->
+    sqr = re.compile(r"Sqrt")
+    strang = sqr.sub(r"sqrt", strang)
+    o6 = re.compile(r"0.6")
+    strang = o6.sub(r"4/5", strang)
+    JIMM = []
+    for s in strang.splitlines():
+        JIMM.append(sympy.Array(sympy.sympify(sympy.parsing.sympy_parser.parse_expr(s.strip()))))
+        #JIMM.append(sympy.Array(eval(s.strip())))
+    # Permute JIMM to MolSym ordering
+    JIMMp = [JIMM[i-1] for i in allen_map_Ih]
+    return np.array(JIMMp)
+
+irrm_I = {}
+irrm_I["A"] = np.array([[[1.0]] for i in range(60)])
+irrm_I["T1"] = parse_Mathematica(T1g_str)[0:60]
+irrm_I["T2"] = parse_Mathematica(T2g_str)[0:60]
+irrm_I["G"] = parse_Mathematica(Gg_str)[0:60]
+irrm_I["H"] = parse_Mathematica(Hg_str)[0:60]
+
 irrm_Ih = {}
 irrm_Ih["Ag"] = np.array([[[1.0]] for i in range(120)])
 irrm_Ih["T1g"] = parse_Mathematica(T1g_str)

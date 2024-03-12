@@ -757,4 +757,4 @@ irrm_Oh = {
             -1*np.array([[ 0, -1, 0],[-1,  0, 0],[ 0,  0, 1]]),-1*np.array([[ 0,  1,  0],[ 1, 0,  0],[0, 0,  1]]),-1*np.array([[1, 0,  0],[0,  0, -1],[ 0, -1,  0]]),-1*np.array([[ 1,  0, 0],[0, 0,  1],[ 0,  1,  0]])])
 }
 
-from .Ih_irrep_mats import irrm_Ih
+from .Ih_irrep_mats import irrm_I, irrm_Ih
