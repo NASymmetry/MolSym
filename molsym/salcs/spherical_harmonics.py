@@ -4,7 +4,6 @@ found in "Rotation Matrices for Real Spherical Harmonics. Direct Determination b
 J. Ivanic and K. Rudenberg: doi/10.1021/jp953350u
 """
 
-import psi4
 import numpy as np
 from molsym.salcs.function_set import FunctionSet
 
@@ -193,12 +192,12 @@ class SphericalHarmonics(FunctionSet):
 
     def get_fxn_map(self):
         # Spherical harmonic map for l up to maxam, not including l = 0
-        rotated = rotate_em(self.maxam, self.symtext.symels) # symel x l x ml
+        self.rotated = rotate_em(self.maxam, self.symtext.symels) # symel x l x ml
         fxn_map = np.zeros((len(self), len(self.symtext), len(self))) # basis_function x symel x basis_function
         for bfxn_i in range(len(self)):
             atom_i, sh, l, ml = self.big_info[bfxn_i]
             for sidx in range(len(self.symtext)):
-                rotate_result = rotated[sidx]
+                rotate_result = self.rotated[sidx]
                 atom_j = self.symtext.atom_map[atom_i,sidx]
                 if l == 0:
                     result = np.eye(1)

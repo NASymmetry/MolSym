@@ -1,4 +1,4 @@
-from molsym.flowchart import find_point_group
+import molsym
 import qcelemental as qcel
 from molsym.molecule import Molecule
 import pytest
@@ -17,7 +17,7 @@ def test_find_point_group(name, pg_ans):
         strang = fn.read()
     schema = qcel.models.Molecule.from_data(strang).dict()
     mol = Molecule.from_schema(schema)
-    pg, (paxis, saxis) = find_point_group(mol)
+    pg, (paxis, saxis) = molsym.find_point_group(mol)
     print("Ans: ", pg)
     assert pg_ans == pg
 
@@ -27,6 +27,6 @@ def test_find_point_group_D100h():
         strang = fn.read()
     schema = qcel.models.Molecule.from_data(strang).dict()
     mol = Molecule.from_schema(schema)
-    pg, (paxis, saxis) = find_point_group(mol)
+    pg, (paxis, saxis) = molsym.find_point_group(mol)
     print("Ans: ", pg)
     assert "D100h" == pg

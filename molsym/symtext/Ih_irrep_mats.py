@@ -1014,11 +1014,27 @@ def parse_to_string(strang):
     # Sqrt --->
     sqr = re.compile(r"Sqrt")
     strang = sqr.sub(r"sqrt", strang)
+    # Sympy does not recognize Sqrt(0.6) as Sqrt(3/5)
     o6 = re.compile(r"0.6")
-    strang = o6.sub(r"4/5", strang)
+    strang = o6.sub(r"3/5", strang)
+    from copy import deepcopy
+    ## Replace other instances of decimals
+    #iflist = [r"0\.1",
+    #          r"0\.25",
+    #          r"0\.2",
+    #          r"0\.5"]
+    #outlist = ["(1/10)",
+    #           "(1/4)",
+    #           "(1/5)",
+    #           "(1/2)"] 
+    #for i in range(len(iflist)):
+    #    r = re.compile(iflist[i])
+    #    strang = re.sub(r, outlist[i], strang)
     JIMM = []
     for s in strang.splitlines():
-        JIMM.append(sympy.Array(sympy.sympify(sympy.parsing.sympy_parser.parse_expr(s.strip()))))
+        #print(sympy.Array(sympy.parsing.sympy_parser.parse_expr(s.strip(), evaluate=False)))
+        #JIMM.append(sympy.Array(sympy.simplify(sympy.parsing.sympy_parser.parse_expr(s.strip(), evaluate=False), rational=True, doit=False, evaluate=True, ratio=1)))
+        JIMM.append(sympy.Array(sympy.simplify(sympy.sympify(sympy.parsing.sympy_parser.parse_expr(s.strip())))))
         #JIMM.append(sympy.Array(eval(s.strip())))
     # Permute JIMM to MolSym ordering
     JIMMp = [JIMM[i-1] for i in allen_map_Ih]

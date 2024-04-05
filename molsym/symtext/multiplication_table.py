@@ -2,10 +2,8 @@ import numpy as np
 import itertools
 import re
 import math
-from . import irrep_mats
 from . import main
-from molsym.symtools import issame_axis, normalize
-from molsym.molecule import rotation_matrix
+from molsym.symtools import *
 
 def multifly(symels, A, B):
     Crrep = np.dot(A.rrep,B.rrep)

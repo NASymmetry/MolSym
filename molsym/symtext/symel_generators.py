@@ -1,8 +1,7 @@
-from molsym.molecule import *
 from .symel import Symel, reduce
 import numpy as np
 from numpy.linalg import matrix_power
-from ..symtools import normalize
+from ..symtools import *
 from math import isclose
 
 def generate_Cn(n):
@@ -326,7 +325,7 @@ def generate_I_vectors():
                 [0.0, phi, phi_i],[0.0, phi, -phi_i],[0.0, -phi, phi_i],[0.0, -phi, -phi_i],
                 [phi_i, 0.0, phi],[-phi_i, 0.0, phi],[phi_i, 0.0, -phi],[-phi_i, 0.0, -phi],
                 [phi, phi_i, 0.0],[phi, -phi_i, 0.0],[-phi, phi_i, 0.0],[-phi, -phi_i, 0.0]])
-    # Reorienting vectors such that one face is on the z-axis with "pentagon" pointing at the negative y-axis
+    # Reorienting vectors such that one face is on the z-axis with "pentagon" pointing at the POSITIVE?  y-axis
     theta = -np.arccos(phi/np.sqrt(1+(phi**2)))
     rmat = rotation_matrix(np.array([1, 0, 0]), theta)
     lf = np.shape(faces_i)[0]

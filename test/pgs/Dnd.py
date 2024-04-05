@@ -1,6 +1,6 @@
 import numpy as np
 from numpy.linalg import matrix_power
-from molsym.molecule import Cn, reflection_matrix, inversion_matrix, Sn
+from molsym.symtools import Cn, reflection_matrix, inversion_matrix, Sn
 from molsym.symtext.symtext import Symel
 
 x = np.array([1,0,0])

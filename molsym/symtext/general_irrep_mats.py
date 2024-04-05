@@ -37,10 +37,9 @@ def irrmat_gen_Cnh(n, mult_table):
     # Cn and i generate for even, Cn and sigma_h for odd
     irrmat = {}
     if n % 2 == 0:
-        prs = pibbis(mult_table, n, 3, [0])
-        #print(prs)
-        iprs = pibbis(mult_table, n, 3, [2])
-        #print(iprs)
+        prs = pibbis(mult_table, n, 3, [0]) # principal rotations
+        iprs = pibbis(mult_table, n, 3, [2]) # i times principal rotations
+        
         irrmat["Ag"] = np.ones((2*n,1,1))
         irrmat["Au"] = np.ones((2*n,1,1))
         irrmat["Au"][iprs] *= -1

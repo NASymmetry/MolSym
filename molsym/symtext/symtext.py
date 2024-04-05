@@ -1,4 +1,5 @@
-from molsym.molecule import *
+import qcelemental as qcel
+from molsym.molecule import Molecule
 from molsym import find_point_group
 from .main import *
 from .multiplication_table import build_mult_table, subgroup_by_name, subgroup_axes
@@ -8,7 +9,7 @@ class Symtext():
         self.mol = mol
         self.rotate_to_std = rotate_to_std
         self.reverse_rotate = reverse_rotate
-        self.pg = PointGroup.from_string(pg) # TODO TODO TODO I CHANGED THIS AND IT MIGHT BREAK STUFF TODO TODO TODO
+        self.pg = PointGroup.from_string(pg)
         self.complex = False
         if self.pg.family == "C" and self.pg.n and self.pg.n > 2:
             if self.pg.subfamily is None or self.pg.subfamily == "h":
