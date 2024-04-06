@@ -1,8 +1,7 @@
 import numpy as np
 import itertools
 import re
-import math
-from . import main
+from .symel import pg_to_symels
 from molsym.symtools import *
 
 def multifly(symels, A, B):
@@ -19,14 +18,6 @@ def build_mult_table(symels):
         for (j,b) in enumerate(symels):
             t[i,j] = multifly(symels, a, b)[0]
     return t
-
-def divisors(n):
-    # This isn't meant to handle large numbers, thankfully most point groups have an order less than 100
-    out = []
-    for i in range(n):
-        if n % (i+1) == 0:
-            out.append(i+1)
-    return out
 
 def is_subgroup(G, mtable):
     # Testing for closure as all other group properties are enforced elsewhere
@@ -53,9 +44,6 @@ def identify_subgroup(subgroup, symels):
     for symel in subgroup_symels:
         if symel.symbol == "i":
             inversion = True
-        #elif symel.symbol[:7] == "sigma_h":
-        #    sigma_h = True
-        #elif re.match(sigma_vd_re, symel.symbol):
         elif symel.symbol[:5] == "sigma":
             sigma = True
         elif symel.symbol[0] == "S":
@@ -161,128 +149,16 @@ def cycles(mtable):
             unique_cycles.append(ci)
     return unique_cycles
 
-def subgroups(symels, mtable):
-    cntr = 0
-    max_cntr = 25
-    # Naive implementation of subgroup search (by combinations of cycles)
-    h = len(symels)
-    unique_cycles = cycles(mtable)
-    print(unique_cycles)
-    possible_subgroup_orders = divisors(h)[1:-1] #Exclude 1 and h
-    subgroups = []
-    subgroup_pgs = []
-    # Select n sets of unique cycles. Each cycle should be a subgroup, but all cycles comprise the group so skip
-    nselect_limit = len(unique_cycles)-1
-    for nselect in range(1,nselect_limit): 
-        itercomb = itertools.combinations(unique_cycles, nselect)
-        n=0
-        combined = []
-        for comb_i in itercomb:
-            n+=1
-            s0 = comb_i[0]
-            for si in range(1,len(comb_i)):
-                s0 = s0.union(comb_i[si])
-            combined.append(s0)
-        print(n)
-        print(len(combined))
-        print(combined)
-        if nselect == 2:
-            break
-        for subgroup_candidate in combined:
-            if cntr >= max_cntr:
-                print("Early stopping")
-                break
-            if subgroup_candidate not in subgroups and len(subgroup_candidate) in possible_subgroup_orders:
-                if is_subgroup(subgroup_candidate, mtable):
-                    accepted_subgroup = list(subgroup_candidate)
-                    accepted_subgroup.sort()
-                    subgroups.append(accepted_subgroup)
-                    subgroup_pgs.append(identify_subgroup(accepted_subgroup, symels))
-                    cntr += 1
-    return subgroups, subgroup_pgs
-
 def multiply(mtable, *args):
     m = args[0]
     for mi in args[1:]:
         m = mtable[m, mi]
     return m
 
-def subgroups_better(symels, mtable, max_subgroup_size=None, restrict_comb=None):
-    h = len(symels)
-    unique_cycles = cycles(symels, mtable)
-    possible_subgroup_orders = divisors(h)[1:-1] #Exclude 1 and h
-    if max_subgroup_size is not None:
-        mss = max_subgroup_size
-    else:
-        mss = h
-    if restrict_comb is not None:
-        nselect_limit = restrict_comb
-    else:
-        nselect_limit = len(unique_cycles)-1
-    subgroups = [[*i] for i in unique_cycles]
-    subgroup_pgs = [identify_subgroup(i, symels) for i in unique_cycles]
-    # Select n sets of unique cycles. Each cycle should be a subgroup, but all cycles comprise the group so skip
-    for nselect in range(2,nselect_limit+1): 
-        itercomb = itertools.combinations(unique_cycles, nselect)
-        for comb_i in itercomb:
-            s = math.prod([len(cycle) for cycle in comb_i])
-            if s > mss or s >= h or s not in possible_subgroup_orders:
-                continue
-            product = itertools.product(*comb_i)
-            grp = []
-            for p in product:
-                grp.append(multiply(mtable, *p))
-            grp = [*set(grp)]
-            grp.sort()
-            if grp not in subgroups and is_subgroup(grp, mtable):
-                subgroups.append(grp)
-                subgroup_pgs.append(identify_subgroup(grp, symels))
-    return subgroups, subgroup_pgs
-
-def mtable_check(irrm, mtable):
-    l = mtable.shape[0]
-    for irrep in irrm:
-        for i in range(l):
-            for j in range(l):
-                if mtable[i,j] in irrm_multifly(irrm[irrep], i, j):
-                    continue
-                else:
-                    #print(f"Irrep. {irrep}\nMat. 1: {irrm[i]}\nMat. 2: {irrm[j]}")
-                    #print(f"Multiplying {i} and {j}")
-                    #print(irrm_multifly(irrm, i, j))
-                    return False
-    return True
-
-def irrm_multifly(irrm, a, b):
-    l = irrm.shape[0]
-    out = []
-    errl = []
-    for i in range(l):
-        if irrm[a].shape[0] == 1:
-            r = [irrm[a][0]*irrm[b][0]]
-        else:
-            r = irrm[a]*irrm[b]
-        errl.append(r)
-        if np.isclose(irrm[i], r, atol = 1e-10).all:
-            out.append(i)
-    return out
-
-def orient_subgroup_to_irrmat(subgroup_symels, subgroup_pg):
-    irrm = eval(f"irrep_mats.irrm_{subgroup_pg}")
-    subgroup_mtable = build_mult_table(subgroup_symels)
-    # Assume E is always first
-    perm_idxs = itertools.permutations(range(1,len(subgroup_symels)))
-    for p in perm_idxs:
-        subgroup_perm_idx = [0] + list(p)
-        subgroup_perm = [subgroup_symels[i] for i in subgroup_perm_idx]
-        if mtable_check(irrm, subgroup_mtable[np.ix_(subgroup_perm_idx, subgroup_perm_idx)]):
-            return subgroup_perm
-    return False
-
 def subgroup_by_name(symels, mult_table, subgroup):
     if subgroup == "C1":
         return [[0,0]]
-    subgroup_symels = main.pg_to_symels(subgroup)
+    subgroup_symels = pg_to_symels(subgroup)
     subgroup_mult_table = build_mult_table(subgroup_symels)
     big_list = []
     for sg_el in range(len(subgroup_symels)):

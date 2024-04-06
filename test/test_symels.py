@@ -6,7 +6,7 @@ from pgs.Dn import *
 from pgs.Dnh import *
 from pgs.Dnd import *
 from pgs.Sn import *
-from molsym.symtext.main import pg_to_symels
+from molsym.symtext.symel import pg_to_symels
 
 pgs = [
     "C2","C3","C4","C5","C6",

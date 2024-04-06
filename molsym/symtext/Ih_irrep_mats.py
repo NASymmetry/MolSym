@@ -1006,8 +1006,9 @@ def parse_Mathematica(strang):
     JIMMp = [JIMM[i-1] for i in allen_map_Ih]
     return np.array(JIMMp)
 
-import sympy
 def parse_to_string(strang):
+    # TODO: Move this function outside of MolSym
+    import sympy
     # Remove List
     lst = re.compile(r"List")
     strang = lst.sub("", strang)

@@ -1,11 +1,15 @@
 import qcelemental as qcel
 from molsym.molecule import Molecule
 from molsym import find_point_group
-from .main import *
+from .point_group import PointGroup
+from .symel import pg_to_symels
+from .character_table import pg_to_chartab
+from .symtext_helper import generate_symel_to_class_map, get_atom_mapping, rotate_mol_to_symels
 from .multiplication_table import build_mult_table, subgroup_by_name, subgroup_axes
+from . import irrep_mats as IrrepMats
 
 class Symtext():
-    def __init__(self, mol, rotate_to_std, reverse_rotate, pg, symels, chartable, class_map, atom_map, mult_table) -> None:
+    def __init__(self, mol, rotate_to_std, reverse_rotate, pg, symels, chartable, class_map, atom_map, mult_table, irrep_mat) -> None:
         self.mol = mol
         self.rotate_to_std = rotate_to_std
         self.reverse_rotate = reverse_rotate
@@ -24,6 +28,7 @@ class Symtext():
         self.atom_map = atom_map
         self.mult_table = mult_table
         self.order = len(symels)
+        self.irrep_mat = irrep_mat
 
     def __len__(self):
         return len(self.symels)
@@ -42,7 +47,8 @@ class Symtext():
         class_map = generate_symel_to_class_map(symels, ctab)
         atom_map = get_atom_mapping(mol, symels)
         mult_table = build_mult_table(symels)
-        return Symtext(mol, rotate_to_std, reverse_rotate, pg, symels, ctab, class_map, atom_map, mult_table)
+        irrep_mat = getattr(IrrepMats, "irrm_" + str(pg))
+        return Symtext(mol, rotate_to_std, reverse_rotate, pg, symels, ctab, class_map, atom_map, mult_table, irrep_mat)
 
     @classmethod
     def from_file(cls, fn):
@@ -74,8 +80,8 @@ class Symtext():
             return 60
 
     def subgroup_symtext(self, subgroup):
-        subgroup_symels = main.pg_to_symels(subgroup)
-        subgroup_ctab = main.pg_to_chartab(subgroup)
+        subgroup_symels = pg_to_symels(subgroup)
+        subgroup_ctab = pg_to_chartab(subgroup)
         class_map = generate_symel_to_class_map(subgroup_symels, subgroup_ctab)
         mult_table = build_mult_table(subgroup_symels)
         isomorphism = subgroup_by_name(self.symels, self.mult_table, subgroup)
@@ -83,10 +89,11 @@ class Symtext():
             raise Exception(f"No {subgroup} subgroup found for {self.pg} group")
         sgp = [self.symels[i[1]] for i in isomorphism]
         paxis, saxis = subgroup_axes(subgroup, sgp)
-        new_mol, reverse_rotate, rotate_to_std = main.rotate_mol_to_symels(self.mol, paxis, saxis)
+        new_mol, reverse_rotate, rotate_to_std = rotate_mol_to_symels(self.mol, paxis, saxis)
         new_mol.tol = 1e-10
         atom_map = get_atom_mapping(new_mol, subgroup_symels)
-        return Symtext(new_mol, rotate_to_std, reverse_rotate, subgroup, subgroup_symels, subgroup_ctab, class_map, atom_map, mult_table)
+        irrep_mat = getattr(IrrepMats, "irrm_" + str(subgroup))
+        return Symtext(new_mol, rotate_to_std, reverse_rotate, subgroup, subgroup_symels, subgroup_ctab, class_map, atom_map, mult_table, irrep_mat)
     
     def largest_D2h_subgroup(self):
         # Some groups may have equivalent order subgroups, if you want a specific one, don't use this function

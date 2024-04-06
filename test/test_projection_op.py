@@ -45,7 +45,7 @@ ic_irrep_labels_test_set = [["A1", "A1", "B2"],
                          ["A1", "A1", "E", "E", "T2", "T2", "T2", "T2", "T2", "T2"]]
 @pytest.mark.parametrize("i", [i for i in range(len(fns))])
 def test_internal_coordinate_SALCs(i):
-    mol = molsym.Molecule.from_file("/home/smg13363/MolSym/test/xyz/"+fns[i]+".xyz")
+    mol = molsym.Molecule.from_file("test/xyz/"+fns[i]+".xyz")
     mol = molsym.symmetrize(mol)
     symtext = molsym.Symtext.from_molecule(mol)
     ic_fxn_set = molsym.salcs.internal_coordinates.InternalCoordinates(symtext, ics_test_set[i])
@@ -343,7 +343,7 @@ sph_irrep_labels_test_set = [
 
 @pytest.mark.parametrize("i", [i for i in range(len(fns))])
 def test_spherical_harmonic_SALCs(i):
-    mol = molsym.Molecule.from_file("/home/smg13363/MolSym/test/xyz/"+fns[i]+".xyz")
+    mol = molsym.Molecule.from_file("test/xyz/"+fns[i]+".xyz")
     mol = molsym.symmetrize(mol)
     symtext = molsym.Symtext.from_molecule(mol)
     sph_fxn_set = molsym.salcs.spherical_harmonics.SphericalHarmonics(symtext, basis_sets_test_set[i])

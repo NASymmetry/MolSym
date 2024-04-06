@@ -1,6 +1,6 @@
 import numpy as np
 from numpy.linalg import matrix_power
-from molsym.symtext.symtext import Symel
+from molsym.symtext.symel import Symel
 from molsym.symtools import Cn, reflection_matrix, inversion_matrix, Sn
 
 x = np.array([1,0,0])

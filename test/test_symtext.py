@@ -1,7 +1,9 @@
 import pytest
 import numpy as np
 import molsym
-from molsym.symtext.main import pg_to_symels, pg_to_chartab, grab_class_orders, generate_symel_to_class_map, rotate_mol_to_symels
+from molsym.symtext.symel import pg_to_symels
+from molsym.symtext.character_table import pg_to_chartab, grab_class_orders
+from molsym.symtext.symtext_helper import generate_symel_to_class_map, rotate_mol_to_symels
 from molsym.symtext.multiplication_table import build_mult_table
 
 # C1, Ci, Cs, C2v, C3h, S8, D6h, Td, Oh, Ih
@@ -165,7 +167,7 @@ order_test_set = [1,4,6,24,24]
 @pytest.mark.parametrize("i", [i for i in range(len(fns))])
 def test_Symtext(i):
     angstrom_per_bohr = 0.529177249
-    mol = molsym.Molecule.from_file("/home/smg13363/MolSym/test/xyz/"+fns[i]+".xyz")
+    mol = molsym.Molecule.from_file("test/xyz/"+fns[i]+".xyz")
     mol = molsym.symmetrize(mol)
     symtext = molsym.Symtext.from_molecule(mol)
     # Add mult table, symels, ctab, class map?
@@ -191,7 +193,7 @@ D2h_subgroup_order_test_set = [1,4,2,4,8]
 
 @pytest.mark.parametrize("i", [i for i in range(len(fns_D2h_subgroups))])
 def test_Symtext_largest_D2h_subgroup(i):
-    mol = molsym.Molecule.from_file("/home/smg13363/MolSym/test/xyz/"+fns_D2h_subgroups[i]+".xyz")
+    mol = molsym.Molecule.from_file("test/xyz/"+fns_D2h_subgroups[i]+".xyz")
     mol = molsym.symmetrize(mol)
     symtext = molsym.Symtext.from_molecule(mol)
     symtext = symtext.largest_D2h_subgroup()
@@ -237,7 +239,7 @@ subgroup_order_test_set = [2,12,3,None]
 
 @pytest.mark.parametrize("i", [i for i in range(len(subgroup_fns))])
 def test_Symtext_subgroup_symtext(i):
-    mol = molsym.Molecule.from_file("/home/smg13363/MolSym/test/xyz/"+subgroup_fns[i]+".xyz")
+    mol = molsym.Molecule.from_file("test/xyz/"+subgroup_fns[i]+".xyz")
     mol = molsym.symmetrize(mol)
     symtext = molsym.Symtext.from_molecule(mol)
     #assert (mol_test_set[i][0] == mol.atoms).all()

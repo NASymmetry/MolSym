@@ -1,6 +1,6 @@
 import numpy as np
 from . import irrep_mats
-from .main import pg_to_symels
+from .symel import pg_to_symels
 from .multiplication_table import build_mult_table
 
 def irrep_things(pg):

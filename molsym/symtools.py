@@ -81,3 +81,29 @@ def isfactor(n,a):
     else:
         return False
 
+def reduce(n, i):
+    g = gcd(n, i)
+    return n//g, i//g # floor divide to get an int, there should never be a remainder since we are dividing by the gcd
+
+def gcd(A, B):
+    # A quick implementation of the Euclid algorithm for finding the greatest common divisor
+    a = max(A,B)
+    b = min(A,B)
+    if a == 0:
+        return b
+    elif b == 0:
+        return a
+    else:
+        r = a % b
+        return gcd(b, r)
+
+def divisors(n):
+    # This isn't meant to handle large numbers, thankfully most point groups have an order less than 100
+    out = []
+    for i in range(n):
+        if n % (i+1) == 0:
+            out.append(i+1)
+    return out
+
+def distance(a,b):
+    return np.sqrt(((a-b)**2).sum())

@@ -60,7 +60,7 @@ def ProjectionOp(symtext, fxn_set):
     numred = len(fxn_set)
     salcs = SALCs(symtext, fxn_set)
     for ir, irrep in enumerate(symtext.chartable.irreps):
-        irrmat = getattr(IrrepMats, "irrm_" + str(symtext.pg))[irrep]
+        irrmat = symtext.irrep_mat[irrep]
         dim = np.array(irrmat[0]).shape[0]
         for se_fxn_set in fxn_set.SE_fxns:
             #equivcoord = se_fxn_set[0]

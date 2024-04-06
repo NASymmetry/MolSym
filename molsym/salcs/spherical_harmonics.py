@@ -73,7 +73,6 @@ def UWVCoefficient(l, m1, m2):
 def Ufun(l, m1, m2, rot, Rsh):
     return Pfun(l, 0, m1, m2, rot, Rsh)
 
-
 #generates function V, eq. 8.1, found in Table 2 of reference, with a sign correction (DERIVE)
 def Vfun(l, m1, m2, rot, Rsh):
     if m1 == 0:
