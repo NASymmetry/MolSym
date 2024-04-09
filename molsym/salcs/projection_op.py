@@ -1,7 +1,7 @@
 import numpy as np
 import molsym
 from .SymmetryEquivalentIC import *
-import molsym.symtext.irrep_mats as IrrepMats
+#import molsym.symtext.irrep_mats as IrrepMats
 from .salc import SALC, SALCs
 from .internal_coordinates import InternalCoordinates
 from .cartesian_coordinates import CartesianCoordinates
@@ -59,8 +59,8 @@ def ProjectionOp(symtext, fxn_set):
     # TODO The way this function is constructed is stupid. I shouldn't have to use isinstance...
     numred = len(fxn_set)
     salcs = SALCs(symtext, fxn_set)
-    for ir, irrep in enumerate(symtext.chartable.irreps):
-        irrmat = symtext.irrep_mat[irrep]
+    for ir, irrep in enumerate(symtext.irreps):
+        irrmat = symtext.irrep_mat[irrep.symbol]
         dim = np.array(irrmat[0]).shape[0]
         for se_fxn_set in fxn_set.SE_fxns:
             #equivcoord = se_fxn_set[0]

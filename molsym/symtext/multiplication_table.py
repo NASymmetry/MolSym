@@ -1,8 +1,9 @@
 import numpy as np
 import itertools
 import re
-from .symel import pg_to_symels
+#from .symel import pg_to_symels
 from molsym.symtools import *
+from .general_irrep_mats import pg_to_symels
 
 def multifly(symels, A, B):
     Crrep = np.dot(A.rrep,B.rrep)
@@ -158,7 +159,7 @@ def multiply(mtable, *args):
 def subgroup_by_name(symels, mult_table, subgroup):
     if subgroup == "C1":
         return [[0,0]]
-    subgroup_symels = pg_to_symels(subgroup)
+    subgroup_symels, irreps, irrep_mat = pg_to_symels(subgroup)
     subgroup_mult_table = build_mult_table(subgroup_symels)
     big_list = []
     for sg_el in range(len(subgroup_symels)):

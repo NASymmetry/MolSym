@@ -39,10 +39,10 @@ ic_salcs_test_set = [([0.70710678, 0.70710678, 0], [0, 0, 1], [ 0.70710678, -0.7
                    [0, 0, 0, 0, 0, 0,-0.707106781, 0.707106781, 0, 0],
                    [0, 0, 0, 0, 0.707106781, 0, 0, 0, 0,-0.707106781])
                    ]
-ic_irrep_labels_test_set = [["A1", "A1", "B2"],
-                         ["A1", "A1", "E", "E", "E", "E"],
+ic_irrep_labels_test_set = [["A_1", "A_1", "B_2"],
+                         ["A_1", "A_1", "E", "E", "E", "E"],
                          ["A'","A'","A'","A'","A'","A'","A'","A'","A'","A''","A''","A''"],
-                         ["A1", "A1", "E", "E", "T2", "T2", "T2", "T2", "T2", "T2"]]
+                         ["A1", "A1", "E", "E", "T_2", "T_2", "T_2", "T_2", "T_2", "T_2"]]
 @pytest.mark.parametrize("i", [i for i in range(len(fns))])
 def test_internal_coordinate_SALCs(i):
     mol = molsym.Molecule.from_file("test/xyz/"+fns[i]+".xyz")
@@ -51,7 +51,7 @@ def test_internal_coordinate_SALCs(i):
     ic_fxn_set = molsym.salcs.internal_coordinates.InternalCoordinates(symtext, ics_test_set[i])
     salcs = molsym.salcs.projection_op.ProjectionOp(symtext, ic_fxn_set)
     assert all([np.isclose(ic_salcs_test_set[i][j], salcs.salc_list[j].coeffs).all() for j in range(len(ic_fxn_set))])
-    assert [salcs.salc_list[j].irrep for j in range(len(ic_fxn_set))] == ic_irrep_labels_test_set[i]
+    assert [salcs.salc_list[j].irrep.symbol for j in range(len(ic_fxn_set))] == ic_irrep_labels_test_set[i]
 
 # Cartesian geometry SALCs with and without Eckart
 
@@ -335,11 +335,11 @@ sph_salcs_test_set = [
          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  0.         ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         ,  0.5        ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         , -0.         ,  0.         ,  0.         ,  0.         ,  0.5        ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         , -0.         ,  0.         ,  0.         ,  0.5        ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         ,  0.         ,  0.5        ]])]
 
 sph_irrep_labels_test_set = [
-    sum([["A1" for i in range(11)]+["A2" for i in range(2)]+["B1" for i in range(4)]+["B2" for i in range(7)]],[]),
-    sum([["A1" for i in range(21)]+["A2" for i in range(5)]+["E" for i in range(46)]],[]),
+    sum([["A_1" for i in range(11)]+["A_2" for i in range(2)]+["B_1" for i in range(4)]+["B_2" for i in range(7)]],[]),
+    sum([["A_1" for i in range(21)]+["A_2" for i in range(5)]+["E" for i in range(46)]],[]),
     sum([["A'" for i in range(33)]+["A''" for i in range(15)]],[]),
-    sum([["A1" for i in range(6)]+["A2" for i in range(0)]+["E" for i in range(4)]+["T1" for i in range(3)]+["T2" for i in range(21)]],[]),
-    sum([["A1" for i in range(11)]+["A2" for i in range(0)]+["E" for i in range(12)]+["T1" for i in range(15)]+["T2" for i in range(48)]],[])]
+    sum([["A_1" for i in range(6)]+["A_2" for i in range(0)]+["E" for i in range(4)]+["T_1" for i in range(3)]+["T_2" for i in range(21)]],[]),
+    sum([["A_1" for i in range(11)]+["A_2" for i in range(0)]+["E" for i in range(12)]+["T_1" for i in range(15)]+["T_2" for i in range(48)]],[])]
 
 @pytest.mark.parametrize("i", [i for i in range(len(fns))])
 def test_spherical_harmonic_SALCs(i):
@@ -353,4 +353,4 @@ def test_spherical_harmonic_SALCs(i):
     print(salcs.basis_transformation_matrix.T[checked:,:])
     print(np.max(np.abs(salcs.basis_transformation_matrix.T[checked:,:]-sph_salcs_test_set[i][checked:,:]), axis=1))
     assert all([np.isclose(sph_salcs_test_set[i][j], salcs.salc_list[j].coeffs).all() for j in range(len(sph_fxn_set))])
-    assert [salcs.salc_list[j].irrep for j in range(len(sph_fxn_set))] == sph_irrep_labels_test_set[i]
+    assert [salcs.salc_list[j].irrep.symbol for j in range(len(sph_fxn_set))] == sph_irrep_labels_test_set[i]

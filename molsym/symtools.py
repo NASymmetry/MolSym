@@ -67,13 +67,13 @@ def normalize(a):
         return None
     return a / np.linalg.norm(a)
 
-def issame_axis(a, b):
+def issame_axis(a, b, tol = global_tol):
     A = normalize(a)
     B = normalize(b)
     if A is None or B is None:
         return False
     d = abs(np.dot(A,B))
-    return np.isclose(d, 1.0, atol=global_tol)
+    return np.isclose(d, 1.0, atol=tol)
 
 def isfactor(n,a):
     if n % a == 0:

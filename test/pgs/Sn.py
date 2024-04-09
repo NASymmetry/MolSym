@@ -11,17 +11,17 @@ rt2 = np.sqrt(2)
 c52 = 2*np.cos(2*np.pi/5)
 c54 = 2*np.cos(4*np.pi/5)
 
-S4s = [Symel("E",None,np.identity(3)), Symel("C_2^1",z,Cn(z,2)),
-        Symel("S_4^1",z,Sn(z,4)), Symel("S_4^3",z,matrix_power(Sn(z,4),3))]
+S4s = [Symel("E",None,np.identity(3)), Symel("C_2",z,Cn(z,2)),
+        Symel("S_4",z,Sn(z,4)), Symel("S_4^3",z,matrix_power(Sn(z,4),3))]
 S6s = [Symel("E",None,np.identity(3)), Symel("i",None,inversion_matrix()), 
-        Symel("C_3^1",z,Cn(z,3)), Symel("C_3^2",z,matrix_power(Cn(z,3),2)),
-        Symel("S_6^1",z,Sn(z,6)), Symel("S_6^5",z,matrix_power(Sn(z,6),5))]
+        Symel("C_3",z,Cn(z,3)), Symel("C_3^2",z,matrix_power(Cn(z,3),2)),
+        Symel("S_6",z,Sn(z,6)), Symel("S_6^5",z,matrix_power(Sn(z,6),5))]
 S8s = [Symel("E",None,np.identity(3)),
-        Symel("C_4^1",z,Cn(z,4)),Symel("C_2^1",z,Cn(z,2)),Symel("C_4^3",z,matrix_power(Cn(z,4),3)),
-        Symel("S_8^1",z,Sn(z,8)), Symel("S_8^3",z,matrix_power(Sn(z,8),3)), Symel("S_8^5",z,matrix_power(Sn(z,8),5)), Symel("S_8^7",z,matrix_power(Sn(z,8),7))]
+        Symel("C_4",z,Cn(z,4)),Symel("C_2",z,Cn(z,2)),Symel("C_4^3",z,matrix_power(Cn(z,4),3)),
+        Symel("S_8",z,Sn(z,8)), Symel("S_8^3",z,matrix_power(Sn(z,8),3)), Symel("S_8^5",z,matrix_power(Sn(z,8),5)), Symel("S_8^7",z,matrix_power(Sn(z,8),7))]
 S10s = [Symel("E",None,np.identity(3)), Symel("i",None,inversion_matrix()),
-        Symel("C_5^1",z,Cn(z,5)),Symel("C_5^2",z,matrix_power(Cn(z,5),2)),Symel("C_5^3",z,matrix_power(Cn(z,5),3)), Symel("C_5^4",z,matrix_power(Cn(z,5),4)),
-        Symel("S_10^1",z,Sn(z,10)), Symel("S_10^3",z,matrix_power(Sn(z,10),3)), Symel("S_10^7",z,matrix_power(Sn(z,10),7)), Symel("S_10^9",z,matrix_power(Sn(z,10),9))]
+        Symel("C_5",z,Cn(z,5)),Symel("C_5^2",z,matrix_power(Cn(z,5),2)),Symel("C_5^3",z,matrix_power(Cn(z,5),3)), Symel("C_5^4",z,matrix_power(Cn(z,5),4)),
+        Symel("S_10",z,Sn(z,10)), Symel("S_10^3",z,matrix_power(Sn(z,10),3)), Symel("S_10^7",z,matrix_power(Sn(z,10),7)), Symel("S_10^9",z,matrix_power(Sn(z,10),9))]
 
 S4irr = ["A", "B", "E_1", "E_2"]
 S4cn = ["E","S_4","C_2","S_4^3"]

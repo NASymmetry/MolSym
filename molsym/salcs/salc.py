@@ -3,27 +3,28 @@ from molsym import symtools
 import numpy as np
 from dataclasses import dataclass
 from .cartesian_coordinates import CartesianCoordinates
+from molsym.symtext.general_irrep_mats import Irrep
 
 # TODO: Need to group SALCs better. Preferably a data structure that allows indexing SALCs by irrep and partner fxn
 
 @dataclass
 class SALC():
     coeffs:np.array
-    irrep:str
+    irrep:Irrep
     bfxn:int
     i:int # Outer index of proj. operator, Pij = |Salc_i><Salc_j|
     j:int
     gamma:float # Overlap coefficient of bfxn with SALC. <Salc_j|bfxn>
 
     def __str__(self) -> str:
-        return f"SALC from P^{self.irrep}_{self.i}{self.j} ({self.bfxn}) gamma={self.gamma:6.3f}\n{self.coeffs}\n"
+        return f"SALC from P^{self.irrep.symbol}_{self.i}{self.j} ({self.bfxn}) gamma={self.gamma:6.3f}\n{self.coeffs}\n"
 
 class SALCs():
     def __init__(self, symtext, fxn_set) -> None:
         self.tol = symtext.mol.tol
         self.symtext = symtext
         self.fxn_set = fxn_set
-        self.irreps = symtext.chartable.irreps
+        self.irreps = symtext.irreps
         self.salc_list = []
         self.salc_sets = [None for i in range(len(self.irreps))]
 
@@ -86,29 +87,29 @@ class SALCs():
         ctr = 0
         btm = np.zeros((len(self.fxn_set),len(self)))
         for irrep_idx, irrep in enumerate(self.irreps):
-            for pf_idx in range(self.symtext.chartable.irrep_dims[irrep]):
+            for pf_idx in range(irrep.d):
                 for salc in self.salc_list:
-                    if salc.irrep == irrep and salc.i == pf_idx:
+                    if salc.irrep.symbol == irrep.symbol and salc.i == pf_idx:
                         btm[:,ctr] = salc.coeffs
                         ctr += 1
         return btm
 
     def ispartner(self, salc1, salc2):
-        if self.symtext.complex and ("_1" in salc1.irrep or "_2" in salc1.irrep):
-            if "_1" in salc1.irrep:
-                if "_2" in salc2.irrep:
-                    chk1 = salc1.irrep.replace("_1", "") == salc2.irrep.replace("_2", "")
+        if self.symtext.complex and ("_1" in salc1.irrep.symbol or "_2" in salc1.irrep.symbol):
+            if "_1" in salc1.irrep.symbol:
+                if "_2" in salc2.irrep.symbol:
+                    chk1 = salc1.irrep.symbol.replace("_1", "") == salc2.irrep.symbol.replace("_2", "")
                 else:
                     chk1 = False
-            elif "_2" in salc1.irrep:
-                if "_1" in salc2.irrep:
-                    chk1 = salc1.irrep.replace("_2", "") == salc2.irrep.replace("_1", "")
+            elif "_2" in salc1.irrep.symbol:
+                if "_1" in salc2.irrep.symbol:
+                    chk1 = salc1.irrep.symbol.replace("_2", "") == salc2.irrep.symbol.replace("_1", "")
                 else:
                     chk1 = False
             else:
                 chk1 = False
         else:
-            chk1 = salc1.irrep == salc2.irrep
+            chk1 = salc1.irrep.symbol == salc2.irrep.symbol
         #chk2 = salc1.sh == salc2.sh
         #chk3 = salc1.atom == salc2.atom
         chk4 = salc1.bfxn == salc2.bfxn
@@ -146,14 +147,14 @@ class SALCs():
         self.salcs_by_irrep = [[] for i in range(len(self.irreps))]
         for irrep_idx, irrep in enumerate(self.irreps):
             for salc_idx, salc in enumerate(self.salc_list):
-                if salc.irrep == irrep:
+                if salc.irrep.symbol == irrep.symbol:
                     self.salcs_by_irrep[irrep_idx].append(salc_idx)
 
         self.partner_functions, o2 = self.sort_partner_functions()
         self.partner_function_sets_by_irrep = [[] for i in range(len(self.irreps))] # This will have empty lists for complex groups
         for irrep_idx, irrep in enumerate(self.irreps):
             for pf_idx, pf_set in enumerate(o2):
-                if self.salc_list[pf_set[0]].irrep == irrep:
+                if self.salc_list[pf_set[0]].irrep.symbol == irrep.symbol:
                     self.partner_function_sets_by_irrep[irrep_idx].append(pf_set)
         self.remove_complexity = remove_complexity
         if remove_complexity: # TODO: Have symtext for groups with reduced complexity, handling irreps such as E2_1g, E2_2g ---> E2g
@@ -172,7 +173,7 @@ class SALCs():
             np.set_printoptions(suppress=True, precision=5, linewidth=1500)
             for irrep_idx, irrep in enumerate(self.irreps):
                 partner_fxns = self.partner_function_sets_by_irrep[irrep_idx]
-                if self.symtext.chartable.irrep_dims[irrep] == 1:
+                if irrep.d == 1:
                     B = self.basis_transformation_matrix[:,self.salcs_by_irrep[irrep_idx]]
                     for col in range(1,B.shape[1]):
                         for gs_idx in range(col):
@@ -195,7 +196,7 @@ class SALCs():
                         B1[:,col_idx] /= nrm
                         trans_mat[:,col_idx] /= nrm
                     # Transform other partner function sets according to the Gram-Schmidt orthogonalization of B1
-                    for pf_idx in range(self.symtext.chartable.irrep_dims[irrep]):
+                    for pf_idx in range(irrep.d):
                         pfxn_set = [i[pf_idx] for i in partner_fxns]
                         Bi = self.basis_transformation_matrix[:,pfxn_set]
                         Bi_trans = Bi @ trans_mat

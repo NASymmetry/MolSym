@@ -10,17 +10,17 @@ z = np.array([0,0,1])
 c52 = 2*np.cos(2*np.pi/5)
 c54 = 2*np.cos(4*np.pi/5)
 
-C2hs = [Symel("E",None,np.identity(3)), Symel("sigma_h",z,reflection_matrix(z)), Symel("i",None,inversion_matrix()), Symel("C_2^1",z,Cn(z,2))]
+C2hs = [Symel("E",None,np.identity(3)), Symel("sigma_h",z,reflection_matrix(z)), Symel("i",None,inversion_matrix()), Symel("C_2",z,Cn(z,2))]
 C3hs = [Symel("E",None,np.identity(3)), Symel("sigma_h",z,reflection_matrix(z)),
-    Symel("C_3^1",z,Cn(z,3)), Symel("C_3^2",z,matrix_power(Cn(z,3),2)), Symel("S_3^1",z,Sn(z,3)), Symel("S_3^5",z,matrix_power(Sn(z,3),5))]
+    Symel("C_3",z,Cn(z,3)), Symel("C_3^2",z,matrix_power(Cn(z,3),2)), Symel("S_3",z,Sn(z,3)), Symel("S_3^5",z,matrix_power(Sn(z,3),5))]
 C4hs = [Symel("E",None,np.identity(3)), Symel("sigma_h",z,reflection_matrix(z)), Symel("i",None,inversion_matrix()),
-    Symel("C_4^1",z,Cn(z,4)), Symel("C_2^1",z,Cn(z,2)), Symel("C_4^3",z,matrix_power(Cn(z,4),3)), Symel("S_4^1",z,Sn(z,4)), Symel("S_4^3",z,matrix_power(Sn(z,4),3))]
+    Symel("C_4",z,Cn(z,4)), Symel("C_2",z,Cn(z,2)), Symel("C_4^3",z,matrix_power(Cn(z,4),3)), Symel("S_4",z,Sn(z,4)), Symel("S_4^3",z,matrix_power(Sn(z,4),3))]
 C5hs = [Symel("E",None,np.identity(3)), Symel("sigma_h",z,reflection_matrix(z)),
-    Symel("C_5^1",z,Cn(z,5)), Symel("C_5^2",z,matrix_power(Cn(z,5),2)), Symel("C_5^3",z,matrix_power(Cn(z,5),3)), Symel("C_5^4",z,matrix_power(Cn(z,5),4)),
-    Symel("S_5^1",z,Sn(z,5)), Symel("S_5^7",z,matrix_power(Sn(z,5),7)), Symel("S_5^3",z,matrix_power(Sn(z,5),3)), Symel("S_5^9",z,matrix_power(Sn(z,5),9))]
+    Symel("C_5",z,Cn(z,5)), Symel("C_5^2",z,matrix_power(Cn(z,5),2)), Symel("C_5^3",z,matrix_power(Cn(z,5),3)), Symel("C_5^4",z,matrix_power(Cn(z,5),4)),
+    Symel("S_5",z,Sn(z,5)), Symel("S_5^7",z,matrix_power(Sn(z,5),7)), Symel("S_5^3",z,matrix_power(Sn(z,5),3)), Symel("S_5^9",z,matrix_power(Sn(z,5),9))]
 C6hs = [Symel("E",None,np.identity(3)), Symel("sigma_h",z,reflection_matrix(z)), Symel("i",None,inversion_matrix()),
-    Symel("C_6^1",z,Cn(z,6)), Symel("C_3^1",z,Cn(z,3)), Symel("C_2^1",z,Cn(z,2)), Symel("C_3^2",z,matrix_power(Cn(z,3),2)), Symel("C_6^5",z,matrix_power(Cn(z,6),5)),
-    Symel("S_6^1",z,Sn(z,6)), Symel("S_3^1",z,Sn(z,3)), Symel("S_3^5",z,matrix_power(Sn(z,3),5)), Symel("S_6^5",z,matrix_power(Sn(z,6),5))]
+    Symel("C_6",z,Cn(z,6)), Symel("C_3",z,Cn(z,3)), Symel("C_2",z,Cn(z,2)), Symel("C_3^2",z,matrix_power(Cn(z,3),2)), Symel("C_6^5",z,matrix_power(Cn(z,6),5)),
+    Symel("S_6",z,Sn(z,6)), Symel("S_3",z,Sn(z,3)), Symel("S_3^5",z,matrix_power(Sn(z,3),5)), Symel("S_6^5",z,matrix_power(Sn(z,6),5))]
 
 C2hirr = ["Ag", "Bg", "Au", "Bu"]
 C2hcn = ["E","C_2","i","sigma_h"]
