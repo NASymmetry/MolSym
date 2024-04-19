@@ -5,6 +5,10 @@ class PointGroup():
         self.str = s
         self.family = family
         self.n = n
+        if self.n == 0:
+            self.is_linear = True
+        else:
+            self.is_linear = False
         self.subfamily = subfamily
         self.dumb_pg()
 

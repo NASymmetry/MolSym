@@ -156,6 +156,11 @@ def multiply(mtable, *args):
         m = mtable[m, mi]
     return m
 
+def inverse(mtable, a):
+    for i in range(mtable.shape[0]):
+        if multiply(mtable, a, i) == 0:
+            return i
+
 def subgroup_by_name(symels, mult_table, subgroup):
     if subgroup == "C1":
         return [[0,0]]

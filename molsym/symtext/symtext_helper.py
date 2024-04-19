@@ -2,6 +2,7 @@ from .point_group import PointGroup
 from molsym.symtools import normalize
 from .multiplication_table import *
 import re
+from .general_irrep_mats import Symel
 
 def generate_symel_to_class_map(symels, ctab):
     pg = PointGroup.from_string(ctab.name)
@@ -173,12 +174,39 @@ def get_atom_mapping(mol, symels):
                 raise Exception(f"Atom {atom} not mapped to another atom under symel {symel}")
     return amap
 
+def get_linear_atom_mapping(mol, pg):
+    amap = np.array([atom for atom in range(mol.natoms)], dtype=int).reshape((mol.natoms,1))
+    if pg.family == "D":
+        ungerade_map = np.zeros((mol.natoms), dtype=int)
+        for atom in range(mol.natoms):
+            w = where_you_go(mol, atom, Symel("i", None, -1*np.eye(3), None, None, None))
+            if w is not None:
+                ungerade_map[atom] = w
+            else:
+                raise Exception(f"Atom {atom} not mapped to another atom under symel i")
+        return np.column_stack((amap, ungerade_map))
+    return amap
+
 def where_you_go(mol, atom, symel):
     ratom = np.dot(symel.rrep, mol.coords[atom,:].T)
     for i in range(mol.natoms):
         if np.isclose(mol.coords[i,:], ratom, atol=mol.tol).all():
             return i
     return None
+
+def get_class_name(symels_in_class):
+    if "^" in symels_in_class[0].symbol:
+        rot_order = []
+        for symel in symels_in_class:
+            s = re.search(r"\^(\d+)", symel.symbol)
+            if s:
+                rot_order.append(int(s.groups()[0]))
+            else:
+                rot_order.append(1)
+        pickem = symels_in_class[np.argmin(rot_order)].symbol
+    else:
+        pickem = symels_in_class[0].symbol
+    return re.sub(r"\(\w+\)", "", pickem)
 
 def irrep_sort_idx(irrep_str):
     rsult = 0

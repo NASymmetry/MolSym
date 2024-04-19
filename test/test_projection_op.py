@@ -42,7 +42,7 @@ ic_salcs_test_set = [([0.70710678, 0.70710678, 0], [0, 0, 1], [ 0.70710678, -0.7
 ic_irrep_labels_test_set = [["A_1", "A_1", "B_2"],
                          ["A_1", "A_1", "E", "E", "E", "E"],
                          ["A'","A'","A'","A'","A'","A'","A'","A'","A'","A''","A''","A''"],
-                         ["A1", "A1", "E", "E", "T_2", "T_2", "T_2", "T_2", "T_2", "T_2"]]
+                         ["A_1", "A_1", "E", "E", "T_2", "T_2", "T_2", "T_2", "T_2", "T_2"]]
 @pytest.mark.parametrize("i", [i for i in range(len(fns))])
 def test_internal_coordinate_SALCs(i):
     mol = molsym.Molecule.from_file("test/xyz/"+fns[i]+".xyz")

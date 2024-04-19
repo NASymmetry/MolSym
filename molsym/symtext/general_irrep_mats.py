@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from .point_group import PointGroup
 from ..symtools import *
 from copy import deepcopy
+from .symel import generate_T, generate_Th, generate_Td, generate_O, generate_Oh, generate_I, generate_Ih
+from .irrep_mats import irrm_T, irrm_Th, irrm_Td, irrm_O, irrm_Oh, irrm_I, irrm_Ih
 
 np.set_printoptions(precision=3, threshold=np.inf, linewidth=14000, suppress=True)
 # New Symel definition!
@@ -35,11 +37,34 @@ class Irrep():
     d:int # dimension
 
 def pg_to_symels(PG):
+    greek = ["Pi", "Delta", "Phi", "Gamma", "Eta", "Iota", "Kappa", "Lambda", "Mu", "Nu", "Omicron"]
     pg = PointGroup.from_string(PG)
     argerr = f"An invalid point group has been given or unexpected parsing of the point group string has occured: {pg.str}"
     z = np.array([0,0,1])
     i = Symel("i", None, inversion_matrix(), 0, 0, "i")
     sh = Symel("sigma_h", np.array([0,0,1]), reflection_matrix(z), 0, 0, "sigma_h")
+    if pg.is_linear:
+        if pg.family == "C":
+            symels = [#Symel("E", None, None, None, None, None), E is included in C 
+                      Symel("C", z, None, None, None, None), 
+                      Symel("sigma_v", None, None, None, None, None)]
+            irreps = [Irrep("Sigma^+", None, None, 1), Irrep("Sigma^-", None, None, 1)]
+            irreps += [Irrep(greek[i], i, None, 2) for i in range(len(greek))]
+            irrep_mats = None
+            return symels, irreps, irrep_mats
+        elif pg.family == "D":
+            symels = [#Symel("E", None, None, None, None, None), 
+                      Symel("C", z, None, None, None, None), 
+                      Symel("sigma_v", None, None, None, None, None),
+                      #Symel("i", None, None, None, None, None), i is included in S
+                      Symel("S", z, None, None, None, None),
+                      Symel("C_2'", None, None, None, None, None)]
+            irreps = [Irrep("Sigma_g^+", None, None, 1), Irrep("Sigma_g^-", None, None, 1)]
+            irreps += [Irrep(greek[i]+"_g", i, None, 2) for i in range(len(greek))]
+            irreps += [Irrep("Sigma_u^+", None, None, 1), Irrep("Sigma_u^-", None, None, 1)]
+            irreps += [Irrep(greek[i]+"_u", i, None, 2) for i in range(len(greek))]
+            irrep_mats = None
+            return symels, irreps, irrep_mats
     if pg.n is not None:
         n_is_even = (pg.n % 2 == 0)
         n_is_doubleeven = (pg.n % 4 == 0)
@@ -98,21 +123,62 @@ def pg_to_symels(PG):
     else:
         if pg.family == "T":
             if pg.subfamily == "h":
-                pass
+                symels = generate_Th()
+                irreps = [Irrep("A_g",1,None,1), Irrep("E_g(1)",1,1,1), 
+                          Irrep("E_g(2)",1,2,1), Irrep("T_g",1,None,3),
+                          Irrep("A_u",1,None,1), Irrep("E_u(1)",1,1,1), 
+                          Irrep("E_u(2)",1,2,1), Irrep("T_u",1,None,3)]
+                irrep_mats = irrm_Th
+                return symels, irreps, irrep_mats
             elif pg.subfamily == "d":
-                pass
+                symels = generate_Td()
+                irreps = [Irrep("A_1",1,None,1), Irrep("A_2",1,None,1), 
+                          Irrep("E",1,None,2), Irrep("T_1",1,None,3),
+                          Irrep("T_2",2,None,3)]
+                irrep_mats = irrm_Td
+                return symels, irreps, irrep_mats
             else:
-                pass
+                symels = generate_T()
+                irreps = [Irrep("A",None,None,1), Irrep("E(1)",1,1,1), 
+                          Irrep("E(2)",1,2,1), Irrep("T",None,None,3)]
+                irrep_mats = irrm_T
+                return symels, irreps, irrep_mats
         elif pg.family == "O":
             if pg.subfamily == "h":
-                pass
+                symels = generate_Oh()
+                irreps = [Irrep("A_1g",1,None,1), Irrep("A_2g",1,None,1), 
+                          Irrep("E_g",1,None,2), Irrep("T_1g",1,None,3),
+                          Irrep("T_2g",2,None,3),
+                          Irrep("A_1u",1,None,1), Irrep("A_2u",1,None,1), 
+                          Irrep("E_u",1,None,2), Irrep("T_1u",1,None,3),
+                          Irrep("T_2u",2,None,3)]
+                irrep_mats = irrm_Oh
+                return symels, irreps, irrep_mats
             else:
-                pass
+                symels = generate_O()
+                irreps = [Irrep("A_1",1,None,1), Irrep("A_2",1,None,1), 
+                          Irrep("E",1,None,2), Irrep("T_1",1,None,3),
+                          Irrep("T_2",2,None,3)]
+                irrep_mats = irrm_O
+                return symels, irreps, irrep_mats
         elif pg.family == "I":
             if pg.subfamily == "h":
-                pass
+                symels = generate_Ih()
+                irreps = [Irrep("A_g",1,None,1), 
+                          Irrep("T_1g",1,None,3), Irrep("T_2g",2,None,3),
+                          Irrep("G_g",1,None,4), Irrep("H_g",1,None,5),
+                          Irrep("A_u",1,None,1), 
+                          Irrep("T_1u",1,None,3), Irrep("T_2u",2,None,3),
+                          Irrep("G_u",1,None,4), Irrep("H_u",1,None,5)]
+                irrep_mats = irrm_Ih
+                return symels, irreps, irrep_mats
             else:
-                pass
+                symels = generate_I()
+                irreps = [Irrep("A",1,None,1), 
+                          Irrep("T_1",1,None,3), Irrep("T_2",2,None,3),
+                          Irrep("G",1,None,4), Irrep("H",1,None,5)]
+                irrep_mats = irrm_I
+                return symels, irreps, irrep_mats
         else:
             raise Exception(argerr)
     return 0
@@ -162,8 +228,12 @@ def Zn(n, generator):
             symels.append(cnm)
 
     irrep_mats = {}
+    if n > 2:
+        im_dtype = np.complex128
+    else:
+        im_dtype = np.float64
     for irrep in irreps:
-        irrep_mats[irrep.symbol] = np.zeros((n,1,1), dtype=np.complex128)
+        irrep_mats[irrep.symbol] = np.zeros((n,1,1), dtype=im_dtype)
     for idx, symel in enumerate(symels):
         for irrep in irreps:
             if irrep.symbol == "A":

@@ -32,9 +32,9 @@ def find_point_group(mol):
             # Reorienting vectors such that one face is on the z-axis with "pentagon" pointing at the POSITIVE y-axis
             phi = (1+np.sqrt(5.0))/2
             # Weirdness here, negative or positive???
-            theta = np.arccos(phi/np.sqrt(1+(phi**2)))
+            theta =-np.arccos(phi/np.sqrt(1+(phi**2)))
             rmat = rotation_matrix(saxis, theta)
-            paxis = np.dot(rmat, paxis)
+            paxis = np.dot(rmat, tempaxis)
             taxis = np.dot(rmat, paxis)
             if invertable:
                 pg = "Ih"

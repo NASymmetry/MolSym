@@ -222,7 +222,7 @@ def generate_T():
         the vectors for the rotation elements.
     """
     # Generate C3's
-    symels = []
+    symels = [Symel("E", None, np.eye(3))]
     C3_1v = normalize(np.array([1.0, 1.0, 1.0]))
     C3_2v = normalize(np.array([-1.0, 1.0, -1.0]))
     C3_3v = normalize(np.array([-1.0, -1.0, 1.0]))
@@ -300,7 +300,7 @@ def generate_Th():
     return symels
 
 def generate_O():
-    symels = []
+    symels = [Symel("E", None, np.eye(3))]
     # C4
     C4_xv = np.array([1.0, 0.0, 0.0])
     C4_yv = np.array([0.0, 1.0, 0.0])
@@ -385,7 +385,7 @@ def generate_Oh():
     return symels
 
 def generate_I():
-    symels = []
+    symels = [Symel("E", None, np.eye(3))]
     faces, vertices, edgecenters = generate_I_vectors()
     # C5 (face vectors)
     for i in range(6):
@@ -453,7 +453,7 @@ def generate_I_vectors():
                 [phi_i, 0.0, phi],[-phi_i, 0.0, phi],[phi_i, 0.0, -phi],[-phi_i, 0.0, -phi],
                 [phi, phi_i, 0.0],[phi, -phi_i, 0.0],[-phi, phi_i, 0.0],[-phi, -phi_i, 0.0]])
     # Reorienting vectors such that one face is on the z-axis with "pentagon" pointing at the POSITIVE?  y-axis
-    theta = -np.arccos(phi/np.sqrt(1+(phi**2)))
+    theta = np.arccos(phi/np.sqrt(1+(phi**2)))
     rmat = rotation_matrix(np.array([1, 0, 0]), theta)
     lf = np.shape(faces_i)[0]
     l = np.shape(vertices_i)[0]

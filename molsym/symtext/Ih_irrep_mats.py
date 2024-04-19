@@ -1043,19 +1043,19 @@ def parse_to_string(strang):
 
 irrm_I = {}
 irrm_I["A"] = np.array([[[1.0]] for i in range(60)])
-irrm_I["T1"] = parse_Mathematica(T1g_str)[0:60]
-irrm_I["T2"] = parse_Mathematica(T2g_str)[0:60]
+irrm_I["T_1"] = parse_Mathematica(T1g_str)[0:60]
+irrm_I["T_2"] = parse_Mathematica(T2g_str)[0:60]
 irrm_I["G"] = parse_Mathematica(Gg_str)[0:60]
 irrm_I["H"] = parse_Mathematica(Hg_str)[0:60]
 
 irrm_Ih = {}
-irrm_Ih["Ag"] = np.array([[[1.0]] for i in range(120)])
-irrm_Ih["T1g"] = parse_Mathematica(T1g_str)
-irrm_Ih["T2g"] = parse_Mathematica(T2g_str)
-irrm_Ih["Gg"] = parse_Mathematica(Gg_str)
-irrm_Ih["Hg"] = parse_Mathematica(Hg_str)
-irrm_Ih["Au"] = np.array([[[1.0]] if i<60 else [[-1.0]] for i in range(120)])
-irrm_Ih["T1u"] = parse_Mathematica(T1u_str)
-irrm_Ih["T2u"] = parse_Mathematica(T2u_str)
-irrm_Ih["Gu"] = parse_Mathematica(Gu_str)
-irrm_Ih["Hu"] = parse_Mathematica(Hu_str)
+irrm_Ih["A_g"] = np.array([[[1.0]] for i in range(120)])
+irrm_Ih["T_1g"] = parse_Mathematica(T1g_str)
+irrm_Ih["T_2g"] = parse_Mathematica(T2g_str)
+irrm_Ih["G_g"] = parse_Mathematica(Gg_str)
+irrm_Ih["H_g"] = parse_Mathematica(Hg_str)
+irrm_Ih["A_u"] = np.array([[[1.0]] if i<60 else [[-1.0]] for i in range(120)])
+irrm_Ih["T_1u"] = parse_Mathematica(T1u_str)
+irrm_Ih["T_2u"] = parse_Mathematica(T2u_str)
+irrm_Ih["G_u"] = parse_Mathematica(Gu_str)
+irrm_Ih["H_u"] = parse_Mathematica(Hu_str)
