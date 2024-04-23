@@ -15,7 +15,7 @@ def eckart_conditions(symtext, translational=True, rotational=True):
     natoms = mol.natoms
     rx, ry, rz = np.zeros(3*natoms), np.zeros(3*natoms), np.zeros(3*natoms)
     x, y, z = np.zeros(3*natoms), np.zeros(3*natoms), np.zeros(3*natoms)
-    moit = molsym.molecule.calcmoit(symtext.mol)
+    moit = molsym.symtools.calcmoit(symtext.mol)
     evals, evec = np.linalg.eigh(moit)
     for i in range(natoms):
         smass = np.sqrt(mol.masses[i])

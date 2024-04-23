@@ -11,14 +11,14 @@ class InternalCoordinates(FunctionSet):
     def operate_on_ic(self, ic_idx, symop):
         symbol = self.symtext.symels[symop].symbol
         ic_type = self.ic_types[ic_idx][0]
-        #if symbol[0] == "i" or symbol[0] == "S" or symbol[0] == "s": # s is for sigma
+        if symbol[0] == "i" or symbol[0] == "S" or symbol[0] == "s": # s is for sigma
             # Are we doing this twice??? TODO here
-            #if ic_type in ["D", "O", "L"]: 
-            #    self.phase_map[ic_idx, symop] = -1.0
-            #if ic_type == "D" or ic_type == "O": 
-            #    self.phase_map[ic_idx, symop] = -1.0
-            #elif ic_type == "L":
-            #    self.phase_map[ic_idx, symop] = -1.0
+            if ic_type in ["D", "O", "L"]: 
+                self.phase_map[ic_idx, symop] = -1.0
+            if ic_type == "D" or ic_type == "O": 
+                self.phase_map[ic_idx, symop] = -1.0
+            elif ic_type == "L":
+                self.phase_map[ic_idx, symop] = -1.0
         mapped_ic = []
         for atom in self.ic_list[ic_idx]:
             atom2 = int(self.symtext.atom_map[atom, symop])
@@ -29,14 +29,13 @@ class InternalCoordinates(FunctionSet):
     def get_fxn_map(self):
         ic_map = np.zeros((len(self.ic_list), len(self.symtext)), dtype=np.int32)
         S = (len(self.ic_list), len(self.symtext))
-        phase_map = np.ones(S)
+        self.phase_map = np.ones(S)
         for ic_idx in range(len(self)):
             for sidx, symel in enumerate(self.symtext.symels):
                 index, phase = self.operate_on_ic(ic_idx, sidx)
                 ic_map[ic_idx, sidx] = index
-                phase_map[ic_idx, sidx] *= phase
-        self.phase_map = phase_map
-        return ic_map#, phase_map
+                self.phase_map[ic_idx, sidx] *= phase
+        return ic_map
 
     def get_symmetry_equiv_functions(self):
         SEICs = []

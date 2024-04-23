@@ -7,7 +7,7 @@ class CartesianCoordinates(FunctionSet):
         # xyz on each atom in molecule
         # fxn map is ncart (natom sets of xyz) by nsymel
         fxn_list = [i for i in range(3*len(symtext.mol))]
-        super().__init__(fxn_list, symtext)
+        super().__init__(symtext, fxn_list)
 
     def get_fxn_map(self):
         # Symel by xyz by xyz, maps xyz to xyz under symels
@@ -40,7 +40,7 @@ class CartesianCoordinates(FunctionSet):
     def special_function(self, salc, coord, sidx, irrmat):
         atom_idx = self.symtext.atom_map[coord//3, sidx]
         cfxn = coord % 3
-        xyz = self.fxn_set.fxn_map[sidx,cfxn,:]
+        xyz = self.fxn_map[sidx,cfxn,:]
         for i in range(3):
             if self.symtext.complex:
                 salc[:,:,3*atom_idx+i] += np.conj(irrmat[sidx, :, :]) * xyz[i]

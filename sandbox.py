@@ -22,36 +22,36 @@ from molsym.symtext.general_irrep_mats import pg_to_symels
 #from molsym.symtext.symtext_helper import get_class_name
 #symels, irreps, irrep_mats = pg_to_symels("Ih")
 
-mol = molsym.Molecule.from_file("test/xyz/benzene.xyz")
-v = molsym.symtools.normalize(np.random.uniform(size=3))
-#theta = 2*np.pi * np.random.uniform()
-#randperm = np.random.permutation(len(mol))
-#mol.coords[:,:] = mol.coords[randperm,:]
-#mol = mol.transform(molsym.symtools.rotation_matrix(v, theta))
-mol = molsym.symmetrize(mol)
-s = molsym.Symtext.from_molecule(mol)
-print(s.pg)
-print(s.character_table)
-print(s.classes)
-print(s.symel_to_class_map)
-print(s.class_orders)
+#mol = molsym.Molecule.from_file("test/xyz/benzene.xyz")
+#v = molsym.symtools.normalize(np.random.uniform(size=3))
+##theta = 2*np.pi * np.random.uniform()
+##randperm = np.random.permutation(len(mol))
+##mol.coords[:,:] = mol.coords[randperm,:]
+##mol = mol.transform(molsym.symtools.rotation_matrix(v, theta))
+#mol = molsym.symmetrize(mol)
+#s = molsym.Symtext.from_molecule(mol)
+#print(s.pg)
+#print(s.character_table)
+#print(s.classes)
+#print(s.symel_to_class_map)
+#print(s.class_orders)
 
 #dp = s.direct_product(*[0,1,2])
 #print(dp)
 #print(s.reduction_coefficients(dp))
 
-#import molsym
-#mol = molsym.Molecule.from_file("acetylene.xyz")
-#mol = molsym.symmetrize(mol)
-#s = molsym.Symtext.from_molecule(mol)
-#fxn_list = [[[0,1],"R1"],[[0,2],"R2"],[[1,3],"R3"],[[1,0,2],"LinX1"],[[1,0,2],"LinY1"],[[0,1,3],"LinX2"],[[0,1,3],"LinY2"]]
-#from molsym.salcs.linear_functions import LinearInternalCoordinates
-#fxn_set = LinearInternalCoordinates(s, fxn_list)
-#
-#print(fxn_set.partners)
-#print(fxn_set.fxn_map)
-#print(fxn_set.SE_fxns)
-
+import molsym
+mol = molsym.Molecule.from_file("test/xyz/ammonia.xyz")
+mol = molsym.symmetrize(mol)
+s = molsym.Symtext.from_molecule(mol)
+fxn_list = ([[0,1],"R1"],[[0,2],"R2"],[[0,3],"R3"],[[1,0,2],"A1"],[[2,0,3],"A2"],[[3,0,1],"A3"])
+from molsym.salcs.internal_coordinates import InternalCoordinates
+from molsym.salcs.projection_op import ProjectionOp
+fxn_set = InternalCoordinates(s, fxn_list)
+salcs = molsym.salcs.ProjectionOp(s, fxn_set)
+print(salcs)
+print(salcs.sort_partner_functions())
+salcs.sort_to("blocks")
 def doodoo(pg):
     symels, irreps, irrep_mat = pg_to_symels(pg)
     #for symel in symels:
