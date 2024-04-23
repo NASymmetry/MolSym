@@ -1,6 +1,5 @@
 import os
 import pytest
-import numpy as np
 from pgs.Cn import *
 from pgs.Cnh import *
 from pgs.Cnv import *
@@ -8,8 +7,7 @@ from pgs.Dn import *
 from pgs.Dnh import *
 from pgs.Dnd import *
 from pgs.Sn import *
-from molsym.symtext.main import pg_to_symels, pg_to_chartab, cn_class_map, generate_symel_to_class_map
-from molsym import Symtext
+from molsym.symtext.symel import pg_to_symels
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -42,11 +40,3 @@ def test_Symel(pg):
             print(symels_ans)
             beans = False
     assert beans
-
-def test_symtext():
-    #for i in range(2,7):
-    #    pg = f"D{i}h"
-    #    beans = generate_symel_to_class_map(pg_to_symels(pg),pg_to_chartab(pg))
-    #    print(f"pg: {pg}, {beans}")
-    file_path = os.path.join(PATH, "sxyz", "D6h.xyz")
-    print(Symtext.from_file(file_path))

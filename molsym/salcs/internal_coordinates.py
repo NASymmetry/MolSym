@@ -3,10 +3,10 @@ import numpy as np
 from .function_set import FunctionSet
 
 class InternalCoordinates(FunctionSet):
-    def __init__(self, fxn_list, symtext) -> None:
+    def __init__(self, symtext, fxn_list) -> None:
         self.ic_list = [i[0] for i in fxn_list]
         self.ic_types = [i[1] for i in fxn_list]
-        super().__init__(fxn_list, symtext)
+        super().__init__(symtext, fxn_list)
 
     def operate_on_ic(self, ic_idx, symop):
         symbol = self.symtext.symels[symop].symbol
@@ -15,10 +15,10 @@ class InternalCoordinates(FunctionSet):
             # Are we doing this twice??? TODO here
             if ic_type in ["D", "O", "L"]: 
                 self.phase_map[ic_idx, symop] = -1.0
-            #if ic_type == "D" or ic_type == "O": 
-            #    self.phase_map[ic_idx, symop] = -1.0
-            #elif ic_type == "L":
-            #    self.phase_map[ic_idx, symop] = -1.0
+            if ic_type == "D" or ic_type == "O": 
+                self.phase_map[ic_idx, symop] = -1.0
+            elif ic_type == "L":
+                self.phase_map[ic_idx, symop] = -1.0
         mapped_ic = []
         for atom in self.ic_list[ic_idx]:
             atom2 = int(self.symtext.atom_map[atom, symop])
@@ -29,13 +29,13 @@ class InternalCoordinates(FunctionSet):
     def get_fxn_map(self):
         ic_map = np.zeros((len(self.ic_list), len(self.symtext)), dtype=np.int32)
         S = (len(self.ic_list), len(self.symtext))
-        phase_map = np.ones(S)
+        self.phase_map = np.ones(S)
         for ic_idx in range(len(self)):
             for sidx, symel in enumerate(self.symtext.symels):
                 index, phase = self.operate_on_ic(ic_idx, sidx)
                 ic_map[ic_idx, sidx] = index
-                phase_map[ic_idx, sidx] *= phase
-        return ic_map, phase_map
+                self.phase_map[ic_idx, sidx] *= phase
+        return ic_map
 
     def get_symmetry_equiv_functions(self):
         SEICs = []
@@ -89,3 +89,9 @@ class InternalCoordinates(FunctionSet):
             n = round(np.sum(rshorker_loaf * self.symtext.chartable.class_orders * self.symtext.chartable.characters[idx,:]) / self.symtext.order)
             span[idx] = n
         return span
+    
+    def special_function(self, salc, coord, sidx, irrmat):
+        ic2 = self.fxn_map[coord, sidx]
+        p = self.phase_map[coord, sidx]
+        salc[:,:,ic2] += (irrmat[sidx, :, :]) * p
+        return salc

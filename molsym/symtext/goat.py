@@ -1,11 +1,11 @@
 import numpy as np
 from . import irrep_mats
-from .main import pg_to_symels
+from .general_irrep_mats import pg_to_symels
 from .multiplication_table import build_mult_table
 
 def irrep_things(pg):
     irrm = getattr(irrep_mats, "irrm_" + str(pg))
-    symels = pg_to_symels(pg)
+    symels, irreps, irrep_mat = pg_to_symels(pg)
     mtable = build_mult_table(symels)
     mtab_chks = True
     for k in irrm:

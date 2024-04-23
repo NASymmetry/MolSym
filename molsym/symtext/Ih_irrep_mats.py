@@ -1006,14 +1006,56 @@ def parse_Mathematica(strang):
     JIMMp = [JIMM[i-1] for i in allen_map_Ih]
     return np.array(JIMMp)
 
+def parse_to_string(strang):
+    # TODO: Move this function outside of MolSym
+    import sympy
+    # Remove List
+    lst = re.compile(r"List")
+    strang = lst.sub("", strang)
+    # Sqrt --->
+    sqr = re.compile(r"Sqrt")
+    strang = sqr.sub(r"sqrt", strang)
+    # Sympy does not recognize Sqrt(0.6) as Sqrt(3/5)
+    o6 = re.compile(r"0.6")
+    strang = o6.sub(r"3/5", strang)
+    from copy import deepcopy
+    ## Replace other instances of decimals
+    #iflist = [r"0\.1",
+    #          r"0\.25",
+    #          r"0\.2",
+    #          r"0\.5"]
+    #outlist = ["(1/10)",
+    #           "(1/4)",
+    #           "(1/5)",
+    #           "(1/2)"] 
+    #for i in range(len(iflist)):
+    #    r = re.compile(iflist[i])
+    #    strang = re.sub(r, outlist[i], strang)
+    JIMM = []
+    for s in strang.splitlines():
+        #print(sympy.Array(sympy.parsing.sympy_parser.parse_expr(s.strip(), evaluate=False)))
+        #JIMM.append(sympy.Array(sympy.simplify(sympy.parsing.sympy_parser.parse_expr(s.strip(), evaluate=False), rational=True, doit=False, evaluate=True, ratio=1)))
+        JIMM.append(sympy.Array(sympy.simplify(sympy.sympify(sympy.parsing.sympy_parser.parse_expr(s.strip())))))
+        #JIMM.append(sympy.Array(eval(s.strip())))
+    # Permute JIMM to MolSym ordering
+    JIMMp = [JIMM[i-1] for i in allen_map_Ih]
+    return np.array(JIMMp)
+
+irrm_I = {}
+irrm_I["A"] = np.array([[[1.0]] for i in range(60)])
+irrm_I["T_1"] = parse_Mathematica(T1g_str)[0:60]
+irrm_I["T_2"] = parse_Mathematica(T2g_str)[0:60]
+irrm_I["G"] = parse_Mathematica(Gg_str)[0:60]
+irrm_I["H"] = parse_Mathematica(Hg_str)[0:60]
+
 irrm_Ih = {}
-irrm_Ih["Ag"] = np.array([[[1.0]] for i in range(120)])
-irrm_Ih["T1g"] = parse_Mathematica(T1g_str)
-irrm_Ih["T2g"] = parse_Mathematica(T2g_str)
-irrm_Ih["Gg"] = parse_Mathematica(Gg_str)
-irrm_Ih["Hg"] = parse_Mathematica(Hg_str)
-irrm_Ih["Au"] = np.array([[[1.0]] if i<60 else [[-1.0]] for i in range(120)])
-irrm_Ih["T1u"] = parse_Mathematica(T1u_str)
-irrm_Ih["T2u"] = parse_Mathematica(T2u_str)
-irrm_Ih["Gu"] = parse_Mathematica(Gu_str)
-irrm_Ih["Hu"] = parse_Mathematica(Hu_str)
+irrm_Ih["A_g"] = np.array([[[1.0]] for i in range(120)])
+irrm_Ih["T_1g"] = parse_Mathematica(T1g_str)
+irrm_Ih["T_2g"] = parse_Mathematica(T2g_str)
+irrm_Ih["G_g"] = parse_Mathematica(Gg_str)
+irrm_Ih["H_g"] = parse_Mathematica(Hg_str)
+irrm_Ih["A_u"] = np.array([[[1.0]] if i<60 else [[-1.0]] for i in range(120)])
+irrm_Ih["T_1u"] = parse_Mathematica(T1u_str)
+irrm_Ih["T_2u"] = parse_Mathematica(T2u_str)
+irrm_Ih["G_u"] = parse_Mathematica(Gu_str)
+irrm_Ih["H_u"] = parse_Mathematica(Hu_str)
