@@ -1,3 +1,4 @@
+import os
 import pytest
 from pgs.Cn import *
 from pgs.Cnh import *
@@ -7,6 +8,8 @@ from pgs.Dnh import *
 from pgs.Dnd import *
 from pgs.Sn import *
 from molsym.symtext.symel import pg_to_symels
+
+PATH = os.path.dirname(os.path.realpath(__file__))
 
 pgs = [
     "C2","C3","C4","C5","C6",
