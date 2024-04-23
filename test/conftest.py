@@ -1,5 +1,10 @@
 import pytest
-
+"""
+If MolSym not in PYTHONPATH, use python -m pytest, otherwise pytest is fine
+Run all fast tests: python -m pytest
+Run specific tests: python -m pytest -k "<test specifying string>"
+Run all tests: python -m pytest --runslow
+"""
 
 def pytest_addoption(parser):
     parser.addoption(
