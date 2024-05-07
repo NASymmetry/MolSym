@@ -442,65 +442,101 @@ def generate_Ih():
     return symels
 
 def generate_I_vectors():
-    phi = (1+(np.sqrt(5.0)))/2.0
-    phi_i = 1.0/phi
-    faces_i = np.array([[1.0, phi, 0.0],[1.0, -phi, 0.0],[-1.0, phi, 0.0],[-1.0, -phi, 0.0],
-             [0.0, 1.0, phi],[0.0, 1.0, -phi],[0.0, -1.0, phi],[0.0, -1.0, -phi],
-             [phi, 0.0, 1.0],[-phi, 0.0, 1.0],[phi, 0.0, -1.0],[-phi, 0.0, -1.0]])
-    vertices_i = np.array([[1.0, 1.0, 1.0],[1.0, 1.0, -1.0],[1.0, -1.0, 1.0],[-1.0, 1.0, 1.0],
-                [1.0, -1.0, -1.0],[-1.0, 1.0, -1.0],[-1.0, -1.0, 1.0],[-1.0, -1.0, -1.0],
-                [0.0, phi, phi_i],[0.0, phi, -phi_i],[0.0, -phi, phi_i],[0.0, -phi, -phi_i],
-                [phi_i, 0.0, phi],[-phi_i, 0.0, phi],[phi_i, 0.0, -phi],[-phi_i, 0.0, -phi],
-                [phi, phi_i, 0.0],[phi, -phi_i, 0.0],[-phi, phi_i, 0.0],[-phi, -phi_i, 0.0]])
-    # Reorienting vectors such that one face is on the z-axis with "pentagon" pointing at the POSITIVE?  y-axis
-    theta = np.arccos(phi/np.sqrt(1+(phi**2)))
-    rmat = rotation_matrix(np.array([1, 0, 0]), theta)
-    lf = np.shape(faces_i)[0]
-    l = np.shape(vertices_i)[0]
-    faces = [np.dot(rmat,faces_i[i,:]) for i in range(lf)]
-    vertices = [np.dot(rmat,vertices_i[i,:]) for i in range(l)]
+    #phi = (1+(np.sqrt(5.0)))/2.0
+    #phi_i = 1.0/phi
+    #faces_i = np.array([[1.0, phi, 0.0],[1.0, -phi, 0.0],[-1.0, phi, 0.0],[-1.0, -phi, 0.0],
+    #         [0.0, 1.0, phi],[0.0, 1.0, -phi],[0.0, -1.0, phi],[0.0, -1.0, -phi],
+    #         [phi, 0.0, 1.0],[-phi, 0.0, 1.0],[phi, 0.0, -1.0],[-phi, 0.0, -1.0]])
+    #vertices_i = np.array([[1.0, 1.0, 1.0],[1.0, 1.0, -1.0],[1.0, -1.0, 1.0],[-1.0, 1.0, 1.0],
+    #            [1.0, -1.0, -1.0],[-1.0, 1.0, -1.0],[-1.0, -1.0, 1.0],[-1.0, -1.0, -1.0],
+    #            [0.0, phi, phi_i],[0.0, phi, -phi_i],[0.0, -phi, phi_i],[0.0, -phi, -phi_i],
+    #            [phi_i, 0.0, phi],[-phi_i, 0.0, phi],[phi_i, 0.0, -phi],[-phi_i, 0.0, -phi],
+    #            [phi, phi_i, 0.0],[phi, -phi_i, 0.0],[-phi, phi_i, 0.0],[-phi, -phi_i, 0.0]])
+    ## Reorienting vectors such that one face is on the z-axis with "pentagon" pointing at the POSITIVE?  y-axis
+    #theta = -np.arccos(phi/np.sqrt(1+(phi**2)))
+    #rmat = rotation_matrix(np.array([1, 0, 0]), theta)
+    #lf = np.shape(faces_i)[0]
+    #l = np.shape(vertices_i)[0]
+    #faces = [np.dot(rmat,faces_i[i,:]) for i in range(lf)]
+    #vertices = [np.dot(rmat,vertices_i[i,:]) for i in range(l)]
     #faces = np.dot(rmat, faces_i.T).T
     #vertices = np.dot(rmat, vertices_i.T).T
     
     #l = np.shape(vertices)[0]
-    edglen = 2*phi_i
-    edgecenters = []
-    for i in range(l):
-        for j in range(i+1,l):#= i+1:l
-            if np.isclose(distance(vertices[i], vertices[j]), edglen):
-                v = normalize(vertices[i]+vertices[j])
-                same = False
-                for k in edgecenters:
-                    if np.isclose(abs(np.dot(k,v)), 1.0):
-                        same = True
-                        break
-                if not same:
-                    edgecenters.append(v)
-    for (idx,face) in enumerate(faces):
-        faces[idx] = normalize(face)
-    face_vectors = []
-    same = False
-    for i in faces:
-        v = normalize(i)
-        for j in face_vectors:
-            same = False
-            if np.isclose(abs(np.dot(v,j)), 1.0):
-                same = True
-                break
-        if not same:
-            face_vectors.append(v)
-        
-    vertex_vectors = []
-    same = False
-    for i in vertices:
-        v = normalize(i)
-        for j in vertex_vectors:
-            same = False
-            if np.isclose(abs(np.dot(v,j)), 1.0):
-                same = True
-                break
-        if not same:
-            vertex_vectors.append(v)
-        
+    #edglen = 2*phi_i
+    #edgecenters = []
+    #for i in range(l):
+    #    for j in range(i+1,l):#= i+1:l
+    #        if np.isclose(distance(vertices[i], vertices[j]), edglen):
+    #            v = normalize(vertices[i]+vertices[j])
+    #            same = False
+    #            for k in edgecenters:
+    #                if np.isclose(abs(np.dot(k,v)), 1.0):
+    #                    same = True
+    #                    break
+    #            if not same:
+    #                edgecenters.append(v)
+    #for (idx,face) in enumerate(faces):
+    #    faces[idx] = normalize(face)
+    #face_vectors = []
+    #same = False
+    #for i in faces:
+    #    v = normalize(i)
+    #    for j in face_vectors:
+    #        same = False
+    #        if np.isclose(abs(np.dot(v,j)), 1.0):
+    #            same = True
+    #            break
+    #    if not same:
+    #        face_vectors.append(v)
+    #    
+    #vertex_vectors = []
+    #same = False
+    #for i in vertices:
+    #    v = normalize(i)
+    #    for j in vertex_vectors:
+    #        same = False
+    #        if np.isclose(abs(np.dot(v,j)), 1.0):
+    #            same = True
+    #            break
+    #    if not same:
+    #        vertex_vectors.append(v)
+    face_vectors = [
+        np.array([0.0, 0.0, 1.0]),
+        np.array([0.0, 2/np.sqrt(5), 1/np.sqrt(5)]),
+        np.array([-np.sqrt((5+np.sqrt(5))/10), (5-np.sqrt(5))/10, 1/np.sqrt(5)]),
+        np.array([ np.sqrt((5+np.sqrt(5))/10), (5-np.sqrt(5))/10, 1/np.sqrt(5)]),
+        np.array([-np.sqrt((5-np.sqrt(5))/10),-(5+np.sqrt(5))/10, 1/np.sqrt(5)]),
+        np.array([ np.sqrt((5-np.sqrt(5))/10),-(5+np.sqrt(5))/10, 1/np.sqrt(5)])]
+    vertex_vectors = [
+        np.array([0.0, -np.sqrt((2*(5+np.sqrt(5)))/15), np.sqrt((5-2*np.sqrt(5))/15)]),
+        np.array([0.0, -np.sqrt((2*(5-np.sqrt(5)))/15), np.sqrt((5+2*np.sqrt(5))/15)]),
+        np.array([-1/np.sqrt(3), np.sqrt((5+2*np.sqrt(5))/15), np.sqrt((5-2*np.sqrt(5))/15)]),
+        np.array([-1/np.sqrt(3),-np.sqrt((5-2*np.sqrt(5))/15), np.sqrt((5+2*np.sqrt(5))/15)]),
+        np.array([ 1/np.sqrt(3), np.sqrt((5+2*np.sqrt(5))/15), np.sqrt((5-2*np.sqrt(5))/15)]),
+        np.array([ 1/np.sqrt(3),-np.sqrt((5-2*np.sqrt(5))/15), np.sqrt((5+2*np.sqrt(5))/15)]),
+        np.array([-np.sqrt((3*np.sqrt(5)+5)/(6*np.sqrt(5))),-np.sqrt((5-np.sqrt(5))/30), np.sqrt((5-2*np.sqrt(5))/15)]),
+        np.array([ np.sqrt((3*np.sqrt(5)-5)/(6*np.sqrt(5))), np.sqrt((5+np.sqrt(5))/30), np.sqrt((5+2*np.sqrt(5))/15)]),
+        np.array([-np.sqrt((3*np.sqrt(5)-5)/(6*np.sqrt(5))), np.sqrt((5+np.sqrt(5))/30), np.sqrt((5+2*np.sqrt(5))/15)]),
+        np.array([ np.sqrt((3*np.sqrt(5)+5)/(6*np.sqrt(5))),-np.sqrt((5-np.sqrt(5))/30), np.sqrt((5-2*np.sqrt(5))/15)]),
+    ]
+    edgecenters = [
+        np.array([0.0, np.sqrt((5+np.sqrt(5))/10),-np.sqrt((5-np.sqrt(5))/10)]),
+        np.array([0.0, np.sqrt((5-np.sqrt(5))/10), np.sqrt((5+np.sqrt(5))/10)]),
+        np.array([0.5,-np.sqrt(1+(2/np.sqrt(5)))/2,-np.sqrt((5-np.sqrt(5))/10)]),
+        np.array([0.5, np.sqrt(1-(2/np.sqrt(5)))/2, np.sqrt((5+np.sqrt(5))/10)]),
+        np.array([0.5,-np.sqrt(1-(2/np.sqrt(5)))/2,-np.sqrt((5+np.sqrt(5))/10)]),
+        np.array([0.5, np.sqrt(1+(2/np.sqrt(5)))/2, np.sqrt((5-np.sqrt(5))/10)]),
+        np.array([1.0, 0.0, 0.0]),
+        np.array([(np.sqrt(5)-1)/4,-np.sqrt((5+np.sqrt(5))/10)/2, np.sqrt((5+np.sqrt(5))/10)]),
+        np.array([(np.sqrt(5)-1)/4, np.sqrt((5+np.sqrt(5))/10)/2,-np.sqrt((5+np.sqrt(5))/10)]),
+        np.array([(np.sqrt(5)-1)/4,-np.sqrt((5+np.sqrt(5))/2)/2, 0.0]),
+        np.array([(np.sqrt(5)-1)/4, np.sqrt((5+np.sqrt(5))/2)/2, 0.0]),
+        np.array([(np.sqrt(5)+1)/4,-np.sqrt((5-np.sqrt(5))/10)/2, np.sqrt((5-np.sqrt(5))/10)]),
+        np.array([(np.sqrt(5)+1)/4, np.sqrt((5-np.sqrt(5))/10)/2,-np.sqrt((5-np.sqrt(5))/10)]),
+        np.array([(np.sqrt(5)+1)/4,-np.sqrt((5-np.sqrt(5))/2)/2, 0.0]),
+        np.array([(np.sqrt(5)+1)/4, np.sqrt((5-np.sqrt(5))/2)/2, 0.0]),
+    ]
+
     return (face_vectors, vertex_vectors, edgecenters)
 
