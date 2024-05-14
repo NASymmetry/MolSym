@@ -164,7 +164,7 @@ def inverse(mtable, a):
 def subgroup_by_name(symels, mult_table, subgroup):
     if subgroup == "C1":
         return [[0,0]]
-    subgroup_symels, irreps, irrep_mat = pg_to_symels(subgroup)
+    subgroup_symels, irreps, irrep_mats = pg_to_symels(subgroup)
     subgroup_mult_table = build_mult_table(subgroup_symels)
     big_list = []
     for sg_el in range(len(subgroup_symels)):

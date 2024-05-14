@@ -5,7 +5,7 @@ from .multiplication_table import build_mult_table
 
 def irrep_things(pg):
     irrm = getattr(irrep_mats, "irrm_" + str(pg))
-    symels, irreps, irrep_mat = pg_to_symels(pg)
+    symels, irreps, irrep_mats = pg_to_symels(pg)
     mtable = build_mult_table(symels)
     mtab_chks = True
     for k in irrm:

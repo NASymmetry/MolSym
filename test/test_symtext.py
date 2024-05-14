@@ -83,7 +83,7 @@ mult_table_test_set = [
 
 @pytest.mark.parametrize("pg, answer", [(pgs[i], mult_table_test_set[i]) for i in range(len(pgs))])
 def test_build_mult_table(pg, answer):
-    symels, irreps, irrep_mat = pg_to_symels(pg)
+    symels, irreps, irrep_mats = pg_to_symels(pg)
     mult_table = build_mult_table(symels)
     assert (mult_table == answer).all()
 

@@ -60,7 +60,7 @@ def ProjectionOp(symtext, fxn_set):
         if symtext.pg.is_linear:
             irrmat = None
         else:
-            irrmat = symtext.irrep_mat[irrep.symbol]
+            irrmat = symtext.irrep_mats[irrep.symbol]
         for se_fxn_set in fxn_set.SE_fxns:
             equivcoord = min(se_fxn_set)
             salc = np.zeros((irrep.d, irrep.d, numred))

@@ -22,7 +22,7 @@ def generateshuffle(l):
 def generateRotations(Lmax, rot):
     Rsh = []
     rrot = adapt(rot)
-    Rsh.append(np.eye(3))
+    Rsh.append(np.eye(1))
     l = 1
     while l < Lmax + 1:
         if l == 1:

@@ -13,7 +13,7 @@ from .multiplication_table import build_mult_table, subgroup_by_name, subgroup_a
 
 class Symtext():
     #def __init__(self, mol, rotate_to_std, reverse_rotate, pg, symels, chartable, class_map, atom_map, mult_table, irrep_mat) -> None:
-    def __init__(self, mol, rotate_to_std, reverse_rotate, pg, symels, atom_map, mult_table, irreps, irrep_mat) -> None:
+    def __init__(self, mol, rotate_to_std, reverse_rotate, pg, symels, atom_map, mult_table, irreps, irrep_mats) -> None:
         self.mol = mol
         self.rotate_to_std = rotate_to_std
         self.reverse_rotate = reverse_rotate
@@ -41,7 +41,7 @@ class Symtext():
         else:
             self.order = len(symels)
         self.irreps = irreps
-        self.irrep_mat = irrep_mat
+        self.irrep_mats = irrep_mats
         self.get_character_table()
 
     def __len__(self):
@@ -57,15 +57,15 @@ class Symtext():
         pg = PointGroup.from_string(pg_str)
         # Return transformation matrix so properties can be rotated to original configuration
         mol, reverse_rotate, rotate_to_std = rotate_mol_to_symels(mol, paxis, saxis)
-        symels, irreps, irrep_mat = pg_to_symels(pg.str)
+        symels, irreps, irrep_mats = pg_to_symels(pg.str)
         if pg.is_linear:
             atom_map = get_linear_atom_mapping(mol, pg)
-            return Symtext(mol, rotate_to_std, reverse_rotate, pg, symels, atom_map, None, irreps, irrep_mat)
+            return Symtext(mol, rotate_to_std, reverse_rotate, pg, symels, atom_map, None, irreps, irrep_mats)
         # Return transformation matrix so properties can be rotated to original configuration
         #mol, reverse_rotate, rotate_to_std = rotate_mol_to_symels(mol, paxis, saxis)
         atom_map = get_atom_mapping(mol, symels)
         mult_table = build_mult_table(symels)
-        return Symtext(mol, rotate_to_std, reverse_rotate, pg, symels, atom_map, mult_table, irreps, irrep_mat)
+        return Symtext(mol, rotate_to_std, reverse_rotate, pg, symels, atom_map, mult_table, irreps, irrep_mats)
 
     @classmethod
     def from_file(cls, fn):
@@ -102,7 +102,7 @@ class Symtext():
             self.character_table = np.zeros((len(self.irreps), len(self.classes)))
         for irrep_idx, irrep in enumerate(self.irreps):
             for class_idx, class_name in enumerate(self.classes):
-                self.character_table[irrep_idx,class_idx] = np.trace(self.irrep_mat[irrep.symbol][self.symel_to_class_map.index(class_idx)])
+                self.character_table[irrep_idx,class_idx] = np.trace(self.irrep_mats[irrep.symbol][self.symel_to_class_map.index(class_idx)])
 
     def direct_product(self, *args):
         # Return direct product of irrep indices (*args)
@@ -143,7 +143,7 @@ class Symtext():
 
     def subgroup_symtext(self, subgroup_str):
         subgroup = PointGroup.from_string(subgroup_str)
-        subgroup_symels, subgroup_irreps, subgroup_irrep_mat = pg_to_symels(subgroup.str)
+        subgroup_symels, subgroup_irreps, subgroup_irrep_mats = pg_to_symels(subgroup.str)
         #subgroup_ctab = pg_to_chartab(subgroup)
         #class_map = generate_symel_to_class_map(subgroup_symels, subgroup_ctab)
         mult_table = build_mult_table(subgroup_symels)
@@ -157,7 +157,7 @@ class Symtext():
         atom_map = get_atom_mapping(new_mol, subgroup_symels)
         #irrep_mat = getattr(IrrepMats, "irrm_" + str(subgroup))
         #return Symtext(new_mol, rotate_to_std, reverse_rotate, subgroup, subgroup_symels, subgroup_ctab, class_map, atom_map, mult_table, irrep_mat)
-        return Symtext(new_mol, rotate_to_std, reverse_rotate, subgroup, subgroup_symels, atom_map, mult_table, subgroup_irreps, subgroup_irrep_mat)
+        return Symtext(new_mol, rotate_to_std, reverse_rotate, subgroup, subgroup_symels, atom_map, mult_table, subgroup_irreps, subgroup_irrep_mats)
     
     def largest_D2h_subgroup(self):
         # Some groups may have equivalent order subgroups, if you want a specific one, don't use this function

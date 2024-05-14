@@ -25,7 +25,7 @@ pgs = [
 
 @pytest.mark.parametrize("pg", pgs)
 def test_Symel(pg):
-    symels, irreps, irrep_mat = pg_to_symels(pg)
+    symels, irreps, irrep_mats = pg_to_symels(pg)
     symels_ans = eval(pg+"s")
     rreps = [symel.symbol for symel in symels]
     rreps_ans = [symel.symbol for symel in symels_ans]
@@ -46,11 +46,11 @@ def test_Symel(pg):
    
     mtable = build_mult_table(symels)
     mchk = True
-    for k in irrep_mat:
-        mtab_chk = mtable_check(k, irrep_mat[k], mtable)
+    for k in irrep_mats:
+        mtab_chk = mtable_check(k, irrep_mats[k], mtable)
         if mtab_chk == False:
             mchk = False
     assert mchk
     
-    gchk = goat_chk(irrep_mat)
+    gchk = goat_chk(irrep_mats)
     assert gchk
