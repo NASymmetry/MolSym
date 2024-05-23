@@ -9,9 +9,7 @@
   </tr>
   <tr>
     <td align="center">
-      <a href=molsym.readthedocs.io>
-      <img src=https://img.shields.io/badge/docs-dev-blue.svg>
-      </a>
+      [![Documentation Status](https://readthedocs.org/projects/molsym/badge/?version=latest)](https://molsym.readthedocs.io/en/latest/?badge=latest)
     </td>
     <td align="center">
       <a href=https://github.com/NASymmetry/MolSym/actions/workflows/workflow.yml>
