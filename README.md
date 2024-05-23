@@ -9,7 +9,7 @@
   </tr>
   <tr>
     <td align="center">
-      <a href=https://ccqc.github.io/MolSym/>
+      <a href=https://nasymmetry.github.io/MolSym/>
       <img src=https://img.shields.io/badge/docs-dev-blue.svg>
       </a>
     </td>
