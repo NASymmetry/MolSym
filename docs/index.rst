@@ -19,6 +19,8 @@ Contents
 
 .. toctree::
    Home <self>
+   
+   usage
    api
 
 Indices and tables

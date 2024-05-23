@@ -1,4 +1,4 @@
-﻿molsym
+molsym
 ======
 
 .. automodule:: molsym
