@@ -1,35 +1,35 @@
 # Read the Docs configuration file for Sphinx projects
- 2# See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
- 3
- 4# Required
- 5version: 2
- 6
- 7# Set the OS, Python version and other tools you might need
- 8build:
- 9  os: ubuntu-22.04
-10  tools:
-11    python: "3.12"
-12    # You can also specify other tool versions:
-13    # nodejs: "20"
-14    # rust: "1.70"
-15    # golang: "1.20"
-16
-17# Build documentation in the "docs/" directory with Sphinx
-18sphinx:
-19  configuration: docs/conf.py
-20  # You can configure Sphinx to use a different builder, for instance use the dirhtml builder for simpler URLs
-21  # builder: "dirhtml"
-22  # Fail on all warnings to avoid broken references
-23  # fail_on_warning: true
-24
-25# Optionally build your docs in additional formats such as PDF and ePub
-26# formats:
-27#   - pdf
-28#   - epub
-29
-30# Optional but recommended, declare the Python requirements required
-31# to build your documentation
-32# See https://docs.readthedocs.io/en/stable/guides/reproducible-builds.html
-33# python:
-34#   install:
-35#     - requirements: docs/requirements.txt
+ # See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
+ 
+ # Required
+ version: 2
+ 
+ # Set the OS, Python version and other tools you might need
+ build:
+   os: ubuntu-22.04
+   tools:
+   python: "3.12"
+   # You can also specify other tool versions:
+   # nodejs: "20"
+   # rust: "1.70"
+   # golang: "1.20"
+
+# Build documentation in the "docs/" directory with Sphinx
+sphinx:
+  configuration: docs/conf.py
+  # You can configure Sphinx to use a different builder, for instance use the dirhtml builder for simpler URLs
+  # builder: "dirhtml"
+  # Fail on all warnings to avoid broken references
+  # fail_on_warning: true
+
+# Optionally build your docs in additional formats such as PDF and ePub
+# formats:
+#   - pdf
+#   - epub
+
+# Optional but recommended, declare the Python requirements required
+# to build your documentation
+# See https://docs.readthedocs.io/en/stable/guides/reproducible-builds.html
+# python:
+#   install:
+#     - requirements: docs/requirements.txt
