@@ -9,7 +9,9 @@
   </tr>
   <tr>
     <td align="center">
-      [![Documentation Status](https://readthedocs.org/projects/molsym/badge/?version=latest)](https://molsym.readthedocs.io/en/latest/?badge=latest)
+      <a href='https://molsym.readthedocs.io/en/latest/?badge=latest'>
+      <img src='https://readthedocs.org/projects/molsym/badge/?version=latest' alt='Documentation Status' />
+      </a>
     </td>
     <td align="center">
       <a href=https://github.com/NASymmetry/MolSym/actions/workflows/workflow.yml>
