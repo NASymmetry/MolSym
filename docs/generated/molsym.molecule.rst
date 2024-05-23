@@ -1,4 +1,4 @@
-molsym.molecule
+﻿molsym.molecule
 ===============
 
 .. automodule:: molsym.molecule
