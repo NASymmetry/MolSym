@@ -6,6 +6,10 @@ from .point_group import PointGroup
 
 @dataclass
 class Symel():
+    """
+    Deprecated data structure for symmetry elements.
+    Still hanging around because of cubic/icosahedral groups and tests.
+    """
     symbol:str
     vector:np.array # Not defined for E or i, axis vector for Cn and Sn, plane normal vector for sigma
     rrep:np.array
@@ -218,8 +222,11 @@ class Symel():
 
 def generate_T():
     """
-        Assume a tetrahedron contained in a cube, then we can easily generate
-        the vectors for the rotation elements.
+    Generate symmetry elements for the T point group.
+    Assume a tetrahedron contained in a cube, then we can easily generate
+    the vectors for the rotation elements.
+
+    :rtype: List[molsym.Symel]
     """
     # Generate C3's
     symels = [Symel("E", None, np.eye(3))]
@@ -246,6 +253,13 @@ def generate_T():
     return symels
 
 def generate_Td():
+    """
+    Generate symmetry elements for the Td point group.
+    Assume a tetrahedron contained in a cube, then we can easily generate
+    the vectors for the rotation elements.
+
+    :rtype: List[molsym.Symel]
+    """
     symels = generate_T()
     # σd's
     sigma_d_1v = normalize(np.array([1.0, 1.0, 0.0]))
@@ -273,6 +287,13 @@ def generate_Td():
     return symels
 
 def generate_Th():
+    """
+    Generate symmetry elements for the Th point group.
+    Assume a tetrahedron contained in a cube, then we can easily generate
+    the vectors for the rotation elements.
+
+    :rtype: List[molsym.Symel]
+    """
     symels = generate_T()
     # i
     symels.append(Symel("i", None, inversion_matrix()))
@@ -300,6 +321,12 @@ def generate_Th():
     return symels
 
 def generate_O():
+    """
+    Generate symmetry elements for the O point group.
+    Assume operations on a cube.
+
+    :rtype: List[molsym.Symel]
+    """
     symels = [Symel("E", None, np.eye(3))]
     # C4
     C4_xv = np.array([1.0, 0.0, 0.0])
@@ -342,6 +369,12 @@ def generate_O():
     return symels
 
 def generate_Oh():
+    """
+    Generate symmetry elements for the Oh point group.
+    Assume operations on a cube.
+
+    :rtype: List[molsym.Symel]
+    """
     symels = generate_O()
     symels.append(Symel("i", None, inversion_matrix()))
     # S4 and σh
@@ -385,6 +418,11 @@ def generate_Oh():
     return symels
 
 def generate_I():
+    """
+    Generate symmetry elements for the I point group.
+
+    :rtype: List[molsym.Symel]
+    """
     symels = [Symel("E", None, np.eye(3))]
     faces, vertices, edgecenters = generate_I_vectors()
     # C5 (face vectors)
@@ -413,6 +451,11 @@ def generate_I():
     return symels
 
 def generate_Ih():
+    """
+    Generate symmetry elements for the Ih point group.
+
+    :rtype: List[molsym.Symel]
+    """
     symels = generate_I()
     faces, vertices, edgecenters = generate_I_vectors()
     symels.append(Symel("i", None, inversion_matrix()))
@@ -442,6 +485,11 @@ def generate_Ih():
     return symels
 
 def generate_I_vectors():
+    """
+    Vectors defining the faces, vertices, and edges of a regular dodecahedron.
+
+    :rtype: (List[NumPy array of shape (3,)], List[NumPy array of shape (3,)], List[NumPy array of shape (3,)])
+    """
     #phi = (1+(np.sqrt(5.0)))/2.0
     #phi_i = 1.0/phi
     #faces_i = np.array([[1.0, phi, 0.0],[1.0, -phi, 0.0],[-1.0, phi, 0.0],[-1.0, -phi, 0.0],

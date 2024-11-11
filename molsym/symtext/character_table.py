@@ -3,8 +3,15 @@ from .point_group import PointGroup
 from ..symtools import *
 import re
 
+"""
+These functions are deprecated
+
+:deprecated:
+"""
+
 class CharacterTable():
     def __init__(self, pg, irreps, classes, class_orders, chars, irrep_dims) -> None:
+        print("Deprecation Warning: Using deprecated CharacterTable class")
         self.name = pg
         self.irreps = irreps
         self.classes = classes

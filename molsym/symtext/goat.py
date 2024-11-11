@@ -4,6 +4,13 @@ from .general_irrep_mats import pg_to_symels
 from .multiplication_table import build_mult_table
 
 def irrep_things(pg):
+    """
+    Test for the correct properties of irreducible representation matrices.
+
+    :param pg: Schoenflies symobl
+    :type pg: str
+    :rtype: (bool, bool)
+    """
     irrm = getattr(irrep_mats, "irrm_" + str(pg))
     symels, irreps, irrep_mats = pg_to_symels(pg)
     mtable = build_mult_table(symels)
@@ -16,6 +23,15 @@ def irrep_things(pg):
     return mtab_chks, gchk
 
 def mtable_check(k, irrm, mtable):
+    """
+    Check that an irreducible representation's matrices are homomorphic to the multiplication table.
+
+    :param k: Irreducible representation symbol
+    :param irrm: Irreducible representation matrices
+    :type k: str
+    :type irrm: NumPy array of shape (nsymel, irrep.d, irrep.d)
+    :rtype: bool
+    """
     l = mtable.shape[0]
     for i in range(l):
         for j in range(l):
@@ -29,6 +45,15 @@ def mtable_check(k, irrm, mtable):
     return True
 
 def multifly(irrm, a, b, printem=False):
+    """
+    Return list of possible symmetry element correspondances from an irreducible representation matrix.
+
+    :param irrm: Irreducible representation matrices
+    :type irrm: NumPy array of shape (nsymel, irrep.d, irrep.d)
+    :type a: int
+    :type b: int
+    :rtype: List[int]
+    """
     l = len(irrm)
     out = []
     errl = []
@@ -46,6 +71,12 @@ def multifly(irrm, a, b, printem=False):
     return out
 
 def goat_chk(irrm):
+    """
+    Performs a check of the great orthogonality theorem for the irreducible reprenstation matrices.
+
+    :type irrm: Dict{molsym.Irrep, NumPy array of shape (nsymel, irrep.d, irrep.d)}
+    :rtype: bool
+    """
     return_full_chk = False
     l = len(irrm)
     gc_final = []

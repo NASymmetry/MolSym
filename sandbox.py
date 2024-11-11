@@ -17,8 +17,13 @@ np.set_printoptions(precision=3, threshold=np.inf, linewidth=14000, suppress=Tru
 #from molsym.symtext.multiplication_table import build_mult_table
 #print(build_mult_table(symels))
 
-import molsym
-from molsym.symtext.general_irrep_mats import pg_to_symels
+#import molsym
+#from molsym.symtext.general_irrep_mats import pg_to_symels
+#mol = molsym.Molecule.from_file("test/xyz/ammonia.xyz")
+#mol = molsym.symmetrize(mol)
+#s = molsym.Symtext.from_molecule(mol)
+#print(s.contains_symmetric_irrep(s.direct_product(0,1,1,2,2)))
+
 #from molsym.symtext.symtext_helper import get_class_name
 #symels, irreps, irrep_mats = pg_to_symels("Ih")
 
@@ -40,18 +45,18 @@ from molsym.symtext.general_irrep_mats import pg_to_symels
 #print(dp)
 #print(s.reduction_coefficients(dp))
 
-import molsym
-mol = molsym.Molecule.from_file("test/xyz/ammonia.xyz")
-mol = molsym.symmetrize(mol)
-s = molsym.Symtext.from_molecule(mol)
-fxn_list = ([[0,1],"R1"],[[0,2],"R2"],[[0,3],"R3"],[[1,0,2],"A1"],[[2,0,3],"A2"],[[3,0,1],"A3"])
-from molsym.salcs.internal_coordinates import InternalCoordinates
-from molsym.salcs.projection_op import ProjectionOp
-fxn_set = InternalCoordinates(s, fxn_list)
-salcs = molsym.salcs.ProjectionOp(s, fxn_set)
-print(salcs)
-print(salcs.sort_partner_functions())
-salcs.sort_to("blocks")
+#import molsym
+#mol = molsym.Molecule.from_file("test/xyz/ammonia.xyz")
+#mol = molsym.symmetrize(mol)
+#s = molsym.Symtext.from_molecule(mol)
+#fxn_list = ([[0,1],"R1"],[[0,2],"R2"],[[0,3],"R3"],[[1,0,2],"A1"],[[2,0,3],"A2"],[[3,0,1],"A3"])
+#from molsym.salcs.internal_coordinates import InternalCoordinates
+#from molsym.salcs.projection_op import ProjectionOp
+#fxn_set = InternalCoordinates(s, fxn_list)
+#salcs = molsym.salcs.ProjectionOp(s, fxn_set)
+#print(salcs)
+#print(salcs.sort_partner_functions())
+#salcs.sort_to("blocks")
 def doodoo(pg):
     symels, irreps, irrep_mat = pg_to_symels(pg)
     #for symel in symels:
@@ -62,6 +67,9 @@ def doodoo(pg):
     #print(irrep_mat)
     #print(irreps)
     #print(symels)
+    for symel in symels:
+        print(symel)
+        print(symel.vector)
     from molsym.symtext.goat import goat_chk, mtable_check
     from molsym.symtext.multiplication_table import build_mult_table
 
@@ -75,9 +83,10 @@ def doodoo(pg):
     print(mtab_chk, gchk)
 
 #aa = ["C1", "Ci", "Cs"] + [f"C{i}" for i in range(9)]
-#aa = [f"D{i}d" for i in range(2,9)]
+aa = [f"D{i}d" for i in [3,5]]
 #doodoo("Ih")
 #aa = ["C4v"]
-#for a in aa:
-#    print(a)
-#    doodoo(a)
+for a in aa:
+    print("-"*45)
+    print(a)
+    doodoo(a)
