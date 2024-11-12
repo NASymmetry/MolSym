@@ -21,7 +21,7 @@ def find_point_group(mol):
     moit = calcmoit(mol)
     Ia_mol, Ib_mol, Ic_mol = np.sort(np.linalg.eigh(moit)[0])
     # Linear tops
-    if Ia_mol == 0.0:
+    if np.isclose(Ia_mol, 0.0, atol=mol.tol):
         if isequivalent(mol, mol.transform(inversion_matrix())):
             pg = "D0h"
         else:
