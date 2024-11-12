@@ -4,13 +4,13 @@ from molsym.symtext.goat import mtable_check, goat_chk
 from molsym.symtext.multiplication_table import build_mult_table
 from molsym.symtools import issame_axis
 
-from pgs.Cn import *
-from pgs.Sn import *
-from pgs.Cnh import *
-from pgs.Cnv import *
-from pgs.Dn import *
-from pgs.Dnh import *
-from pgs.Dnd import *
+from .pgs.Cn import *
+from .pgs.Sn import *
+from .pgs.Cnh import *
+from .pgs.Cnv import *
+from .pgs.Dn import *
+from .pgs.Dnh import *
+from .pgs.Dnd import *
 
 pgs = [
     "C1","Ci","Cs",
