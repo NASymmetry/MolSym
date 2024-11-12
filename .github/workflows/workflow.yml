@@ -7,8 +7,6 @@ jobs:
       matrix:
         cfg:
           - conda-env: base
-            python-version: 3.8
-          - conda-env: base
             python-version: 3.9
           - conda-env: base
             python-version: "3.10"
