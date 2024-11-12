@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="molsym.png" width="400" alt=""/>
+  <img src="molsym_logo_v3.svg" width="400" alt=""/>
 </p>
 <table align="center">
   <tr>
