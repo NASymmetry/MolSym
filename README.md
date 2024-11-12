@@ -42,7 +42,7 @@ Create a new conda environment with:
 
   `conda create -n "NameYourEnvironment" python=3.X`
 
-MolSym is tested with Python 3.8, 3.9, and 3.10 but should work for more recent versions as well.
+MolSym is tested with Python 3.9-3.13, but should work for more recent versions and some older versions as well.
   
   `git clone git@github.com:NASymmetry/MolSym.git`
 
