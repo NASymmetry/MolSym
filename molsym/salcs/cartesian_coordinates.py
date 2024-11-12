@@ -2,7 +2,9 @@ import numpy as np
 from .function_set import FunctionSet
 
 class CartesianCoordinates(FunctionSet):
- 
+    """
+    FunctionSet for Cartesian coordinates
+    """
     def __init__(self, symtext) -> None:
         # xyz on each atom in molecule
         # fxn map is ncart (natom sets of xyz) by nsymel
@@ -10,6 +12,11 @@ class CartesianCoordinates(FunctionSet):
         super().__init__(symtext, fxn_list)
 
     def get_fxn_map(self):
+        """
+        Builds the function map for all of the Cartesian coordinates under each symmetry element.
+        
+        :rtype: NumPy array of shape (nsymels, 3, 3)
+        """
         # Symel by xyz by xyz, maps xyz to xyz under symels
         fxn_map = np.zeros((len(self.symtext), 3, 3))
         #phase_map = None
@@ -18,6 +25,11 @@ class CartesianCoordinates(FunctionSet):
         return fxn_map#, phase_map
  
     def get_symmetry_equiv_functions(self):
+        """
+        Finds the sets of functions that are invariant under all of the symmetry elements.
+
+        :rtype: List[List[int]]
+        """
         symm_equiv = []
         done = []
         xyz = np.array([0,1,2], dtype=int)
@@ -38,6 +50,14 @@ class CartesianCoordinates(FunctionSet):
         return symm_equiv
 
     def special_function(self, salc, coord, sidx, irrmat):
+        """
+        Defines how to map an internal coordinate under a symmetry operation for the ProjectionOp function.
+        
+        :type salc: NumPy array of shape (number of internal coordinates,)
+        :type coord: int
+        :type sidx: int
+        :type irrmat: NumPy array of shape (nsymel, irrep.d, irrep.d)
+        """
         atom_idx = self.symtext.atom_map[coord//3, sidx]
         cfxn = coord % 3
         xyz = self.fxn_map[sidx,cfxn,:]

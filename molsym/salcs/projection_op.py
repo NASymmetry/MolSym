@@ -5,11 +5,24 @@ from .salc import SALC, SALCs
 from .cartesian_coordinates import CartesianCoordinates
 
 def project_out_Eckart(eckart_conditions, new_vector):
+    """
+    Projects out Eckart conditions from the given vector.
+
+    :type eckart_conditions: NumPy array of shape (m,n)
+    :type new_vector: NumPy array of shape (n,)
+    :rtype: NumPy array of shape (n,)
+    """
     for i in range(eckart_conditions.shape[0]):
         new_vector -= np.dot(eckart_conditions[i,:], new_vector) * eckart_conditions[i,:]
     return new_vector
 
 def eckart_conditions(symtext, translational=True, rotational=True):
+    """
+    Produces a matrix of the Eckart conditions.
+
+    :type symtext: molsym.Symtext
+    :rtype: NumPy array of shape (m,n)
+    """
     # TODO Needs some cleaning up
     mol = symtext.mol
     natoms = mol.natoms
@@ -54,6 +67,13 @@ def eckart_conditions(symtext, translational=True, rotational=True):
         raise Exception("Calling this function is rather silly if you don't want either output...")
 
 def ProjectionOp(symtext, fxn_set):
+    """
+    Projection operator: projects the functions in fxn_set into SALCs.
+
+    :type symtext: molsym.Symtext
+    :type fxn_set: molsym.FunctionSet
+    :rtype: molsym.SALCs
+    """
     numred = len(fxn_set)
     salcs = SALCs(symtext, fxn_set)
     for ir, irrep in enumerate(symtext.irreps):

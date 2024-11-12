@@ -6,6 +6,15 @@ from molsym.symtools import *
 from .general_irrep_mats import pg_to_symels
 
 def multifly(symels, A, B):
+    """
+    Find the symmetry element that corresponds to the product of symmetry elements A and B.
+
+    :type symels: List[molsym.Symel]
+    :type A: molsym.Symel
+    :type B: molsym.Symel
+    :return: Index of resultant symmetry element and symmetry element
+    :rtype: (int, molsym.Symel)
+    """
     Crrep = np.dot(A.rrep,B.rrep)
     for (i,g) in enumerate(symels):
         if np.isclose(Crrep, g.rrep).all():
@@ -13,6 +22,12 @@ def multifly(symels, A, B):
     raise Exception(f"No match found for Symels {A.symbol} and {B.symbol}!")
 
 def build_mult_table(symels):
+    """
+    Build the multiplication table (Cayley Table) for the group of symmetry elements.
+
+    :type symels: List[molsym.Symel]
+    :rtype: NumPy array of shape (nsymel,nsymel)
+    """
     h = len(symels)
     t = np.zeros((h,h), dtype=int)
     for (i,a) in enumerate(symels):
@@ -21,7 +36,13 @@ def build_mult_table(symels):
     return t
 
 def is_subgroup(G, mtable):
-    # Testing for closure as all other group properties are enforced elsewhere
+    """
+    Tests for closure of subgroup in the group multiplication table as all other group properties are enforced elsewhere.
+
+    :type G: List[int]
+    :type mtable: NumPy array of shape (n,n)
+    :rtype: bool
+    """
     for ga in G:
         for gb in G:
             if mtable[ga,gb] in G:
@@ -30,6 +51,14 @@ def is_subgroup(G, mtable):
     return True
 
 def identify_subgroup(subgroup, symels):
+    """
+    Identify Schoenflies symbol for a set of symmetry elements.
+
+    :param subgroup: List of indices for symmetry elements comprising a subgroup
+    :param symels: List of group symmetry elements
+    :type subgroup: List[int]
+    :type symels: List[molsym.Symel]
+    """
     subgroup_symels = [symels[i] for i in subgroup]
     inversion = False
     highest_Cn = None
@@ -124,7 +153,12 @@ def identify_subgroup(subgroup, symels):
     return pg
 
 def cycles(mtable):
-    # Find cycles of each element
+    """
+    Find cycles of each symmetry element.
+
+    :type mtable: NumPy array of shape (n,n)
+    :rtype: List[List[int]]
+    """
     h = mtable.shape[0]
     cycles = []
     for gi in range(1,h):
@@ -151,17 +185,43 @@ def cycles(mtable):
     return unique_cycles
 
 def multiply(mtable, *args):
+    """
+    Multiply symmetry operations using the multiplication table.
+
+    :param *args: Indices for symmetry elements to be multiplied (in order!)
+    :type mtable: NumPy array of shape (n,n)
+    :type *args: int
+    :rtype: int
+    """
     m = args[0]
     for mi in args[1:]:
         m = mtable[m, mi]
     return m
 
 def inverse(mtable, a):
+    """
+    Finds inverse element using the multiplication table.
+
+    :param a: Symmetry element index to find the inverse for
+    :type mtable: NumPy array of shape (n,n)
+    :type a: int
+    :rtype: int
+    """
     for i in range(mtable.shape[0]):
         if multiply(mtable, a, i) == 0:
             return i
 
 def subgroup_by_name(symels, mult_table, subgroup):
+    """
+    Find a set of symmetry elements that form a subgroup of the group and have the same Schoenflies symbol as the one requested.
+
+    :param subgroup: Schoenflies symbol for the requested subgroup
+    :type symels: List[molsym.Symel]
+    :type mult_table: NumPy array of shape (n,n)
+    :type subgroup: str
+    :return: Map from subgroup elements to elements in the group
+    :rtype: List[List[int]]
+    """
     if subgroup == "C1":
         return [[0,0]]
     subgroup_symels, irreps, irrep_mats = pg_to_symels(subgroup)
@@ -222,6 +282,13 @@ def subgroup_by_name(symels, mult_table, subgroup):
             return subgroup_isomorphism
 
 def same_type(symel_a, symel_b):
+    """
+    Check if input Symels are of the same type (identity, inversion, reflection, same order of proper/improper rotation).
+
+    :type symel_a: molsym.Symel
+    :type symel_b: molsym.Symel
+    :rtype: bool
+    """
     # E, i, sigma, C_n, S_n
     rgx = re.compile(r"_(\d*)\^?")
     if symel_a.symbol[0] == "E" and symel_b.symbol[0] == "E":
@@ -240,6 +307,13 @@ def same_type(symel_a, symel_b):
         return False
 
 def min_cycle_set(mult_table, cycle_set):
+    """
+    Minimum number of cycles to reconstruct the group.
+
+    :type mult_table: NumPy array of shape (n,n)
+    :type cycle_set: List[List[int]]
+    :rtype: List[int]
+    """
     h = mult_table.shape[0]
     min_set = []
     already_in = [0]
@@ -259,7 +333,14 @@ def min_cycle_set(mult_table, cycle_set):
             raise(Exception("Too many elements added to group"))
         
 def order(mult_table, idx):
-    # Returns order of element in group
+    """
+    Returns order of an element in the group.
+
+    :param idx: Index of element to get the order of
+    :type mult_table: NumPy array of shape (n,n)
+    :type idx: int
+    :rtype: int
+    """
     n = 0
     old = idx
     while True:
@@ -270,6 +351,15 @@ def order(mult_table, idx):
         old = new
 
 def subgroup_axes(subgroup, symels):
+    """
+    Find the new primary and secondary axes of a subgroup.
+
+    :param subgroup: Schoenflies string
+    :type subgroup: str
+    :type symels: List[molsym.Symel]
+    :return: New primary and secondary axes
+    :rtype: (NumPy array of shape (3,), NumPy array of shape (3,))
+    """
     rgx = re.compile(r"_(\d*)\^?")
     paxis = np.array([0,0,0])
     saxis = np.array([0,0,0])

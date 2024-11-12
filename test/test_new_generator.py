@@ -4,13 +4,13 @@ from molsym.symtext.goat import mtable_check, goat_chk
 from molsym.symtext.multiplication_table import build_mult_table
 from molsym.symtools import issame_axis
 
-from pgs.Cn import *
-from pgs.Sn import *
-from pgs.Cnh import *
-from pgs.Cnv import *
-from pgs.Dn import *
-from pgs.Dnh import *
-from pgs.Dnd import *
+from .pgs.Cn import *
+from .pgs.Sn import *
+from .pgs.Cnh import *
+from .pgs.Cnv import *
+from .pgs.Dn import *
+from .pgs.Dnh import *
+from .pgs.Dnd import *
 
 pgs = [
     "C1","Ci","Cs",
@@ -30,18 +30,19 @@ def test_Symel(pg):
     rreps = [symel.symbol for symel in symels]
     rreps_ans = [symel.symbol for symel in symels_ans]
     assert set(rreps) == set(rreps_ans)
+    print(pg)
     for symel in symels:
         for symel_a in symels_ans:
             if symel.symbol == symel_a.symbol:
-                print(pg)
+                print(symel.symbol)
                 print(symel.vector)
                 print(symel_a.vector)
-                print(symel.rrep)
-                print(symel_a.rrep)
+                #print(symel.rrep)
+                #print(symel_a.rrep)
                 if symel.vector is None:
                     assert symel_a.vector is None
                 else:
-                    assert issame_axis(symel.vector, symel_a.vector).all()
+                    assert issame_axis(symel.vector, symel_a.vector)
                 assert np.isclose(symel.rrep, symel_a.rrep).all()
    
     mtable = build_mult_table(symels)

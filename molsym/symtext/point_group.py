@@ -1,6 +1,9 @@
 import re
 
 class PointGroup():
+    """
+    Class for defining point group.
+    """
     def __init__(self, s, family, n, subfamily):
         self.str = s
         self.family = family

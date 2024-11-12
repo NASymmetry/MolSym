@@ -19,8 +19,8 @@
       </a>
     </td>
     <td align="center">
-      <a href=https://codecov.io/gh/CCQC/MolSym>
-      <img src=https://codecov.io/gh/CCQC/MolSym/branch/main/graph/badge.svg?token=NQDJ0QYLB0>
+      <a href=https://codecov.io/gh/NASymmetry/MolSym>
+      <img src=https://codecov.io/gh/NASymmetry/MolSym/branch/main/graph/badge.svg?token=NQDJ0QYLB0>
       </a> 
     </td>
   </tr>
@@ -42,7 +42,7 @@ Create a new conda environment with:
 
   `conda create -n "NameYourEnvironment" python=3.X`
 
-MolSym is tested with Python 3.8, 3.9, and 3.10 but should work for more recent versions as well.
+MolSym is tested with Python 3.9-3.13, but should work for more recent versions and some older versions as well.
   
   `git clone git@github.com:NASymmetry/MolSym.git`
 

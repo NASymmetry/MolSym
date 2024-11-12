@@ -3,12 +3,25 @@ from ..symtools import *
 from .flowchart_helper import *
 
 def find_point_group(mol):
+    """
+    Find the point group of a molecule.
+    Bases on the algorithm developed by:
+        Beruski, Otávio; Vidal, Luciano N. Algorithms for computer detection of 
+        symmetry elements in molecular systems, J. Comp. Chem, 2013 doi:10.1002/jcc.23493
+    Returns a primary and secondary axis in order to define an orienation of the molecule
+    with resepct to the symmetry elements generated later.
+    
+    :type mol: molsym.Molecule
+    :return: Schoenflies point group string, primary axis, and secondary axis
+    :rtype: (str, NumPy array of shape (3,), NumPy array of shape (3,))
+    """
+
     paxis = [0,0,0]
     saxis = [0,0,0]
     moit = calcmoit(mol)
     Ia_mol, Ib_mol, Ic_mol = np.sort(np.linalg.eigh(moit)[0])
     # Linear tops
-    if Ia_mol == 0.0:
+    if np.isclose(Ia_mol, 0.0, atol=mol.tol):
         if isequivalent(mol, mol.transform(inversion_matrix())):
             pg = "D0h"
         else:
@@ -32,7 +45,7 @@ def find_point_group(mol):
             # Reorienting vectors such that one face is on the z-axis with "pentagon" pointing at the POSITIVE y-axis
             phi = (1+np.sqrt(5.0))/2
             # Weirdness here, negative or positive???
-            theta =-np.arccos(phi/np.sqrt(1+(phi**2)))
+            theta = np.arccos(phi/np.sqrt(1+(phi**2)))
             rmat = rotation_matrix(saxis, theta)
             paxis = np.dot(rmat, tempaxis)
             taxis = np.dot(rmat, paxis)

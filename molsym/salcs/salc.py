@@ -9,6 +9,9 @@ from molsym.symtext.general_irrep_mats import Irrep
 
 @dataclass
 class SALC():
+    """
+    Dataclass for SALC information.
+    """
     coeffs:np.array
     irrep:Irrep
     bfxn:int
@@ -20,6 +23,9 @@ class SALC():
         return f"SALC from P^{self.irrep.symbol}_{self.i}{self.j} ({self.bfxn}) gamma={self.gamma:6.3f}\n{self.coeffs}\n"
 
 class SALCs():
+    """
+    Class for building and working with SALCs.
+    """
     def __init__(self, symtext, fxn_set) -> None:
         self.tol = symtext.mol.tol
         self.symtext = symtext
@@ -43,6 +49,12 @@ class SALCs():
         return self.__str__()
 
     def addnewSALC(self, new_salc, irrep_idx):
+        """
+        Adds a new SALC to the SALC list if it is not linearly dependent with previous SALCs.
+
+        :type new_salc: NumPy array of shape (n,)
+        :type irrep_idx: int
+        """
         sbi = self.salcs_by_irrep[irrep_idx]
         if sbi is None:
             self.salcs.append(new_salc)
@@ -57,6 +69,11 @@ class SALCs():
 
     @property
     def salcs_by_irrep(self):
+        """
+        List of SALCs sorted by irreducible representation.
+
+        :rtype: List[List[int]]
+        """
         salcs_by_irrep = [[] for i in range(len(self.irreps))]
         for irrep_idx, irrep in enumerate(self.irreps):
             for salc_idx, salc in enumerate(self.salcs):
@@ -66,7 +83,7 @@ class SALCs():
 
     def sort_to(self, sort_style=None):
         """
-        Sort SALCs by style
+        Sort SALCs in place by style
             - 'partners': sort such that partner functions are sequential
             - 'blocks': sort such that transformation yields maximal block diagonalization
             - None: no sort applied, SALCs in native ordering
@@ -96,6 +113,11 @@ class SALCs():
 
     @property
     def basis_transformation_matrix(self):
+        """
+        Function by SALC matrix of coefficients.
+
+        :rtype: NumPy array of shape (n functions, n SALCs)
+        """
         if self.symtext.complex and not self.remove_complexity:
             btm = np.zeros((len(self.fxn_set), len(self)), dtype=np.complex128)
         else:
@@ -105,6 +127,13 @@ class SALCs():
         return btm
 
     def ispartner(self, salc1, salc2):
+        """
+        Determine whether two SALCs are partner functions of each other.
+
+        :type salc1: molsym.SALC
+        :type salc2: molsym.SALC
+        :rtype: bool
+        """
         if self.symtext.complex and ("(1)" in salc1.irrep.symbol or "(2)" in salc1.irrep.symbol):
             if "(1)" in salc1.irrep.symbol:
                 if "(2)" in salc2.irrep.symbol:
@@ -125,8 +154,12 @@ class SALCs():
         return chk1 and chk2 and chk3
 
     def sort_partner_functions(self):
-        # Group partner functions together 
-        # Natively ordered by projection operator outer index
+        """ 
+        Group partner functions together 
+        Natively ordered by projection operator outer index
+        
+        :rtype: List[List[int]]
+        """
         out = [[0]]
         for sidx, salc in enumerate(self.salcs[1:]):
             chk = False
@@ -140,8 +173,11 @@ class SALCs():
 
     def finish_building(self, orthogonalize=False, remove_complexity=False):
         """
-            Remove complexities if seperably degenerate
-            If doing Eckart projection, reorthogonalize SALCs
+            Remove complexities if seperably degenerate.
+            If doing Eckart projection, reorthogonalize SALCs.
+
+            :type orthogonalize: bool
+            :type remove_complexity: bool
         """
         self.remove_complexity = remove_complexity
         if remove_complexity: # TODO: Have symtext for groups with reduced complexity, handling irreps such as E2_1g, E2_2g ---> E2g
@@ -156,7 +192,6 @@ class SALCs():
                 if not np.isclose(np.max(np.abs(np.imag(s.coeffs))), 0):
                     raise Exception("Remove complexity procedure unable to remove imaginary components of SALCs")
                 s.coeffs = np.real(s.coeffs)
-
         if orthogonalize:
             np.set_printoptions(suppress=True, precision=5, linewidth=1500)
             self.sort_to("blocks")
@@ -172,7 +207,8 @@ class SALCs():
                         self.salcs[salc].coeffs = B[:,idx]
                 else:
                     n_pf_sets = round(len(self.salcs_by_irrep[irrep_idx]) / irrep.d)
-                    B1 = self.basis_transformation_matrix[:,:irrep.d]
+                    #B1 = self.basis_transformation_matrix[:,:irrep.d]
+                    B1 = self.basis_transformation_matrix[:,self.salcs_by_irrep[irrep_idx]]
                     # Gram-Schmidt orthogonalize columns of B1
                     trans_mat = np.eye(n_pf_sets)
                     for col_idx in range(1, n_pf_sets):

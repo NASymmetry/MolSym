@@ -7,11 +7,15 @@ jobs:
       matrix:
         cfg:
           - conda-env: base
-            python-version: 3.8
-          - conda-env: base
             python-version: 3.9
           - conda-env: base
             python-version: "3.10"
+          - conda-env: base
+            python-version: "3.11"
+          - conda-env: base
+            python-version: "3.12"
+          - conda-env: base
+            python-version: "3.13"
     env:
       PYVER: ${{ matrix.cfg.python-version }}
       CONDA_ENV: ${{ matrix.cfg.conda-env }}
@@ -36,3 +40,12 @@ jobs:
         pytest --cov="molsym" --color=yes --cov-report=xml test/
     - name: Upload Coverage to Codecov
       uses: codecov/codecov-action@v2
+      with:
+        directory: ./coverage/reports/
+        env_vars: OS,PYTHON
+        fail_ci_if_error: false
+        files: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        token: ${{ secrets.CODECOV_TOKEN }}
+        verbose: true
