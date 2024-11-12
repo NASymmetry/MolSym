@@ -3,7 +3,7 @@ channels:
   - defaults
   - conda-forge
 dependencies:
-  - numpy>=1.23.4
+  - numpy>=2.0.0
   - qcelemental >= 0.28.0
   - sphinx >= 7.3.7
   - sphinx_rtd_theme >= 2.0.0
