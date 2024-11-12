@@ -4,9 +4,9 @@ channels:
   - psi4
 dependencies:
     # Base
-  - numpy
+  - numpy>=2.0.0
   - python
-  - qcelemental
+  - qcelemental>=0.28.0
   #- psi4
   - pytest
   - pytest-cov
