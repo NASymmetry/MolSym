@@ -16,8 +16,8 @@ def test_find_point_group(name, pg_ans):
     file_path = os.path.join(PATH, "sxyz", f"{name}.xyz")
     with open(file_path, "r") as fn:
         strang = fn.read()
-    schema = qcel.models.Molecule.from_data(strang).dict()
-    mol = Molecule.from_schema(schema)
+    #schema = qcel.models.Molecule.from_data(strang).dict()
+    mol = Molecule.from_Molecule(strang)
     pg, (paxis, saxis) = molsym.find_point_group(mol)
     print("Ans: ", pg)
     assert pg_ans == pg
