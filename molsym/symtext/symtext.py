@@ -12,7 +12,9 @@ from .multiplication_table import build_mult_table, subgroup_by_name, subgroup_a
 #from . import irrep_mats as IrrepMats
 
 class Symtext():
-    #def __init__(self, mol, rotate_to_std, reverse_rotate, pg, symels, chartable, class_map, atom_map, mult_table, irrep_mat) -> None:
+    """
+    Fundamental object of MolSym, holds most of the symmetry information of the molecule.
+    """
     def __init__(self, mol, rotate_to_std, reverse_rotate, pg, symels, atom_map, mult_table, irreps, irrep_mats) -> None:
         self.mol = mol
         self.rotate_to_std = rotate_to_std
@@ -52,6 +54,12 @@ class Symtext():
 
     @classmethod
     def from_molecule(cls, mol):
+        """
+        Class method for creating a Symtext from a molsym.Molecule
+
+        :type mol: molsym.Molecule
+        :rtype: molsym.Symtext
+        """
         mol.translate(mol.find_com())
         pg_str, (paxis, saxis) = find_point_group(mol)
         pg = PointGroup.from_string(pg_str)
@@ -69,6 +77,12 @@ class Symtext():
 
     @classmethod
     def from_file(cls, fn):
+        """
+        Class method for creating a Symtext from a *.xyz file.
+
+        :type fn: str
+        :rtype: molsym.Symtext
+        """
         with open(fn, "r") as lfn:
             strang = lfn.read()
         schema = qcel.models.Molecule.from_data(strang).dict()
@@ -76,6 +90,9 @@ class Symtext():
         return cls.from_molecule(mol)
     
     def get_character_table(self):
+        """
+        Get character table data. Characters are calculated from the irreducible representation matrices, classes are determined from the multiplication table.
+        """
         # Sort classes
         self.classes = []
         self.symel_to_class_map = [0 for i in range(len(self))]
@@ -105,23 +122,61 @@ class Symtext():
                 self.character_table[irrep_idx,class_idx] = np.trace(self.irrep_mats[irrep.symbol][self.symel_to_class_map.index(class_idx)])
 
     def direct_product(self, *args):
-        # Return direct product of irrep indices (*args)
+        """
+        Return direct product of irrep indices (*args).
+
+        :type *args: int
+        :rtype: NumPy array of shape (n,)
+        """
         out = self.character_table[args[0],:]
         for arg in args[1:]:
             out = np.multiply(out, self.character_table[arg,:])
         return out
 
+    def direct_product2(self, *args):
+        """
+        Return direct product of irrep objects (*args).
+
+        :type *args: molsym.Irrep
+        :rtype: NumPy array of shape (n,)
+        """
+        new_args = [self.irreps.index(arg) for arg in args]
+        return self.direct_product(*new_args)
+
+    def contains_symmetric_irrep(self, dp_vector):
+        """
+        Return True if a direct product contains the totally symmetric irreducible representation.
+
+        :type dp_vector: NumPy array of shape (n,)
+        :rtype: bool
+        """
+        p = np.multiply(dp_vector, self.class_orders)
+        return round(p.sum()/(self.order)) > 0
+
+
     def reduction_coefficients(self, rrep_characters):
+        """
+        Return reduction coefficients for the characters of a representation.
+
+        :param rrep_characters: Characters for each class for a representation (reducible or irreducible)
+        :type rrep_characters: NumPy array of shape (n,)
+        :return: Integer array with number of occurences of each irrep. in rrep_characters.
+        :rtype: NumPy array of shape (len(self.irreps),)
+        """
         out = np.zeros(len(self.irreps), dtype=int)
         for irrep_idx, irrep in enumerate(self.irreps):
             p = np.multiply(rrep_characters, self.class_orders)
             p = np.multiply(p, self.character_table[irrep_idx,:])
-            print(p.sum()/self.order)
             out[irrep_idx] = round(p.sum()/(self.order))
         return out
 
     @property
     def rotational_symmetry_number(self):
+        """
+        Returns the symmetry number for the rotational partition function.
+
+        :rtype: int
+        """
         if self.pg.family == "C":
             if self.pg.n == 0 or self.pg.n is None:
                 return 1
@@ -142,6 +197,13 @@ class Symtext():
             return 60
 
     def subgroup_symtext(self, subgroup_str):
+        """
+        Build a new Symtext for the specified subgroup from the parent Symtext.
+
+        :param subgroup_str: Schoenflies symbol of desired subgroup.
+        :type subgroup_str: str
+        :rtype: molsym.Symtext
+        """
         subgroup = PointGroup.from_string(subgroup_str)
         subgroup_symels, subgroup_irreps, subgroup_irrep_mats = pg_to_symels(subgroup.str)
         #subgroup_ctab = pg_to_chartab(subgroup)
@@ -160,7 +222,12 @@ class Symtext():
         return Symtext(new_mol, rotate_to_std, reverse_rotate, subgroup, subgroup_symels, atom_map, mult_table, subgroup_irreps, subgroup_irrep_mats)
     
     def largest_D2h_subgroup(self):
-        # Some groups may have equivalent order subgroups, if you want a specific one, don't use this function
+        """
+        Build a new Symtext for the largest subgroup of the parent Symtext that is also a subgroup of the D2h point group.
+        Some groups may have equivalent order subgroups, if you want a specific one, don't use this function
+
+        :rtype: molsym.Symtext
+        """
         D2h_subgroups = ["D2h", "D2", "C2v", "C2h", "Cs", "C2", "Ci", "C1"]
         for i in D2h_subgroups:
             try:

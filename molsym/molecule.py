@@ -6,17 +6,42 @@ global_tol = 1e-6
 
 @dataclass
 class Atom():
+    """
+    Dataclass for storing atom information
+
+    :param Z: Atomic number of atom.
+    :param mass: Mass of atom in amu as defined by QCElemental.
+    :param xyz: Position vector of atom in Cartesian coordinates.
+    :type Z: int 
+    :type mass: float
+    :type xyz: NumPy array of shape (3,)
+    """
     Z:int
     mass:float
     xyz:np.array
 
 @dataclass
 class SEA():
+    """
+    SEA: symmetry equivalent atoms.
+    SEAs are atoms that can be swapped with no distinguishable change in the molecule.
+
+    :param label: Optionally defines rotor type of SEA set (e.g. Single Atom, Linear, Spherical, Regular Polygon, Oblate Symmetric Top, etc.)
+    :param subset: Sublist of atom indices in molecule that constitute the SEA set
+    :param axis: Optionally defines possible rotational symmetry vector
+    :type label: str or None
+    :type subset: NumPy array of integers
+    :type axis: NumPy array of shape (3,) or None
+    """
     label:str
     subset:np.array
     axis:np.array
 
 class Molecule():
+    """
+    Class dealing with molecule relevant information.
+    Typically initiated from a QCSchema object.
+    """
     def __init__(self, atoms, coords, masses) -> None:
         self.tol = 1e-5
         self.atoms = np.asarray(atoms)
@@ -29,6 +54,13 @@ class Molecule():
 
     @classmethod
     def from_schema(cls, schema):
+        """
+        Class method for constructing a Molecule from a QCSchema object
+
+        :param schema: Schema dictionary to be converted to Molecule
+        :type schema: dict
+        :rtype: molsym.Molecule
+        """
         atoms = schema["symbols"]
         natoms = len(atoms)
         coords = np.reshape(schema["geometry"], (natoms,3))
@@ -40,6 +72,13 @@ class Molecule():
 
     @classmethod
     def from_file(cls, fn):
+        """
+        Class method for constructing a Molecule from an *.xyz file
+
+        :param fn: Filename
+        :type fn: str
+        :rtype: molsym.Molecule
+        """
         with open(fn, "r") as lfn:
             strang = lfn.read()
         strang = "units bohr\n"+strang
@@ -48,7 +87,14 @@ class Molecule():
 
     @classmethod
     def from_psi4_schema(cls, schema):
-        # Schemas coming from Psi4 are different for some reason?
+        """
+        Class method for constructing a Molecule from a QCSchema object generated in Psi4.
+        Schemas coming from Psi4 are different for some reason?
+
+        :param schema: Schema dictionary to be converted to Molecule
+        :type schema: dict
+        :rtype: molsym.Molecule
+        """
         atoms = schema["elem"] # was symbols
         natoms = len(atoms)
         coords = np.reshape(schema["geom"], (natoms,3)) # was geometry
@@ -87,27 +133,58 @@ class Molecule():
             return c1 and c2 and c3
 
     def find_com(self):
+        """
+        Get center of mass of molecule.
+
+        :return: Center of mass
+        :rtype: NumPy array of shape (3,)
+        """
         com = np.zeros(3)
         for i in range(self.natoms):
             com += self.masses[i]*self.coords[i,:]
         return com / sum(self.masses)
 
     def is_at_com(self):
+        """
+        Checks if molecule is at center of mass already.
+
+        :rtype: bool
+        """
         if sum(abs(self.find_com())) < self.tol:
             return True
         else:
             return False
 
     def translate(self, r):
+        """
+        Translates Cartesian positions of all atoms in molecule in place by vector r.
+
+        :param r: Translation vector
+        :type r: NumPy array of shape (3,)
+        """
         for i in range(self.natoms):
             self.coords[i,:] -= r
         
     def transform(self, M):
+        """
+        Transform coordinates of molecule by matrix M and return new molecule.
+
+        :param M: Transformation matrix (e.g. rotation, reflection, etc.)
+        :type M: NumPy array (3,3)
+        :return: Molecule with transformed atom coordinates
+        :rtype: molsym.Molecule
+        """
         new_mol = deepcopy(self)
         new_mol.coords = np.dot(new_mol.coords,np.transpose(M))
         return new_mol
 
     def distance_matrix(self):
+        """
+        Calculates the interatomic distance matrix as all pairwise distances between atoms.
+
+        :return: Interatomic distance matrix
+        :rtype: NumPy array of shape (self.natoms,self.natoms)
+        """
         dm = np.zeros((self.natoms,self.natoms))
         for i in range(self.natoms):
             for j in range(i,self.natoms):
@@ -116,6 +193,13 @@ class Molecule():
         return dm
 
     def find_SEAs(self):
+        """
+        Find sets of symmetry equivalent atoms.
+        Permutations of the distance matrix reveal which atoms form symmetry equivalent sets.
+
+        :return: List of symmetry equivalent atom sets
+        :rtype: List[molsym.SEA]
+        """
         dm = self.distance_matrix()
         out = []
         for i in range(self.natoms):
@@ -151,7 +235,12 @@ class Molecule():
         return SEAs
 
     def symmetrize(self, asym_tol=0.05):
-        # This code might be bad. Consider removing. Interatomic distances ---> Cart. not always well defined
+        """
+        Symmetrizes molecule.
+        This code might be bad. Consider removing. Interatomic distances ---> Cart. not always well defined
+        
+        :deprecated:
+        """
         print("Warning! Using this symmetrize (the one in Molecule) may fail!")
         dm = self.distance_matrix()
         SEAs = self.find_SEAs()

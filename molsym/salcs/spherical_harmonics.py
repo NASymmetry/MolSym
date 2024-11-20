@@ -9,6 +9,12 @@ from molsym.salcs.function_set import FunctionSet
 
 #0, 1+, 1-, 2+, 2- .... l+, l-
 def generateshuffle(l):
+    """
+    Return list ordering m_l by 0, 1, -1, 2, -2, ..., l, -l.
+
+    :type l: int
+    :rtype: List[int]
+    """
     count = 0
     beeb = [x for x in range(0, l*2 + 1)]
     for ind in range(0, l + 1):
@@ -20,6 +26,18 @@ def generateshuffle(l):
     return beeb
 
 def generateRotations(Lmax, rot):
+    """
+    This code generates the rotation matrices for real spherical harmonics by a recursion relation
+    found in "Rotation Matrices for Real Spherical Harmonics. Direct Determination by Recursion."
+    J. Ivanic and K. Rudenberg: doi/10.1021/jp953350u.
+
+    :param Lmax: Maximum angular momentum to treat
+    :param rot: Cartesian transformation matrix of a symmetry operation
+    :type Lmax: int
+    :type rot: NumPy array of shape (3,3)
+    :return: List of arrays, each describing how each m_l transforms under a symmetry operation
+    :rtype: List[NumPy array of shape (l,l)]
+    """
     Rsh = []
     rrot = adapt(rot)
     Rsh.append(np.eye(1))
@@ -57,8 +75,15 @@ def generateRotations(Lmax, rot):
             Rsh[r] = Rsh[r][beeb, :]
     return Rsh
 
-#generates u, w, and v coefficients, eq. 8.1, found in Table 1 of reference
 def UWVCoefficient(l, m1, m2):
+    """
+    Generates u, w, and v coefficients, eq. 8.1, found in Table 1 of reference.
+
+    :type l: int
+    :type m1: int
+    :type m2: int
+    :rtype: (float, float, float)
+    """
     delta = bool(0 == m1)
     if abs(m2) < l:
         denom = (l + m2)*(l - m2)
@@ -69,12 +94,16 @@ def UWVCoefficient(l, m1, m2):
     w = -0.5*(((l - abs(m1) - 1)*(l - abs(m1)) / denom) ** (1/2))*(1 - delta)
     return u, v, w
 
-#generates function U, eq. 8.1, found in Table 2 of reference
 def Ufun(l, m1, m2, rot, Rsh):
+    """
+    Generates function U, eq. 8.1, found in Table 2 of reference.
+    """
     return Pfun(l, 0, m1, m2, rot, Rsh)
 
-#generates function V, eq. 8.1, found in Table 2 of reference, with a sign correction (DERIVE)
 def Vfun(l, m1, m2, rot, Rsh):
+    """
+    Generates function V, eq. 8.1, found in Table 2 of reference, with a sign correction (DERIVE).
+    """
     if m1 == 0:
         V = Pfun(l, 1, 1, m2, rot, Rsh) + Pfun(l, -1, -1, m2, rot, Rsh)
     elif m1 == 1:
@@ -87,16 +116,20 @@ def Vfun(l, m1, m2, rot, Rsh):
         V = Pfun(l, 1, m1 +1, m2, rot, Rsh) + Pfun(l, -1, -m1 - 1, m2, rot, Rsh)
     return V
 
-#generates function W, eq. 8.1, found in Table 2 of reference
 def Wfun(l, m1, m2, rot, Rsh):
+    """
+    Generates function W, eq. 8.1, found in Table 2 of reference.
+    """
     if m1 > 0:
         W = Pfun(l, 1, m1 +1, m2, rot, Rsh) + Pfun(l, -1, -m1 -1, m2, rot, Rsh)
     elif m1 < 0:
         W = Pfun(l, 1, m1 -1, m2, rot, Rsh) - Pfun(l, -1, -m1 +1, m2, rot, Rsh)
     return W
 
-#generates function P, eq. 8.1, found in Table 2 of reference
 def Pfun(l, i, m1, m2, rot, Rsh):
+    """
+    Generates function P, eq. 8.1, found in Table 2 of reference.
+    """
     rsh = Rsh[l - 1]
     dl = len(Rsh[l - 1])
     ol = int((dl -1) / 2)
@@ -111,11 +144,14 @@ def Pfun(l, i, m1, m2, rot, Rsh):
     else: 
         P = rot[i + 1, 1] * rsh[m1 + ol, m2 + ol]
     return P
-#For l = 1, RSH and cartesians are the same, just rotate for convention
-#y -> x
-#z -> y
-#x -> z
+
 def adapt(rot):
+    """
+    For l = 1, RSH and cartesians are the same, just rotate for convention
+    y -> x
+    z -> y
+    x -> z
+    """
     rrot = np.zeros((3,3))
     rrot[0,0] = rot[1,1]
     rrot[0,1] = rot[1,2]
@@ -128,8 +164,15 @@ def adapt(rot):
     rrot[2,2] = rot[0,0]
     return rrot
 
-#count the number of shells between an atom
 def obstruct(atom1, atom2, nbas_vec):
+    """
+    Count the number of shells between an atom.
+
+    :type atom1: int
+    :type atom2: int
+    :type nbas_vec: NumPy array of shape (n,)
+    :rtype: int
+    """
     if atom1 == atom2:
         obstruction = 0
     else:
@@ -141,14 +184,23 @@ def obstruct(atom1, atom2, nbas_vec):
             obstruction += x
     return obstruction
 
-#collect parameterized rsh rotations for each symmetry operation
 def rotate_em(maxam, ops):
-   rsh_rot_per_op = []
-   for i, op in enumerate(ops):
-       rsh_rot_per_op.append(generateRotations(maxam, op.rrep))
-   return rsh_rot_per_op
+    """
+    Collect parameterized rsh rotations for each symmetry operation.
+
+    :type maxam: int
+    :type ops: List[molsym.Symel]
+    :rtype: List[List[NumPy array of shape (l,l)]]
+    """
+    rsh_rot_per_op = []
+    for i, op in enumerate(ops):
+        rsh_rot_per_op.append(generateRotations(maxam, op.rrep))
+    return rsh_rot_per_op
 
 class SphericalHarmonics(FunctionSet):
+    """
+    FunctionSet for spherical harmonic basis functions.
+    """
     def __init__(self, symtext, fxn_list) -> None:
         self.fxns = fxn_list
         self.symtext = symtext
@@ -170,6 +222,11 @@ class SphericalHarmonics(FunctionSet):
         return sum(self.nbas_vec)
 
     def get_symmetry_equiv_functions(self):
+        """
+        Finds the sets of functions that are invariant under all of the symmetry elements.
+
+        :rtype: List[List[int]]
+        """
         symm_equiv = []
         done = []
         for bfxn_i in range(len(self)):
@@ -190,6 +247,11 @@ class SphericalHarmonics(FunctionSet):
         return symm_equiv
 
     def get_fxn_map(self):
+        """
+        Builds the function map for all of the basis functions under each symmetry element.
+        
+        :rtype: NumPy array of shape (nbfxn, nsymels, nbfxn)
+        """
         # Spherical harmonic map for l up to maxam, not including l = 0
         self.rotated = rotate_em(self.maxam, self.symtext.symels) # symel x l x ml
         fxn_map = np.zeros((len(self), len(self.symtext), len(self))) # basis_function x symel x basis_function
@@ -220,6 +282,14 @@ class SphericalHarmonics(FunctionSet):
         return maxam
 
     def special_function(self, salc, coord, sidx, irrmat):
+        """
+        Defines how to map an internal coordinate under a symmetry operation for the ProjectionOp function.
+        
+        :type salc: NumPy array of shape (number of internal coordinates,)
+        :type coord: int
+        :type sidx: int
+        :type irrmat: NumPy array of shape (nsymel, irrep.d, irrep.d)
+        """
         dim = irrmat[sidx,:,:].shape[0]
         new_vec = self.fxn_map[coord, sidx, :]
         #salc[:,:,:] += np.multiply((irrmat[sidx, :, :]).reshape(dim**2,1), new_vec).reshape((dim, dim, new_vec.size))

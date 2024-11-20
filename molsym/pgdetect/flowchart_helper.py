@@ -2,6 +2,9 @@ import numpy as np
 from molsym.symtools import *
 
 class RotationElement():
+    """
+    Data structure holding rotation axes and orders.
+    """
     def __init__(self, axis, order):
         self.axis = axis
         self.order = order
@@ -10,6 +13,13 @@ class RotationElement():
             return issame_axis(self.axis, other.axis) and self.order == other.order
 
 def intersect(a, b):
+    """
+    Find intersection of sets of RotationElements.
+
+    :type a: List[RotationElement]
+    :type b: List[RotationElement]
+    :rtype: List[RotationElement]
+    """
     out = []
     for re_a in a:
         for re_b in b:
@@ -19,6 +29,14 @@ def intersect(a, b):
     return out
 
 def rotation_set_intersection(rotation_set):
+    """
+    Find intersection of all RotationElement sets in rotation_set
+
+    :param rotation_set: Set of sets of RotationElement
+    :type rotation_set: List[List[RotationElement]]
+    :return: Intersection of rotation sets
+    :rtype: List[RotationElement]
+    """
     out = rotation_set[0]
     if len(rotation_set) > 1:
         for i in range(len(rotation_set)):
@@ -26,6 +44,13 @@ def rotation_set_intersection(rotation_set):
     return out
 
 def find_rotation_sets(mol, SEAs):
+    """
+    For each set of symmetry equivalent atoms, find the set of possible RotationElements
+
+    :type mol: molsym.Molecule
+    :type SEAs: List[molsym.SEA]
+    :rtype: List[List[RotationElement]]
+    """
     out_all_SEAs = []
     for sea in SEAs:
         length = len(sea.subset)
@@ -84,6 +109,12 @@ def find_rotation_sets(mol, SEAs):
     return out_all_SEAs
 
 def find_rotations(mol, rotation_set):
+    """
+    Find the RotationElements in rotation_set that leave the molecule indistinguishable.
+
+    :type rotation_set: List[List[RotationElement]]
+    :rtype: List[RotationElement]
+    """
     if len(rotation_set) < 1:
         return []
     molmoit = calcmoit(mol)
@@ -104,6 +135,13 @@ def find_rotations(mol, rotation_set):
     return out
 
 def find_a_c2(mol, SEAs):
+    """
+    Search for any possible C_2 rotation axes, return the first one found.
+
+    :type mol: molsym.Molecule
+    :type SEAs: List[molsym.SEA]
+    :rtype: NumPy array of shape (3,)
+    """
     for sea in SEAs:
         a = c2a(mol, sea)
         if a is not None:
@@ -124,6 +162,15 @@ def find_a_c2(mol, SEAs):
     return None
 
 def is_there_ortho_c2(mol, SEAs, paxis):
+    """
+    Search for any possible C_2 rotation axes that are orthogonal to paxis, return the first one found.
+
+    :type mol: molsym.Molecule
+    :type SEAs: List[molsym.SEA]
+    :type paxis: NumPy array of shape (3,)
+    :return: True if found and new C_2 axis
+    :rtype: (bool, NumPy array of shape (3,) or None)
+    """
     for sea in SEAs:
         b = c2b(mol, sea, axis=paxis)
         if b is not None:
@@ -144,6 +191,14 @@ def is_there_ortho_c2(mol, SEAs, paxis):
     return False, None
 
 def num_C2(mol, SEAs):
+    """
+    Find the number of C_2 axis present and the axes defining them.
+    
+    :type mol: molsym.Molecule
+    :type SEAs: List[molsym.SEA]
+    :return: Number of C_2 axes and the C_2 axes
+    :rtype: (int, List[NumPy array of shape (3,)])
+    """
     axes = []
     for sea in SEAs:
         a = c2a(mol, sea, all=True)
@@ -168,6 +223,18 @@ def num_C2(mol, SEAs):
     return len(unique_axes), unique_axes
 
 def c2a(mol, sea, axis=None, all=False):
+    """
+    Find C_2 axes by testing vectors formed from the origin and midpoint of all pairs of symmetry equivalent atoms.
+
+    :param axis: If not None, only search for C_2 axes that are not equivalent to axis
+    :param all: If False return first C_2 found, if True search all atom pairs for C_2 axes
+    :type mol: molsym.Molecule
+    :type sea: molsym.SEA
+    :type axis: None or NumPy array of shape (3,)
+    :type all: bool
+    :return: C_2 axis or list of C_2 axes (if all=True)
+    :rtype: NumPy array of shape (3,) or List[NumPy array of shape (3,)]
+    """
     length = len(sea.subset)
     out = []
     for i in range(length):
@@ -191,6 +258,18 @@ def c2a(mol, sea, axis=None, all=False):
     return out
 
 def c2b(mol, sea, axis=None, all=False):
+    """
+    Find C_2 axes by testing vectors which pass through individual symmetry equivalent atoms.
+
+    :param axis: If not None, only search for C_2 axes that are not equivalent to axis
+    :param all: If False return first C_2 found, if True search all atom pairs for C_2 axes
+    :type mol: molsym.Molecule
+    :type sea: molsym.SEA
+    :type axis: None or NumPy array of shape (3,)
+    :type all: bool
+    :return: C_2 axis or list of C_2 axes (if all=True)
+    :rtype: NumPy array of shape (3,) or List[NumPy array of shape (3,)]
+    """
     length = len(sea.subset)
     out = []
     for i in range(length):
@@ -211,6 +290,18 @@ def c2b(mol, sea, axis=None, all=False):
     return out
 
 def c2c(mol, sea1, sea2, axis=None):
+    """
+    Find C_2 axes by testing vectors mutually orthogonal to sets of linear SEAs.
+
+    :param axis: If not None, only search for C_2 axes that are not equivalent to axis
+    :param all: If False return first C_2 found, if True search all atom pairs for C_2 axes
+    :type mol: molsym.Molecule
+    :type sea: molsym.SEA
+    :type axis: None or NumPy array of shape (3,)
+    :type all: bool
+    :return: C_2 axis or list of C_2 axes (if all=True)
+    :rtype: NumPy array of shape (3,) or List[NumPy array of shape (3,)]
+    """
     rij = mol.coords[sea1.subset[0],:] - mol.coords[sea1.subset[1],:]
     rkl = mol.coords[sea2.subset[0],:] - mol.coords[sea2.subset[1],:]
     c2_axis = normalize(np.cross(rij, rkl))
@@ -224,18 +315,39 @@ def c2c(mol, sea1, sea2, axis=None):
         return c2_axis
     return None
 
-def highest_order_axis(rotations):
+def highest_order_axis(rotations): 
+    """
+    Sorts rotations by highest order rotation axis first.
+
+    :type rotations: List[RotationElement]
+    :rtype: List[RotationElemtns]
+    """
     ns = []
     for i in range(len(rotations)):
         ns.append(rotations[i].order)
     return np.sort(ns)[-1]
 
 def is_there_sigmah(mol, paxis):
+    """
+    Check for reflection plane with same normal axis as paxis.
+
+    :type mol: molsym.Molecule
+    :type paxis: NumPy array of shape (3,)
+    :rtype: bool
+    """
     sigmah = reflection_matrix(paxis)
     molB = mol.transform(sigmah)
     return isequivalent(mol, molB)
 
 def is_there_sigmav(mol, SEAs, paxis):
+    """
+    Check for reflection planes with normal axis orthogonal to paxis.
+
+    :type mol: molsym.Molecule
+    :type SEAs: List[molsym.SEA]
+    :type paxis: NumPy array of shape (3,)
+    :rtype: bool
+    """
     axes = []
     for sea in SEAs:
         length = len(sea.subset)
@@ -273,12 +385,24 @@ def is_there_sigmav(mol, SEAs, paxis):
     return False, None
 
 def mol_is_planar(mol):
+    """
+    Check if all atoms in the molecue lie in a plane.
+
+    :type mol: molsym.Molecule
+    :rtype: bool
+    """
     rank = np.linalg.matrix_rank(mol.coords, tol=mol.tol)
     if rank < 3:
         return True
     return False
 
 def planar_mol_axis(mol):
+    """
+    Returns the normal axis to the plane of a planar molecule.
+
+    :type mol: molsym.Molecule
+    :rtype: NumPy array of shape (3,) or None
+    """
     for i in range(mol.natoms):
         for j in range(i,mol.natoms):
             a = normalize(mol.coords[i,:])
@@ -286,12 +410,18 @@ def planar_mol_axis(mol):
             if a is not None and b is not None:
                 chk = np.dot(a,b)
                 if not np.isclose(chk, 1.0, atol=mol.tol):
-                    return normalize(np.cross(a,b))
-    return None
+                    out = normalize(np.cross(a,b))
+                    if out is not None:
+                        return out
+                    #return normalize(np.cross(a,b))
+    #return None
 
 def find_C3s_for_Ih(mol):
     """
-    Finds the twenty C3 axes for an Ih point group so the paxis and saxis can be defined
+    Finds the twenty C3 axes for an Ih point group so the paxis and saxis can be defined.
+
+    :type mol: molsym.Molecule
+    :rtype: List[NumPy array of shape (3,)]
     """
     c3_axes = []
     for i in range(mol.natoms):
@@ -327,7 +457,10 @@ def find_C3s_for_Ih(mol):
 
 def find_C4s_for_Oh(mol):
     """
-    Finds the three C4 axes for an Oh point group so the paxis and saxis can be defined
+    Finds the three C4 axes for an Oh point group so the paxis and saxis can be defined.
+    
+    :type mol: molsym.Molecule
+    :rtype: List[NumPy array of shape (3,)]
     """
     c4_axes = []
     for i in range(mol.natoms):

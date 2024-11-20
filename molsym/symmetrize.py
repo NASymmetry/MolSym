@@ -2,6 +2,19 @@ import numpy as np
 from .symtext.symtext import Symtext
 
 def symmetrize(mol_in, asym_tol=0.05):
+    """
+    Symmetrizes a molecule to a detectable low tolerance point group.
+    Constructs a molsym.Symtext for mol_in with tolerance asym_tol.
+    The atoms are then projected onto the symmetry elements in the Symtext.
+    The tolerance of the returned molecule is set to 1e-12.
+
+    :param mol_in: Molecule to be symmetrized.
+    :param asym_tol: Tolerance for asymmetry in mol_in, default is 0.05
+    :type mol_in: molsym.Molecule
+    :type asym_tol: float
+    :return: Symmetrized molecule
+    :rtype: molsym.Molecule
+    """
     mol_in.tol = asym_tol
     seas = mol_in.find_SEAs()
     asym_symtext = Symtext.from_molecule(mol_in)

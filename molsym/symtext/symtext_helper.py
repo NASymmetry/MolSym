@@ -5,6 +5,9 @@ import re
 from .general_irrep_mats import Symel
 
 def generate_symel_to_class_map(symels, ctab):
+    """
+    Deprecated. Generate a map of the symels to their corresponding classes.
+    """
     pg = PointGroup.from_string(ctab.name)
     if pg.n is not None:
         ns = pg.n>>1 # pg.n floor divided by 2
@@ -132,6 +135,9 @@ def generate_symel_to_class_map(symels, ctab):
     return class_map
 
 def cn_class_map(class_map, n, idx_offset, cls_offset):
+    """
+    Deprecated
+    """
     for i in range(1,n): # = 2:n
         if i > (n>>1):
             class_map[i+idx_offset] = n-i+cls_offset
@@ -140,6 +146,16 @@ def cn_class_map(class_map, n, idx_offset, cls_offset):
     return class_map
 
 def rotate_mol_to_symels(mol, paxis, saxis):
+    """
+    Rotate molecule with symmetry defined by paxis and saxis to symmetry elements.
+    paxis -> z axis and saxis -> x axis.
+
+    :type mol: molsym.Molecule
+    :type paxis: NumPy array of shape (3,)
+    :type saxis: NumPy array of shape (3,)
+    :return: New rotated molecule, rotation matrix, inverse rotation matrix
+    :rtype: (molsym.Molecule, NumPy array of shape (3,3), NumPy array of shape (3,3))
+    """
     if np.isclose(np.linalg.norm(paxis), 0.0, atol=global_tol): 
         # Symmetry is C1 and paxis not defined, just return mol
         rmat = rmat_inv = np.eye(3)
@@ -163,6 +179,14 @@ def rotate_mol_to_symels(mol, paxis, saxis):
     return new_mol, rmat, rmat_inv
 
 def get_atom_mapping(mol, symels):
+    """
+    Map of each atom under each symmetry element.
+
+    :type mol: molsym.Molecule
+    :type symels: List[molsym.Symel]
+    :return: Atom by Symel array
+    :rtype: NumPy array of shape (natom, nsymel)
+    """
     # symels after transformation
     amap = np.zeros((mol.natoms, len(symels)), dtype=int)
     for atom in range(mol.natoms):
@@ -175,6 +199,9 @@ def get_atom_mapping(mol, symels):
     return amap
 
 def get_linear_atom_mapping(mol, pg):
+    """
+    Atom map for linear point groups. Still under development.
+    """
     amap = np.array([atom for atom in range(mol.natoms)], dtype=int).reshape((mol.natoms,1))
     if pg.family == "D":
         ungerade_map = np.zeros((mol.natoms), dtype=int)
@@ -188,6 +215,14 @@ def get_linear_atom_mapping(mol, pg):
     return amap
 
 def where_you_go(mol, atom, symel):
+    """
+    Find the resulting atom after applying a symmetry operation
+
+    :type mol: molsym.Molecule
+    :type atom: int
+    :type symel: molsym.Symel
+    :rtype: int
+    """
     ratom = np.dot(symel.rrep, mol.coords[atom,:].T)
     for i in range(mol.natoms):
         if np.isclose(mol.coords[i,:], ratom, atol=mol.tol).all():
@@ -195,6 +230,12 @@ def where_you_go(mol, atom, symel):
     return None
 
 def get_class_name(symels_in_class):
+    """
+    Get the name of the class that a set of Symels belong to.
+
+    :type symels_in_class: List[molsym.Symel]
+    :rtype: str
+    """
     if "^" in symels_in_class[0].symbol:
         rot_order = []
         for symel in symels_in_class:
@@ -209,6 +250,13 @@ def get_class_name(symels_in_class):
     return re.sub(r"\(\w+\)", "", pickem)
 
 def irrep_sort_idx(irrep_str):
+    """
+    Provide an integer to each irrep string such that when sorted from smallest to largest
+    the result is that the irrep strings are sorted into the order present in most published character tables.
+
+    :type irrep_str: str
+    :rtype: int
+    """
     rsult = 0
     # g and ' always go first
     gchk = r"g"
