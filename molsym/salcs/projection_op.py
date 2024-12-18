@@ -5,6 +5,7 @@ import molsym.symtext.irrep_mats as IrrepMats
 from .salc import SALC, SALCs
 from .internal_coordinates import InternalCoordinates
 from .cartesian_coordinates import CartesianCoordinates
+np.printoptions(precision=3, suppress=True)
 
 def project_out_Eckart(eckart_conditions, new_vector):
     for i in range(eckart_conditions.shape[0]):

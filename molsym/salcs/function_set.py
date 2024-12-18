@@ -7,6 +7,8 @@ class FunctionSet(ABC):
         self.fxns = fxn_list
         self.symtext = symtext
         self.fxn_map, self.phase_map = self.get_fxn_map()
+        #print(self.phase_map)
+        #print(beebus)
         self.SE_fxns = self.get_symmetry_equiv_functions()
 
     def __len__(self):
