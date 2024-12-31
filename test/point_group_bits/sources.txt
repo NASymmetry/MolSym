@@ -1,0 +1,9 @@
+Sources of molecules in folder
+
+1 https://forum.psicode.org/t/unrecognized-point-group-bits/2776
+2 https://github.com/psi4/psi4/issues/948 Lori Burns comment via Francesco Evangelista
+3 https://github.com/psi4/psi4/issues/948 from Awallace3
+4 https://github.com/psi4/psi4/issues/948, noreorient, nocom, symmetry c1
+5 https://github.com/psi4/psi4/issues/3213, comment 1
+6 https://github.com/psi4/psi4/issues/3213, comment 2
+

@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from molsym.symtext.symel import CharTable
+from molsym.symtext.character_table import CharacterTable, pg_to_chartab
 from pgs.Cn import *
 from pgs.Cnh import *
 from pgs.Cnv import *
@@ -8,19 +8,18 @@ from pgs.Dn import *
 from pgs.Dnh import *
 from pgs.Dnd import *
 from pgs.Sn import *
-from molsym.symtext.main import pg_to_chartab
 from test_symels import pgs
 
 @pytest.mark.parametrize("pg", pgs)
 def test_CharTable(pg):
     ctab = pg_to_chartab(pg)
-    ctab_ans = CharTable(pg,np.array(eval(pg+"irr")),np.array(eval(pg+"cn")),None,eval(pg+"ct"),None)
+    ctab_ans = CharacterTable(pg,np.array(eval(pg+"irr")),np.array(eval(pg+"cn")),None,eval(pg+"ct"),None)
     beans = ctab == ctab_ans
     if not beans:
         print(ctab)
         print("Ref.")
         print(ctab_ans)
-        tab_chk = ctab.characters == ctab_ans.characters
+        tab_chk = np.isclose(ctab.characters, ctab_ans.characters, atol=1e-14)
         irr_chk = ctab.irreps == ctab_ans.irreps
         name_chk = ctab.classes == ctab_ans.classes
         print(f"Table Check: {tab_chk.all()}")

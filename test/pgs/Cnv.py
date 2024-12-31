@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.linalg import matrix_power
-from molsym.molecule import Cn, reflection_matrix, inversion_matrix, Sn
-from molsym.symtext.symtext import Symel
+from molsym.symtools import Cn, reflection_matrix
+from molsym.symtext.symel import Symel
 
 x = np.array([1,0,0])
 y = np.array([0,1,0])
@@ -10,17 +10,17 @@ z = np.array([0,0,1])
 c52 = 2*np.cos(2*np.pi/5)
 c54 = 2*np.cos(4*np.pi/5)
 
-C2vs = [Symel("E",None,np.identity(3)), Symel("C_2^1",z,Cn(z,2)), Symel("sigma_v(1)",y,reflection_matrix(y)), Symel("sigma_d(1)",x,reflection_matrix(x))]
-C3vs = [Symel("E",None,np.identity(3)), Symel("C_3^1",z,Cn(z,3)),Symel("C_3^2",z,matrix_power(Cn(z,3),2)),
-        Symel("sigma_v(1)",y,reflection_matrix(y)), Symel("sigma_v(2)",np.dot(Cn(z,3),y.T),reflection_matrix(np.dot(Cn(z,3),y.T))), Symel("sigma_v(3)",np.dot(matrix_power(Cn(z,3),2),y.T),reflection_matrix(np.dot(matrix_power(Cn(z,3),2),y.T)))]
-C4vs = [Symel("E",None,np.identity(3)), Symel("C_4^1",z,Cn(z,4)),Symel("C_2^1",z,Cn(z,2)),Symel("C_4^3",z,matrix_power(Cn(z,4),3)),
-        Symel("sigma_v(1)",y,reflection_matrix(y)), Symel("sigma_v(2)",x,reflection_matrix(x)), Symel("sigma_d(1)",np.dot(Cn(z,8),y.T),reflection_matrix(np.dot(Cn(z,8),y.T))), Symel("sigma_d(2)",np.dot(Cn(z,8),x.T),reflection_matrix(np.dot(Cn(z,8),x.T)))]
-C5vs = [Symel("E",None,np.identity(3)), Symel("C_5^1",z,Cn(z,5)),Symel("C_5^2",z,matrix_power(Cn(z,5),2)),Symel("C_5^3",z,matrix_power(Cn(z,5),3)),Symel("C_5^4",z,matrix_power(Cn(z,5),4)),
-        Symel("sigma_v(1)",y,reflection_matrix(y)), Symel("sigma_v(2)",np.dot(Cn(z,5),y.T),reflection_matrix(np.dot(Cn(z,5),y.T))), Symel("sigma_v(3)",np.dot(matrix_power(Cn(z,5),2),y.T),reflection_matrix(np.dot(matrix_power(Cn(z,5),2),y.T))), 
-        Symel("sigma_v(4)",np.dot(matrix_power(Cn(z,5),3),y.T),reflection_matrix(np.dot(matrix_power(Cn(z,5),3),y.T))), Symel("sigma_v(5)",np.dot(matrix_power(Cn(z,5),4),y.T),reflection_matrix(np.dot(matrix_power(Cn(z,5),4),y.T)))]
-C6vs = [Symel("E",None,np.identity(3)), Symel("C_6^1",z,Cn(z,6)),Symel("C_3^1",z,Cn(z,3)),Symel("C_2^1",z,Cn(z,2)),Symel("C_3^2",z,matrix_power(Cn(z,3),2)),Symel("C_6^5",z,matrix_power(Cn(z,6),5)),
-        Symel("sigma_v(1)",y,reflection_matrix(y)), Symel("sigma_v(2)",np.dot(Cn(z,6),y.T),reflection_matrix(np.dot(Cn(z,6),y.T))), Symel("sigma_v(3)",np.dot(matrix_power(Cn(z,6),2),y.T),reflection_matrix(np.dot(matrix_power(Cn(z,6),2),y.T))),
-        Symel("sigma_d(1)",np.dot(matrix_power(Cn(z,6),2),x.T),reflection_matrix(np.dot(matrix_power(Cn(z,6),2),x.T))), Symel("sigma_d(2)",x,reflection_matrix(x)), Symel("sigma_d(3)",np.dot(Cn(z,6),x.T),reflection_matrix(np.dot(Cn(z,6),x.T)))]
+C2vs = [Symel("E",None,np.identity(3)), Symel("C_2",z,Cn(z,2)), Symel("sigma_v(0)",y,reflection_matrix(y)), Symel("sigma_d(0)",x,reflection_matrix(x))]
+C3vs = [Symel("E",None,np.identity(3)), Symel("C_3",z,Cn(z,3)),Symel("C_3^2",z,matrix_power(Cn(z,3),2)),
+        Symel("sigma_v(0)",y,reflection_matrix(y)), Symel("sigma_v(1)",np.dot(Cn(z,3),y.T),reflection_matrix(np.dot(Cn(z,3),y.T))), Symel("sigma_v(2)",np.dot(matrix_power(Cn(z,3),2),y.T),reflection_matrix(np.dot(matrix_power(Cn(z,3),2),y.T)))]
+C4vs = [Symel("E",None,np.identity(3)), Symel("C_4",z,Cn(z,4)),Symel("C_2",z,Cn(z,2)),Symel("C_4^3",z,matrix_power(Cn(z,4),3)),
+        Symel("sigma_v(0)",y,reflection_matrix(y)), Symel("sigma_v(1)",x,reflection_matrix(x)), Symel("sigma_d(0)",np.dot(Cn(z,8),y.T),reflection_matrix(np.dot(Cn(z,8),y.T))), Symel("sigma_d(1)",np.dot(Cn(z,8),x.T),reflection_matrix(np.dot(Cn(z,8),x.T)))]
+C5vs = [Symel("E",None,np.identity(3)), Symel("C_5",z,Cn(z,5)),Symel("C_5^2",z,matrix_power(Cn(z,5),2)),Symel("C_5^3",z,matrix_power(Cn(z,5),3)),Symel("C_5^4",z,matrix_power(Cn(z,5),4)),
+        Symel("sigma_v(0)",y,reflection_matrix(y)), Symel("sigma_v(1)",np.dot(Cn(z,5),y.T),reflection_matrix(np.dot(Cn(z,5),y.T))), Symel("sigma_v(2)",np.dot(matrix_power(Cn(z,5),2),y.T),reflection_matrix(np.dot(matrix_power(Cn(z,5),2),y.T))), 
+        Symel("sigma_v(3)",np.dot(matrix_power(Cn(z,5),3),y.T),reflection_matrix(np.dot(matrix_power(Cn(z,5),3),y.T))), Symel("sigma_v(4)",np.dot(matrix_power(Cn(z,5),4),y.T),reflection_matrix(np.dot(matrix_power(Cn(z,5),4),y.T)))]
+C6vs = [Symel("E",None,np.identity(3)), Symel("C_6",z,Cn(z,6)),Symel("C_3",z,Cn(z,3)),Symel("C_2",z,Cn(z,2)),Symel("C_3^2",z,matrix_power(Cn(z,3),2)),Symel("C_6^5",z,matrix_power(Cn(z,6),5)),
+        Symel("sigma_v(0)",y,reflection_matrix(y)), Symel("sigma_v(1)",np.dot(Cn(z,6),y.T),reflection_matrix(np.dot(Cn(z,6),y.T))), Symel("sigma_v(2)",np.dot(matrix_power(Cn(z,6),2),y.T),reflection_matrix(np.dot(matrix_power(Cn(z,6),2),y.T))),
+        Symel("sigma_d(0)",np.dot(matrix_power(Cn(z,6),2),x.T),reflection_matrix(np.dot(matrix_power(Cn(z,6),2),x.T))), Symel("sigma_d(1)",x,reflection_matrix(x)), Symel("sigma_d(2)",np.dot(Cn(z,6),x.T),reflection_matrix(np.dot(Cn(z,6),x.T)))]
 
 C2virr = ["A1", "A2", "B1", "B2"]
 C2vcn = ["E","C_2","sigma_v(xz)","sigma_d(yz)"]
