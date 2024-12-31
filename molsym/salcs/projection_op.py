@@ -3,7 +3,6 @@ import molsym
 from .SymmetryEquivalentIC import *
 from .salc import SALC, SALCs
 from .cartesian_coordinates import CartesianCoordinates
-np.printoptions(precision=3, suppress=True)
 
 def project_out_Eckart(eckart_conditions, new_vector):
     """

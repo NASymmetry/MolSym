@@ -72,7 +72,6 @@ class Molecule():
     
     @classmethod
     def from_psi4_molecule(cls, mol):
-        print(f"The mol {mol}")
         atoms = [mol.symbol(i) for i in range(mol.natom())]
         coords = mol.geometry().to_array()
         masses = [mol.mass(i) for i in range(mol.natom())]
@@ -117,10 +116,6 @@ class Molecule():
         masses = np.zeros(natoms)
         for (idx, symb) in enumerate(atoms):
             masses[idx] = qcel.periodictable.to_mass(symb)
-        print("masses")
-        print(masses)
-        print("coords")
-        print(coords)
         return cls(atoms, coords, masses)
 
     def __repr__(self) -> str:
