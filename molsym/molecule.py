@@ -2,6 +2,7 @@ import numpy as np
 import qcelemental as qcel
 from dataclasses import dataclass
 from copy import deepcopy
+import sys
 global_tol = 1e-6
 
 @dataclass
@@ -72,9 +73,6 @@ class Molecule():
     
     @classmethod
     def from_psi4_molecule(cls, mol):
-        atoms = [mol.symbol(i) for i in range(mol.natom())]
-        coords = mol.geometry().to_array()
-        masses = [mol.mass(i) for i in range(mol.natom())]
         """
         Class method for constructing a Molecule from a QCSchema object
 
@@ -82,6 +80,11 @@ class Molecule():
         :type schema: dict
         :rtype: molsym.Molecule
         """
+        if "psi4" not in sys.modules:
+            raise ImportError("Psi4 is required to use this function")
+        atoms = [mol.symbol(i) for i in range(mol.natom())]
+        coords = mol.geometry().to_array()
+        masses = [mol.mass(i) for i in range(mol.natom())]
         return cls(atoms, coords, masses)
 
     @classmethod

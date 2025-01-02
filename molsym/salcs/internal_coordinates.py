@@ -1,4 +1,3 @@
-import copy
 from copy import deepcopy
 import numpy as np
 from .function_set import FunctionSet
@@ -21,20 +20,11 @@ class InternalCoordinates(FunctionSet):
         :return: New internal coordinate index and phase
         :rtype: int, float
         """
-        symbol = self.symtext.symels[symop].symbol
-        ic_type = self.ic_types[ic_idx][0]
-        #self.phase_map = np.ones((len(self.ic_list), len(self.ic_list)))
-        if symbol[0] == "i" or symbol[0] == "S" or symbol[0] == "s": # s is for sigma
-            if ic_type == "D" or ic_type == "O":
-                self.phase_map[ic_idx, symop] = -1.0
-            elif ic_type == "L":
-                self.phase_map[ic_idx, symop] = -1.0
-           
         mapped_ic = []
         for atom in self.ic_list[ic_idx]:
             atom2 = int(self.symtext.atom_map[atom, symop])
             mapped_ic.append(atom2)
-        index, phase = self.ic_index(mapped_ic)
+        index, phase = self.ic_index(mapped_ic, symop, ic_idx)
         return index, phase
     
     def get_fxn_map(self):
@@ -74,7 +64,7 @@ class InternalCoordinates(FunctionSet):
         
         return SEICs
 
-    def ic_index(self, ic):
+    def ic_index(self, ic, symop, ic_idx):
         """
         Permutes internal coordinate indices and tracks phase to avoid redundantly defined coordinates.
         Example, the angle between atoms 1,2,3 is the same as 3,2,1.
@@ -82,19 +72,25 @@ class InternalCoordinates(FunctionSet):
         :type ic: List[int]
         :rtype: (int, int)
         """
+        symbol = self.symtext.symels[symop].symbol
+        ic_type = self.ic_types[ic_idx][0]
+        phase_from_op = 1.0
+        if symbol[0] == "i" or symbol[0] == "S" or symbol[0] == "s": # s is for sigma
+            if ic_type in ["D", "O", "L"]:
+                phase_from_op = -1.0
         if len(ic) > 3:
             ic2 = deepcopy(ic)
             ic2[2], ic2[3] = ic[3], ic[2]
             for c, coord in enumerate(self.ic_list):
                 # TODO here
                 if ic == coord:
-                    return c, 1
+                    return c, 1 * phase_from_op
                 elif list(reversed(ic)) == coord:
-                    return c, 1
+                    return c, 1 * phase_from_op
                 elif ic2 == coord:
-                    return c, -1
+                    return c, -1 * phase_from_op
                 elif list(reversed(ic2)) == coord:
-                    return c, -1
+                    return c, -1 * phase_from_op
         
         elif len(ic) == 3:
             #first, loop through IC list, only after the list is exhausted, loop through reverse indices
@@ -103,11 +99,11 @@ class InternalCoordinates(FunctionSet):
                     return c, 1
                 elif list(reversed(ic)) == coord:
                     return c, 1
-            ic2 = copy.deepcopy(ic)
-            for c, coord in enumerate(self.ic_list):
-                if len(coord) == 3:
-                    if ic[0] == coord[0] and ic[1] == coord[1]:
-                        return c, -1
+            ic2 = deepcopy(ic)
+            #for c, coord in enumerate(self.ic_list):
+            #    if len(coord) == 3:
+            #        if ic[0] == coord[0] and ic[1] == coord[1]:
+            #            return c, -1
         else:
             for c, coord in enumerate(self.ic_list):
                 if ic == coord:
