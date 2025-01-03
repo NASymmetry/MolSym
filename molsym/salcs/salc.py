@@ -205,10 +205,11 @@ class SALCs():
                         B[:,col] /= np.linalg.norm(B[:,col])
                     for idx, salc in enumerate(self.salcs_by_irrep[irrep_idx]):
                         self.salcs[salc].coeffs = B[:,idx]
+                    #raise Exception("BEANS")
                 else:
                     n_pf_sets = round(len(self.salcs_by_irrep[irrep_idx]) / irrep.d)
-                    #B1 = self.basis_transformation_matrix[:,:irrep.d]
-                    B1 = self.basis_transformation_matrix[:,self.salcs_by_irrep[irrep_idx]]
+                    salcs_in_this_irrep = self.salcs_by_irrep[irrep_idx]
+                    B1 = self.basis_transformation_matrix[:,salcs_in_this_irrep]
                     # Gram-Schmidt orthogonalize columns of B1
                     trans_mat = np.eye(n_pf_sets)
                     for col_idx in range(1, n_pf_sets):
@@ -218,13 +219,13 @@ class SALCs():
                             trans_mat[:,col_idx] -= proj * trans_mat[:,gs_idx]
                         nrm = np.linalg.norm(B1[:,col_idx])
                         B1[:,col_idx] /= nrm
+                        self.salcs[salcs_in_this_irrep[col_idx]].coeffs = B1[:,col_idx]
                         trans_mat[:,col_idx] /= nrm
+                    B1 = self.basis_transformation_matrix[:,salcs_in_this_irrep]
                     # Transform other partner function sets according to the Gram-Schmidt orthogonalization of B1
-                    for pf_idx in range(irrep.d):
-                        pfxn_set = [pf_idx*irrep.d + i for i in range(n_pf_sets)]
-                        Bi = self.basis_transformation_matrix[:,pfxn_set]
+                    for pf_idx in range(1,irrep.d):
+                        pfxn_set = [pf_idx*n_pf_sets + i for i in range(n_pf_sets)]
+                        Bi = self.basis_transformation_matrix[:,[salcs_in_this_irrep[idx] for idx in pfxn_set]]
                         Bi_trans = Bi @ trans_mat
-                        for Bidx,salc_idx in enumerate(pfxn_set):
-                            self.salcs[salc_idx].coeffs = Bi_trans[:,Bidx] / np.linalg.norm(Bi_trans[:,Bidx])
-                    
-
+                        for Bidx, salc_idx in enumerate(pfxn_set):
+                            self.salcs[salcs_in_this_irrep[salc_idx]].coeffs = Bi_trans[:,Bidx] / np.linalg.norm(Bi_trans[:,Bidx])
