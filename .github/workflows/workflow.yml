@@ -39,7 +39,7 @@ jobs:
       run: |
         pytest --cov="molsym" --color=yes --cov-report=xml test/
     - name: Upload Coverage to Codecov
-      uses: codecov/codecov-action@v2
+      uses: codecov/codecov-action@v5
       with:
         directory: ./coverage/reports/
         env_vars: OS,PYTHON
