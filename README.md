@@ -20,7 +20,7 @@
     </td>
     <td align="center">
       <a href=https://codecov.io/gh/NASymmetry/MolSym>
-      <img src=https://codecov.io/gh/NASymmetry/MolSym/branch/main/graph/badge.svg?token=NQDJ0QYLB0>
+      <img src=https://codecov.io/gh/NASymmetry/MolSym/branch/nlk36701-patch-3/graph/badge.svg?token=NQDJ0QYLB0>
       </a> 
     </td>
   </tr>
