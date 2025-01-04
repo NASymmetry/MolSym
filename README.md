@@ -6,6 +6,7 @@
     <th>Documentation</th>
     <th>CI</th>
     <th>Coverage</th>
+    <th>Citation</th>
   </tr>
   <tr>
     <td align="center">
@@ -22,6 +23,11 @@
       <a href=https://codecov.io/gh/NASymmetry/MolSym>
       <img src=https://codecov.io/gh/NASymmetry/MolSym/branch/main/graph/badge.svg?token=NQDJ0QYLB0>
       </a> 
+    </td>
+    <td align="center">
+      <a href=https://doi.org/10.1063/5.0216738>
+      <img src=https://img.shields.io/badge/JCP-10.1063/5.0216738-purple.svg>
+      </a>
     </td>
   </tr>
 </table>
