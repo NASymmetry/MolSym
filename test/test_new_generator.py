@@ -11,6 +11,7 @@ from .pgs.Cnv import *
 from .pgs.Dn import *
 from .pgs.Dnh import *
 from .pgs.Dnd import *
+from .pgs.Cubic import *
 
 pgs = [
     "C1","Ci","Cs",
@@ -21,6 +22,7 @@ pgs = [
     "D2","D3","D4","D5","D6",
     "D2h","D3h","D4h","D5h","D6h",
     "D2d","D3d","D4d","D5d","D6d",
+    "T", "Td", "Th", "O", "Oh"
 ]
 
 @pytest.mark.parametrize("pg", pgs)

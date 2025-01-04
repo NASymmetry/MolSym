@@ -4,10 +4,11 @@ from .multiplication_table import *
 import re
 from .general_irrep_mats import Symel
 
+"""
 def generate_symel_to_class_map(symels, ctab):
-    """
+    r""
     Deprecated. Generate a map of the symels to their corresponding classes.
-    """
+    r""
     pg = PointGroup.from_string(ctab.name)
     if pg.n is not None:
         ns = pg.n>>1 # pg.n floor divided by 2
@@ -135,16 +136,17 @@ def generate_symel_to_class_map(symels, ctab):
     return class_map
 
 def cn_class_map(class_map, n, idx_offset, cls_offset):
-    """
+    r""
     Deprecated
-    """
+    r""
     for i in range(1,n): # = 2:n
         if i > (n>>1):
             class_map[i+idx_offset] = n-i+cls_offset
         else:
             class_map[i+idx_offset] = i+cls_offset
     return class_map
-
+"""
+    
 def rotate_mol_to_symels(mol, paxis, saxis):
     """
     Rotate molecule with symmetry defined by paxis and saxis to symmetry elements.
@@ -249,14 +251,15 @@ def get_class_name(symels_in_class):
         pickem = symels_in_class[0].symbol
     return re.sub(r"\(\w+\)", "", pickem)
 
+"""
 def irrep_sort_idx(irrep_str):
-    """
+    r""
     Provide an integer to each irrep string such that when sorted from smallest to largest
     the result is that the irrep strings are sorted into the order present in most published character tables.
 
     :type irrep_str: str
     :rtype: int
-    """
+    r""
     rsult = 0
     # g and ' always go first
     gchk = r"g"
@@ -289,3 +292,4 @@ def irrep_sort_idx(irrep_str):
     else:
         raise Exception(f"Invalid irrep order: {irrep_letter}")
     return rsult
+"""

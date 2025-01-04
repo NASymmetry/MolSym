@@ -7,7 +7,7 @@ from .point_group import PointGroup
 #from .symel import pg_to_symels
 #from .character_table import pg_to_chartab
 from .general_irrep_mats import pg_to_symels
-from .symtext_helper import generate_symel_to_class_map, get_atom_mapping, rotate_mol_to_symels, get_linear_atom_mapping, get_class_name
+from .symtext_helper import get_atom_mapping, rotate_mol_to_symels, get_linear_atom_mapping, get_class_name
 from .multiplication_table import build_mult_table, subgroup_by_name, subgroup_axes, multiply, inverse
 #from . import irrep_mats as IrrepMats
 

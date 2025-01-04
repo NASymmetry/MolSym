@@ -4,7 +4,7 @@ import molsym
 #from molsym.symtext.symel import pg_to_symels
 #from molsym.symtext.character_table import pg_to_chartab, grab_class_orders
 from molsym.symtext.general_irrep_mats import pg_to_symels
-from molsym.symtext.symtext_helper import generate_symel_to_class_map, rotate_mol_to_symels
+from molsym.symtext.symtext_helper import rotate_mol_to_symels
 from molsym.symtext.multiplication_table import build_mult_table
 
 # C1, Ci, Cs, C2v, C3h, S8, D6h, Td, Oh, Ih
