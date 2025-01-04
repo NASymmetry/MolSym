@@ -1,13 +1,12 @@
+"""
 import numpy as np
 from .point_group import PointGroup
 from ..symtools import *
 import re
 
-"""
 These functions are deprecated
 
 :deprecated:
-"""
 
 class CharacterTable():
     def __init__(self, pg, irreps, classes, class_orders, chars, irrep_dims) -> None:
@@ -524,3 +523,4 @@ def Dnd_irr(n):
         bot = np.hstack((dnchars, dncharsi))
         chars = np.vstack((top, bot))
     return names, classes, chars
+"""

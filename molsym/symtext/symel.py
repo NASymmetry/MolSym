@@ -21,205 +21,207 @@ class Symel():
     def __eq__(self, other):
         return self.symbol == other.symbol and np.isclose(self.rrep,other.rrep,atol=1e-10).all()
 
-#def pg_to_symels(PG):
-#    pg = PointGroup.from_string(PG)
-#    argerr = f"An invalid point group has been given or unexpected parsing of the point group string has occured: {pg.str}"
-#    symels = [Symel("E", None, np.asarray([[1,0,0],[0,1,0],[0,0,1]]))]
-#    z_axis = np.array([0,0,1])
-#    sigma_h = np.asarray([[1,0,0],[0,1,0],[0,0,-1]])
-#    if pg.family == "C":
-#        if pg.subfamily == "h":
-#            symels.append(Symel("sigma_h", z_axis, sigma_h))
-#            if pg.n % 2 == 0:
-#                symels.append(Symel("i", None, inversion_matrix()))
-#            cns = generate_Cn(pg.n)
-#            sns = generate_Sn(pg.n)
-#            symels = symels + cns + sns
-#        elif pg.subfamily == "v":
-#            cns = generate_Cn(pg.n)
-#            if pg.n % 2 == 0:
-#                n = pg.n >> 1
-#                sigma_ds = generate_sigma_d(n)
-#            else:
-#                n = pg.n
-#                sigma_ds = []
-#            sigma_vs = generate_sigma_v(pg.n)
-#            symels = symels + cns + sigma_vs + sigma_ds
-#        elif pg.subfamily == "s":
-#            symels.append(Symel("sigma_h", z_axis, sigma_h))
-#        elif pg.subfamily == "i":
-#            symels.append(Symel("i", None, inversion_matrix()))
-#        elif pg.subfamily is None:
-#            cns = generate_Cn(pg.n)
-#            symels = symels + cns
-#        else:
-#            raise Exception(argerr)
-#    elif pg.family == "D":
-#        if pg.subfamily == "h":
-#            symels.append(Symel("sigma_h", z_axis, sigma_h))
-#            if pg.n % 2 == 0:
-#                symels.append(Symel("i", None, inversion_matrix()))
-#                n = pg.n >> 1
-#                sigma_ds = generate_sigma_d(n)
-#                c2ps = generate_C2p(pg.n)
-#                c2pps = generate_C2pp(pg.n)
-#                c2s = c2ps + c2pps
-#            else:
-#                n = pg.n
-#                sigma_ds = []
-#                c2s = generate_C2p(pg.n)
-#            cns = generate_Cn(pg.n)
-#            sns = generate_Sn(pg.n)
-#            sigma_vs = generate_sigma_v(pg.n)
-#            #c2s = generate_C2(pg.n)
-#            symels = symels + cns + c2s + sns + sigma_vs + sigma_ds
-#        elif pg.subfamily == "d":
-#            if pg.n % 2 == 0:
-#                c2ps = generate_C2p(pg.n)
-#                c2pps = generate_C2pp(pg.n)
-#                c2s = c2ps + c2pps
-#            else:
-#                c2s = generate_C2p(pg.n)
-#                symels.append(Symel("i", None, inversion_matrix()))
-#            cns = generate_Cn(pg.n)
-#            sns = generate_Sn(pg.n * 2, S2n=True)
-#            sigma_ds = generate_sigma_d(pg.n)
-#            symels = symels + cns + sns + c2s + sigma_ds
-#        elif pg.subfamily is None:
-#            cns = generate_Cn(pg.n)
-#            if pg.n % 2 == 0:
-#                c2ps = generate_C2p(pg.n)
-#                c2pps = generate_C2pp(pg.n)
-#                c2s = c2ps + c2pps
-#            else:
-#                c2s = generate_C2p(pg.n)
-#            symels = symels + cns + c2s
-#        else:
-#            raise Exception(argerr)
-#    elif pg.family == "S":
-#        if pg.subfamily is None and (pg.n % 2 == 0):
-#            n = pg.n >> 1
-#            if n % 2 != 0:
-#                symels.append(Symel("i", None, inversion_matrix()))
-#            cns = generate_Cn(n)
-#            sns = generate_Sn(pg.n, S2n=True)
-#            symels = symels + cns + sns
-#        else:
-#            raise Exception(argerr)
-#    else:
-#        if pg.family == "T":
-#            if pg.subfamily == "h":
-#                Ths = generate_Th()
-#                symels = symels + Ths
-#            elif pg.subfamily == "d":
-#                Tds = generate_Td()
-#                symels = symels + Tds
-#            else:
-#                Ts = generate_T()
-#                symels = symels + Ts
-#        elif pg.family == "O":
-#            if pg.subfamily == "h":
-#                Ohs = generate_Oh()
-#                symels = symels + Ohs
-#            else:
-#                Os = generate_O()
-#                symels = symels + Os
-#        elif pg.family == "I":
-#            if pg.subfamily == "h":
-#                Ihs = generate_Ih()
-#                symels = symels + Ihs
-#            else:
-#                Is = generate_I()
-#                symels = symels + Is
-#        else:
-#            raise Exception(argerr)
-#    return symels
-#
-#def generate_Cn(n):
-#    symels = []
-#    axis = np.asarray([0,0,1])
-#    #axis = [0 0 1]'
-#    cn_r = Cn(axis, n)
-#    for i in range(1,n):
-#        a, b = reduce(n, i)
-#        symels.append(Symel(f"C_{a:d}^{b:d}", axis, matrix_power(cn_r,i))) # Cns
-#    return symels
-#
-#def generate_Sn(n, S2n=False):
-#    symels = []
-#    axis = np.asarray([0,0,1])
-#    sigma_h = reflection_matrix(axis)
-#    cn_r = Cn(axis, n)
-#    if S2n: # Generating improper rotations for S2n PG
-#        for i in range(1,n):
-#            if i % 2 == 0:
-#                continue
-#            else:
-#                a, b = reduce(n, i)
-#                if a == 2:
-#                    continue
-#                else:
-#                    symels.append(Symel(f"S_{a}^{b}", axis, np.dot(matrix_power(cn_r,i),sigma_h)))
-#        return symels
-#    for i in range(1,n):
-#        a, b = reduce(n, i)
-#        if b % 2 == 0:
-#            b += a
-#        if a == 2:
-#            continue
-#        else:
-#            symels.append(Symel(f"S_{a}^{b}", axis, np.dot(matrix_power(cn_r,i),sigma_h))) # Sns
-#    return symels
-#
-#def generate_sigma_v(n):
-#    if n % 2 == 0:
-#        nsigma_vs = n >> 1
-#    else:
-#        nsigma_vs = n
-#    symels = []
-#    x_axis = np.asarray([1,0,0]) # Orient C2 and sigma_v along x-axis
-#    z_axis = np.asarray([0,0,1])
-#    rot_mat = Cn(z_axis, n)
-#    for i in range(nsigma_vs):
-#        axis = np.cross(np.dot(matrix_power(rot_mat,i), x_axis),z_axis)
-#        symels.append(Symel(f"sigma_v({i+1})", axis, reflection_matrix(axis)))
-#    return symels
-#
-#def generate_sigma_d(n):
-#    symels = []
-#    x_axis = np.asarray([1,0,0]) # Orient C2 and sigma_v along x-axis
-#    z_axis = np.asarray([0,0,1])
-#    rot_mat = Cn(z_axis, 2*n)
-#    base_axis = np.dot(Cn(z_axis, 4*n),x_axis) # Rotate x-axis by Cn/2 to produce an axis for sigma_d's
-#    for i in range(n):
-#        axis = np.cross(np.dot(matrix_power(rot_mat,i), base_axis),z_axis)
-#        symels.append(Symel(f"sigma_d({i+1})", axis, reflection_matrix(axis)))
-#    return symels
-#
-#def generate_C2p(n):
-#    if n % 2 == 0:
-#        nn = n >> 1
-#    else:
-#        nn = n
-#    symels = []
-#    x_axis = np.asarray([1,0,0]) # Orient C2 and sigma_v along x-axis
-#    rot_mat = Cn([0,0,1], n)
-#    for i in range(nn):
-#        axis = np.dot(matrix_power(rot_mat,i), x_axis)
-#        symels.append(Symel(f"C_2'({i+1})", axis, Cn(axis, 2)))
-#    return symels
-#
-#def generate_C2pp(n):
-#    nn = n >> 1
-#    symels = []
-#    x_axis = np.asarray([1,0,0])
-#    rot_mat = Cn([0,0,1], n)
-#    base_axis = np.dot(Cn([0,0,1], 2*n),x_axis)
-#    for i in range(nn):
-#        axis = np.dot(matrix_power(rot_mat,i), base_axis)
-#        symels.append(Symel(f"C_2''({i+1})", axis, Cn(axis, 2)))
-#    return symels
+"""
+def pg_to_symels(PG):
+    pg = PointGroup.from_string(PG)
+    argerr = f"An invalid point group has been given or unexpected parsing of the point group string has occured: {pg.str}"
+    symels = [Symel("E", None, np.asarray([[1,0,0],[0,1,0],[0,0,1]]))]
+    z_axis = np.array([0,0,1])
+    sigma_h = np.asarray([[1,0,0],[0,1,0],[0,0,-1]])
+    if pg.family == "C":
+        if pg.subfamily == "h":
+            symels.append(Symel("sigma_h", z_axis, sigma_h))
+            if pg.n % 2 == 0:
+                symels.append(Symel("i", None, inversion_matrix()))
+            cns = generate_Cn(pg.n)
+            sns = generate_Sn(pg.n)
+            symels = symels + cns + sns
+        elif pg.subfamily == "v":
+            cns = generate_Cn(pg.n)
+            if pg.n % 2 == 0:
+                n = pg.n >> 1
+                sigma_ds = generate_sigma_d(n)
+            else:
+                n = pg.n
+                sigma_ds = []
+            sigma_vs = generate_sigma_v(pg.n)
+            symels = symels + cns + sigma_vs + sigma_ds
+        elif pg.subfamily == "s":
+            symels.append(Symel("sigma_h", z_axis, sigma_h))
+        elif pg.subfamily == "i":
+            symels.append(Symel("i", None, inversion_matrix()))
+        elif pg.subfamily is None:
+            cns = generate_Cn(pg.n)
+            symels = symels + cns
+        else:
+            raise Exception(argerr)
+    elif pg.family == "D":
+        if pg.subfamily == "h":
+            symels.append(Symel("sigma_h", z_axis, sigma_h))
+            if pg.n % 2 == 0:
+                symels.append(Symel("i", None, inversion_matrix()))
+                n = pg.n >> 1
+                sigma_ds = generate_sigma_d(n)
+                c2ps = generate_C2p(pg.n)
+                c2pps = generate_C2pp(pg.n)
+                c2s = c2ps + c2pps
+            else:
+                n = pg.n
+                sigma_ds = []
+                c2s = generate_C2p(pg.n)
+            cns = generate_Cn(pg.n)
+            sns = generate_Sn(pg.n)
+            sigma_vs = generate_sigma_v(pg.n)
+            #c2s = generate_C2(pg.n)
+            symels = symels + cns + c2s + sns + sigma_vs + sigma_ds
+        elif pg.subfamily == "d":
+            if pg.n % 2 == 0:
+                c2ps = generate_C2p(pg.n)
+                c2pps = generate_C2pp(pg.n)
+                c2s = c2ps + c2pps
+            else:
+                c2s = generate_C2p(pg.n)
+                symels.append(Symel("i", None, inversion_matrix()))
+            cns = generate_Cn(pg.n)
+            sns = generate_Sn(pg.n * 2, S2n=True)
+            sigma_ds = generate_sigma_d(pg.n)
+            symels = symels + cns + sns + c2s + sigma_ds
+        elif pg.subfamily is None:
+            cns = generate_Cn(pg.n)
+            if pg.n % 2 == 0:
+                c2ps = generate_C2p(pg.n)
+                c2pps = generate_C2pp(pg.n)
+                c2s = c2ps + c2pps
+            else:
+                c2s = generate_C2p(pg.n)
+            symels = symels + cns + c2s
+        else:
+            raise Exception(argerr)
+    elif pg.family == "S":
+        if pg.subfamily is None and (pg.n % 2 == 0):
+            n = pg.n >> 1
+            if n % 2 != 0:
+                symels.append(Symel("i", None, inversion_matrix()))
+            cns = generate_Cn(n)
+            sns = generate_Sn(pg.n, S2n=True)
+            symels = symels + cns + sns
+        else:
+            raise Exception(argerr)
+    else:
+        if pg.family == "T":
+            if pg.subfamily == "h":
+                Ths = generate_Th()
+                symels = symels + Ths
+            elif pg.subfamily == "d":
+                Tds = generate_Td()
+                symels = symels + Tds
+            else:
+                Ts = generate_T()
+                symels = symels + Ts
+        elif pg.family == "O":
+            if pg.subfamily == "h":
+                Ohs = generate_Oh()
+                symels = symels + Ohs
+            else:
+                Os = generate_O()
+                symels = symels + Os
+        elif pg.family == "I":
+            if pg.subfamily == "h":
+                Ihs = generate_Ih()
+                symels = symels + Ihs
+            else:
+                Is = generate_I()
+                symels = symels + Is
+        else:
+            raise Exception(argerr)
+    return symels
 
+def generate_Cn(n):
+    symels = []
+    axis = np.asarray([0,0,1])
+    #axis = [0 0 1]'
+    cn_r = Cn(axis, n)
+    for i in range(1,n):
+        a, b = reduce(n, i)
+        symels.append(Symel(f"C_{a:d}^{b:d}", axis, matrix_power(cn_r,i))) # Cns
+    return symels
+
+def generate_Sn(n, S2n=False):
+    symels = []
+    axis = np.asarray([0,0,1])
+    sigma_h = reflection_matrix(axis)
+    cn_r = Cn(axis, n)
+    if S2n: # Generating improper rotations for S2n PG
+        for i in range(1,n):
+            if i % 2 == 0:
+                continue
+            else:
+                a, b = reduce(n, i)
+                if a == 2:
+                    continue
+                else:
+                    symels.append(Symel(f"S_{a}^{b}", axis, np.dot(matrix_power(cn_r,i),sigma_h)))
+        return symels
+    for i in range(1,n):
+        a, b = reduce(n, i)
+        if b % 2 == 0:
+            b += a
+        if a == 2:
+            continue
+        else:
+            symels.append(Symel(f"S_{a}^{b}", axis, np.dot(matrix_power(cn_r,i),sigma_h))) # Sns
+    return symels
+
+def generate_sigma_v(n):
+    if n % 2 == 0:
+        nsigma_vs = n >> 1
+    else:
+        nsigma_vs = n
+    symels = []
+    x_axis = np.asarray([1,0,0]) # Orient C2 and sigma_v along x-axis
+    z_axis = np.asarray([0,0,1])
+    rot_mat = Cn(z_axis, n)
+    for i in range(nsigma_vs):
+        axis = np.cross(np.dot(matrix_power(rot_mat,i), x_axis),z_axis)
+        symels.append(Symel(f"sigma_v({i+1})", axis, reflection_matrix(axis)))
+    return symels
+
+def generate_sigma_d(n):
+    symels = []
+    x_axis = np.asarray([1,0,0]) # Orient C2 and sigma_v along x-axis
+    z_axis = np.asarray([0,0,1])
+    rot_mat = Cn(z_axis, 2*n)
+    base_axis = np.dot(Cn(z_axis, 4*n),x_axis) # Rotate x-axis by Cn/2 to produce an axis for sigma_d's
+    for i in range(n):
+        axis = np.cross(np.dot(matrix_power(rot_mat,i), base_axis),z_axis)
+        symels.append(Symel(f"sigma_d({i+1})", axis, reflection_matrix(axis)))
+    return symels
+
+def generate_C2p(n):
+    if n % 2 == 0:
+        nn = n >> 1
+    else:
+        nn = n
+    symels = []
+    x_axis = np.asarray([1,0,0]) # Orient C2 and sigma_v along x-axis
+    rot_mat = Cn([0,0,1], n)
+    for i in range(nn):
+        axis = np.dot(matrix_power(rot_mat,i), x_axis)
+        symels.append(Symel(f"C_2'({i+1})", axis, Cn(axis, 2)))
+    return symels
+
+def generate_C2pp(n):
+    nn = n >> 1
+    symels = []
+    x_axis = np.asarray([1,0,0])
+    rot_mat = Cn([0,0,1], n)
+    base_axis = np.dot(Cn([0,0,1], 2*n),x_axis)
+    for i in range(nn):
+        axis = np.dot(matrix_power(rot_mat,i), base_axis)
+        symels.append(Symel(f"C_2''({i+1})", axis, Cn(axis, 2)))
+    return symels
+"""
+    
 def generate_T():
     """
     Generate symmetry elements for the T point group.
