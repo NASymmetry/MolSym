@@ -66,7 +66,7 @@ def eckart_conditions(symtext, translational=True, rotational=True):
     else:
         raise Exception("Calling this function is rather silly if you don't want either output...")
 
-def ProjectionOp(symtext, fxn_set):
+def ProjectionOp(symtext, fxn_set, project_Eckart=True):
     """
     Projection operator: projects the functions in fxn_set into SALCs.
 
@@ -76,6 +76,7 @@ def ProjectionOp(symtext, fxn_set):
     """
     numred = len(fxn_set)
     salcs = SALCs(symtext, fxn_set)
+    orthogonalize = False
     for ir, irrep in enumerate(symtext.irreps):
         if symtext.pg.is_linear:
             irrmat = None
@@ -91,7 +92,8 @@ def ProjectionOp(symtext, fxn_set):
             salc *= irrep.d/symtext.order
             
             # Project out Eckart conditions when constructing SALCs of Cartesian displacements
-            if isinstance(fxn_set, CartesianCoordinates):
+            if isinstance(fxn_set, CartesianCoordinates) and project_Eckart:
+                orthogonalize = True
                 eckart_cond = eckart_conditions(symtext)
                 for i in range(irrep.d):
                     for j in range(irrep.d):
@@ -114,10 +116,10 @@ def ProjectionOp(symtext, fxn_set):
                         salcs.addnewSALC(s, ir)
     # Reorthogonalize SALCs after Eckart projection
     # TODO: Only necessary if Eckart projection was performed
-    if isinstance(fxn_set, CartesianCoordinates):
-        orthogonalize = True
-    else:
-        orthogonalize = False
+    #if isinstance(fxn_set, CartesianCoordinates):
+    #    orthogonalize = True
+    #else:
+    #    orthogonalize = False
     if symtext.complex:
         remove_complexity = True
     else:

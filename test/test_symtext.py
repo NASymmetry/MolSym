@@ -172,7 +172,8 @@ def test_Symtext(i):
     symtext = molsym.Symtext.from_molecule(mol)
     # Add mult table, symels, ctab, class map?
     assert (mol_test_set[i][0] == mol.atoms).all()
-    assert np.isclose(mol_test_set[i][1]*angstrom_per_bohr, mol.coords).all() # QCElemental performed undesired unit conv. in test set
+    #assert np.isclose(mol_test_set[i][1]*angstrom_per_bohr, mol.coords).all() # QCElemental performed undesired unit conv. in test set
+    assert np.isclose(mol_test_set[i][1], mol.coords).all() # QCElemental performed undesired unit conv. in test set
     assert symtext.pg.str == pgs[i]
     assert (symtext.atom_map == atom_map_test_set[i]).all()
     assert complex_test_set[i] == symtext.complex

@@ -3,7 +3,7 @@ import qcelemental as qcel
 from dataclasses import dataclass
 from copy import deepcopy
 import sys
-global_tol = 1e-6
+global_tol = 1e-8 # TODO It would be nice to get rid of this...
 
 @dataclass
 class Atom():
@@ -98,7 +98,7 @@ class Molecule():
         """
         with open(fn, "r") as lfn:
             strang = lfn.read()
-        strang = "units bohr\n"+strang
+        
         schema = qcel.models.Molecule.from_data(strang).dict()
         return cls.from_schema(schema)
 
@@ -120,6 +120,14 @@ class Molecule():
         for (idx, symb) in enumerate(atoms):
             masses[idx] = qcel.periodictable.to_mass(symb)
         return cls(atoms, coords, masses)
+
+    def to_xyz_string(self):
+        # Will save xyz in Angstrom, undoing the previous
+        # Ang->Bohr from Molecule.from_schema
+        qcmol = qcel.models.Molecule(
+            **{"symbols": self.atoms, 
+            "geometry": self.coords})
+        return qcmol.to_string("xyz")
 
     def __repr__(self) -> str:
         rstr = "MolSym Molecule:\n"
