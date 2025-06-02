@@ -114,12 +114,6 @@ def ProjectionOp(symtext, fxn_set, project_Eckart=True):
                         salc[i,j,:] = molsym.symtools.normalize(salc[i,j,:])
                         s = SALC(salc[i,j,:], irrep, equivcoord, i, j, gamma)
                         salcs.addnewSALC(s, ir)
-    # Reorthogonalize SALCs after Eckart projection
-    # TODO: Only necessary if Eckart projection was performed
-    #if isinstance(fxn_set, CartesianCoordinates):
-    #    orthogonalize = True
-    #else:
-    #    orthogonalize = False
     if symtext.complex:
         remove_complexity = True
     else:

@@ -32,6 +32,7 @@ class SALCs():
         self.fxn_set = fxn_set
         self.irreps = symtext.irreps
         self.salcs = []
+        self.remove_complex = False
 
     def __getitem__(self, salc_idx):
         return self.salcs[salc_idx]
@@ -118,7 +119,7 @@ class SALCs():
 
         :rtype: NumPy array of shape (n functions, n SALCs)
         """
-        if self.symtext.complex and not self.remove_complexity:
+        if self.symtext.complex and not self.remove_complex:
             btm = np.zeros((len(self.fxn_set), len(self)), dtype=np.complex128)
         else:
             btm = np.zeros((len(self.fxn_set), len(self)))
@@ -179,8 +180,8 @@ class SALCs():
             :type orthogonalize: bool
             :type remove_complexity: bool
         """
-        self.remove_complexity = remove_complexity
         if remove_complexity: # TODO: Have symtext for groups with reduced complexity, handling irreps such as E2_1g, E2_2g ---> E2g
+            self.remove_complex = True
             pfxns = self.sort_partner_functions()
             for pf in pfxns:
                 if len(pf) == 2:
