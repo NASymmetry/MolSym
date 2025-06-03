@@ -47,6 +47,19 @@ class Symtext():
         return f"\n{self.mol}\n{self.character_table}\n{self.symels}\nAtom map:\n{self.atom_map}\nMultiplication Table\n{self.mult_table}"
 
     @classmethod
+    def empty(cls):
+        mol = None
+        rotate_to_std = None
+        reverse_rotate = None
+        pg = PointGroup.from_string("C1")
+        symels = []
+        atom_map = []
+        mult_table = []
+        irreps = []
+        irrep_mats = []
+        return Symtext(mol, rotate_to_std, reverse_rotate, pg, symels, atom_map, mult_table, irreps, irrep_mats)
+
+    @classmethod
     def from_molecule(cls, mol):
         """
         Class method for creating a Symtext from a molsym.Molecule

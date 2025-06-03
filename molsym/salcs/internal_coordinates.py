@@ -1,17 +1,119 @@
 from copy import deepcopy
 import numpy as np
-from .function_set import FunctionSet
+from molsym.salcs.function_set import FunctionSet
+
+class IC():
+    def __init__(self, atom_list):
+        if len(atom_list) != self.num_centers:
+            raise ValueError(f"Incorrect number of centers ({len(atom_list)}) for internal coordinate type {self.__class__}")
+        self.atom_list = atom_list
+        self.phase_on_permute = 1
+        self.phase_on_inversion = 1
+        self.exchange_atoms = None
+        self.perm_symmetry = None
+
+    def is_equiv(self, ic):
+        if isinstance(ic, self.__class__):
+            if self.atom_list == ic.atom_list:
+                return True, 1
+            elif self.perm_symmetry(self.atom_list) == ic.atom_list:
+                return True, self.phase_on_permute
+        return False, 1
+
+    def __eq__(self, value):
+        if isinstance(value, self.__class__):
+            if self.atom_list == value.atom_list:
+                return True
+        return False
+
+    def __repr__(self):
+        cls_name = str(self.__class__).split(".")[-1][:-2]
+        return f"{cls_name}" + " [" + ",".join([f"{a}" for a in self.atom_list]) + "]"
+
+    def reversal(self, atom_list):
+        return list(reversed(atom_list))
+
+    def exchange(self, atom_list):
+        return [atom_list[i] for i in self.exchange_atoms]
+
+class Stretch(IC):
+    def __init__(self, atom_list):
+        self.num_centers = 2
+        super().__init__(atom_list)
+        self.perm_symmetry = self.reversal
+
+class Bend(IC):
+    def __init__(self, atom_list):
+        self.num_centers = 3
+        super().__init__(atom_list)
+        self.perm_symmetry = self.reversal
+
+class Torsion(IC):
+    def __init__(self, atom_list):
+        self.num_centers = 4
+        super().__init__(atom_list)
+        self.phase_on_inversion = -1
+        self.perm_symmetry = self.reversal
+
+class OutOfPlane(IC):
+    def __init__(self, atom_list):
+        self.num_centers = 4
+        super().__init__(atom_list)
+        self.phase_on_permute = -1
+        self.phase_on_inversion = -1
+        self.exchange_atoms = [0,1,3,2]
+        self.perm_symmetry = self.exchange
+
+class Linear(IC):
+    def __init__(self, atom_list):
+        self.num_centers = 4
+        super().__init__(atom_list)
+        self.phase_on_permute = -1
+        self.exchange_atoms = [2,1,0,3]
+        self.perm_symmetry = self.exchange
+
+class LinX(IC):
+    def __init__(self, atom_list):
+        self.num_centers = 4
+        super().__init__(atom_list)
+
+class LinY(IC):
+    def __init__(self, atom_list):
+        self.num_centers = 4
+        super().__init__(atom_list)
+
+def user_to_IC(ic_list):
+    atom_list = ic_list[0]
+    name = ic_list[1]
+    if name[0] == "R":
+        return Stretch(atom_list)
+    elif name[0] == "A":
+        return Bend(atom_list)
+    elif name[0] == "D":
+        return Torsion(atom_list)
+    elif name[0] == "O":
+        return OutOfPlane(atom_list)
+    elif name[0:3] == "Lin":
+        return Linear(atom_list)
+    elif name[0:2] == "Lx":
+        return LinX(atom_list)
+    elif name[0:2] == "Ly":
+        return LinY(atom_list)
+    else:
+        raise ValueError(f"Unrecogonized internal coordinate name {name}")
 
 class InternalCoordinates(FunctionSet):
-    """
-    FunctionSet for internal coordinates (interatomic distances, angles, dihedral angles, etc.)
-    """
-    def __init__(self, symtext, fxn_list) -> None:
-        self.ic_list = [i[0] for i in fxn_list]
-        self.ic_types = [i[1] for i in fxn_list]
+    def __init__(self, symtext, fxn_list):
+        self.ic_list = [user_to_IC(i) for i in fxn_list]
         super().__init__(symtext, fxn_list)
 
-    def operate_on_ic(self, ic_idx, symop):
+    def find_equiv_ic(self, ic):
+        for idx, ic_i in enumerate(self.ic_list):
+            ic_equiv = ic.is_equiv(ic_i)
+            if ic_equiv[0]:
+                return idx, ic_equiv[1]
+
+    def operate_on_ic(self, ic_idx, sidx):
         """
         Maps an internal coordinate to a new internal coordinate under a symmetry operation.
         The phase can be 1 or -1 depending on the effect of the symmetry element.
@@ -20,13 +122,15 @@ class InternalCoordinates(FunctionSet):
         :return: New internal coordinate index and phase
         :rtype: int, float
         """
-        mapped_ic = []
-        for atom in self.ic_list[ic_idx]:
-            atom2 = int(self.symtext.atom_map[atom, symop])
-            mapped_ic.append(atom2)
-        index, phase = self.ic_index(mapped_ic, symop, ic_idx)
+        mapped_ic_atom_list = [self.symtext.atom_map[a, sidx] for a in self.ic_list[ic_idx].atom_list]
+        mapped_ic = deepcopy(self.ic_list[ic_idx])
+        mapped_ic.atom_list = mapped_ic_atom_list
+        index, phase = self.find_equiv_ic(mapped_ic)
+        symbol = self.symtext.symels[sidx].symbol
+        if symbol[0] == "i" or symbol[0] == "S" or symbol[0] == "s": # s is for sigma
+            phase *= mapped_ic.phase_on_inversion
         return index, phase
-    
+
     def get_fxn_map(self):
         """
         Builds the function map for all of the internal coordinates under each symmetry element.
@@ -64,53 +168,6 @@ class InternalCoordinates(FunctionSet):
         
         return SEICs
 
-    def ic_index(self, ic, symop, ic_idx):
-        """
-        Permutes internal coordinate indices and tracks phase to avoid redundantly defined coordinates.
-        Example, the angle between atoms 1,2,3 is the same as 3,2,1.
-
-        :type ic: List[int]
-        :rtype: (int, int)
-        """
-        symbol = self.symtext.symels[symop].symbol
-        ic_type = self.ic_types[ic_idx][0]
-        phase_from_op = 1.0
-        if symbol[0] == "i" or symbol[0] == "S" or symbol[0] == "s": # s is for sigma
-            if ic_type in ["D", "O", "L"]:
-                phase_from_op = -1.0
-        if len(ic) > 3:
-            ic2 = deepcopy(ic)
-            ic2[2], ic2[3] = ic[3], ic[2]
-            for c, coord in enumerate(self.ic_list):
-                # TODO here
-                if ic == coord:
-                    return c, 1 * phase_from_op
-                elif list(reversed(ic)) == coord:
-                    return c, 1 * phase_from_op
-                elif ic2 == coord:
-                    return c, -1 * phase_from_op
-                elif list(reversed(ic2)) == coord:
-                    return c, -1 * phase_from_op
-        
-        elif len(ic) == 3:
-            #first, loop through IC list, only after the list is exhausted, loop through reverse indices
-            for c, coord in enumerate(self.ic_list):
-                if ic == coord:
-                    return c, 1
-                elif list(reversed(ic)) == coord:
-                    return c, 1
-            ic2 = deepcopy(ic)
-            #for c, coord in enumerate(self.ic_list):
-            #    if len(coord) == 3:
-            #        if ic[0] == coord[0] and ic[1] == coord[1]:
-            #            return c, -1
-        else:
-            for c, coord in enumerate(self.ic_list):
-                if ic == coord:
-                    return c, 1
-                elif list(reversed(ic)) == coord:
-                    return c, 1
-
     def span(self, SE_fxn):
         chorker_loaf = np.zeros(self.fxn_map.shape)
         for i in range(self.fxn_map.shape[0]):
@@ -127,7 +184,7 @@ class InternalCoordinates(FunctionSet):
             n = round(np.sum(rshorker_loaf * self.symtext.chartable.class_orders * self.symtext.chartable.characters[idx,:]) / self.symtext.order)
             span[idx] = n
         return span
-    
+
     def special_function(self, salc, coord, sidx, irrmat):
         """
         Defines how to map an internal coordinate under a symmetry operation for the ProjectionOp function.
@@ -141,3 +198,4 @@ class InternalCoordinates(FunctionSet):
         p = self.phase_map[coord, sidx]
         salc[:,:,ic2] += (irrmat[sidx, :, :]) * p
         return salc
+
