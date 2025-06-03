@@ -1,26 +1,36 @@
 import pytest
 from molsym.symtext.point_group import PointGroup
 from molsym.symtext.symtext import Symtext
-from molsym.salcs.internal_coordinates import user_to_IC, Stretch, Bend, Torsion, OutOfPlane, InternalCoordinates
+from molsym.salcs.internal_coordinates import user_to_IC, Stretch, Bend, Torsion, OutOfPlane, Linear, LinX, LinY, InternalCoordinates
 
+# Random names should be ignored other than leading characters
 user_input = [
     [[0,1], "R1"],
     [[0,1,2], "A23"],
     [[0,1,2,3], "D932j"],
-    [[0,1,2,3], "Ode3"] # Random names should be ignored other than leading char
+    [[0,1,2,3], "Ode3"],
+    [[0,1,2,3], "Lin-13"],
+    [[0,1,2,3], "Lx1"],
+    [[0,1,2,3], "Ly0"]
 ]
 
 r = Stretch([0,1])
 a = Bend([0,1,2])
 d = Torsion([0,1,2,3])
 o = OutOfPlane([0,1,2,3])
+lin = Linear([0,1,2,3])
+lx = LinX([0,1,2,3])
+ly = LinY([0,1,2,3])
 
-allics = [r, a, d, o]
+allics = [r, a, d, o, lin, lx, ly]
 scrambled = [
     Stretch([1,0]),
     Bend([2,1,0]),
     Torsion([3,2,1,0]),
-    OutOfPlane([0,1,3,2])
+    OutOfPlane([0,1,3,2]),
+    Linear([2,1,0,3]),
+    LinX([0,1,2,3]),
+    LinY([0,1,2,3])
 ]
 
 def test_Stretch():

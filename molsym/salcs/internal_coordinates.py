@@ -10,7 +10,7 @@ class IC():
         self.phase_on_permute = 1
         self.phase_on_inversion = 1
         self.exchange_atoms = None
-        self.perm_symmetry = None
+        self.perm_symmetry = list # Does nothing
 
     def is_equiv(self, ic):
         if isinstance(ic, self.__class__):
