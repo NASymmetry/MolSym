@@ -1,7 +1,9 @@
 from copy import deepcopy
 import numpy as np
 from .function_set import FunctionSet
-
+"""
+@codeCoverageIgnore
+"""
 class InternalCoordinates(FunctionSet):
     """
     FunctionSet for internal coordinates (interatomic distances, angles, dihedral angles, etc.)
