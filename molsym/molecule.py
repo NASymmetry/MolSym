@@ -88,7 +88,7 @@ class Molecule():
         return cls(atoms, coords, masses)
 
     @classmethod
-    def from_file(cls, fn):
+    def from_file(cls, fn, keep_angstrom=False):
         """
         Class method for constructing a Molecule from an *.xyz file
 
@@ -100,6 +100,8 @@ class Molecule():
             strang = lfn.read()
         
         schema = qcel.models.Molecule.from_data(strang).dict()
+        if keep_angstrom:
+            schema["geometry"] *= qcel.constants.bohr2angstroms
         return cls.from_schema(schema)
 
     @classmethod
@@ -121,9 +123,11 @@ class Molecule():
             masses[idx] = qcel.periodictable.to_mass(symb)
         return cls(atoms, coords, masses)
 
-    def to_xyz_string(self):
+    def to_xyz_string(self, already_angstrom=False):
         # Will save xyz in Angstrom, undoing the previous
         # Ang->Bohr from Molecule.from_schema
+        if already_angstrom:
+            self.coords /= qcel.constants.bohr2angstroms
         qcmol = qcel.models.Molecule(
             **{"symbols": self.atoms, 
             "geometry": self.coords})
@@ -259,43 +263,3 @@ class Molecule():
             SEAs.append(SEA("", collect, np.zeros(3)))
         return SEAs
 
-    def symmetrize(self, asym_tol=0.05):
-        """
-        Symmetrizes molecule.
-        This code might be bad. Consider removing. Interatomic distances ---> Cart. not always well defined
-        
-        :deprecated:
-        """
-        print("Warning! Using this symmetrize (the one in Molecule) may fail!")
-        dm = self.distance_matrix()
-        SEAs = self.find_SEAs()
-        new_dm = deepcopy(dm)
-        # Symmetrize interatomic distance matrix
-        for sea in SEAs:
-            if len(sea.subset) < 2:
-                continue
-            for dm_el_0 in range(self.natoms):
-                matches = [(sea.subset[0], dm_el_0)]
-                for sea_i in sea.subset[1:]:
-                    for dm_el_i in range(self.natoms):
-                        if np.isclose(dm[sea.subset[0], dm_el_0], dm[sea_i, dm_el_i], atol=asym_tol):
-                            matches.append((sea_i, dm_el_i))
-                suum = 0.0
-                for idxs in matches:
-                    suum += dm[idxs]
-                avg_dm = suum / len(matches)
-                for idxs in matches:
-                    new_dm[idxs[0],idxs[1]] = avg_dm
-                    new_dm[idxs[1],idxs[0]] = avg_dm
-        
-        # Transform back to Cartesian coordinates, shout out to @Legendre17 on Math Stack Exchange
-        M = np.array([[(new_dm[0,j]**2 + new_dm[i,0]**2 - new_dm[i,j]**2)/2 for j in range(self.natoms)] for i in range(self.natoms)])
-        evals, evecs = np.linalg.eigh(M)
-        for i in range(len(evals)):
-            if abs(evals[i]) < 1e-10:
-                evals[i] = 0
-        evalMat = np.zeros((self.natoms, self.natoms))
-        for i in range(self.natoms):
-            evalMat[i,i] = np.sqrt(evals[i])
-        X = np.dot(evecs, evalMat)
-        self.coords = X[:,-3:]
