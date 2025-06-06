@@ -1,6 +1,6 @@
 import numpy as np
 import molsym
-from .SymmetryEquivalentIC import *
+#from .SymmetryEquivalentIC import *
 from .salc import SALC, SALCs
 from .cartesian_coordinates import CartesianCoordinates
 
