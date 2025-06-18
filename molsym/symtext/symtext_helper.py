@@ -214,7 +214,10 @@ def get_linear_atom_mapping(mol, pg):
             else:
                 raise Exception(f"Atom {atom} not mapped to another atom under symel i")
         return np.column_stack((amap, ungerade_map))
-    return amap
+    elif pg.family == "C":
+        return np.arange(mol.natoms, dtype=int).reshape((mol.natoms,1))
+    else:
+        raise Exception(f"Linear point group {pg.str} not supported for atom mapping")
 
 def where_you_go(mol, atom, symel):
     """

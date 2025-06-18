@@ -57,20 +57,20 @@ def pg_to_symels(PG):
     sh = Symel("sigma_h", np.array([0,0,1]), reflection_matrix(z), 0, 0, "sigma_h")
     if pg.is_linear:
         if pg.family == "C":
-            symels = [#Symel("E", None, None, None, None, None), E is included in C 
-                      Symel("C", z, None, None, None, None), 
-                      Symel("sigma_v", None, None, None, None, None)]
+            symels = [Symel("E", None, np.eye(3), None, None, None),
+                      Symel("C", z, np.eye(3), 0, 0, "E"), 
+                      Symel("sigma_v", [1,0,0], reflection_matrix([1,0,0]), 0, 0, "sigma_v")]
             irreps = [Irrep("Sigma^+", None, None, 1), Irrep("Sigma^-", None, None, 1)]
             irreps += [Irrep(greek[i], i, None, 2) for i in range(len(greek))]
             irrep_mats = None
             return symels, irreps, irrep_mats
         elif pg.family == "D":
-            symels = [#Symel("E", None, None, None, None, None), 
-                      Symel("C", z, None, None, None, None), 
-                      Symel("sigma_v", None, None, None, None, None),
-                      #Symel("i", None, None, None, None, None), i is included in S
-                      Symel("S", z, None, None, None, None),
-                      Symel("C_2'", None, None, None, None, None)]
+            symels = [Symel("E", None, np.eye(3), None, None, None), 
+                      Symel("C", z, np.eye(3), None, None, None), 
+                      Symel("sigma_v", [1,0,0], reflection_matrix([1,0,0]), None, None, None),
+                      Symel("i", None, -1*np.eye(3), None, None, None),
+                      Symel("S", z, reflection_matrix(z), None, None, None),
+                      Symel("C_2'", [1,0,0], Cn([1,0,0], 2), None, None, None)]
             irreps = [Irrep("Sigma_g^+", None, None, 1), Irrep("Sigma_g^-", None, None, 1)]
             irreps += [Irrep(greek[i]+"_g", i, None, 2) for i in range(len(greek))]
             irreps += [Irrep("Sigma_u^+", None, None, 1), Irrep("Sigma_u^-", None, None, 1)]
