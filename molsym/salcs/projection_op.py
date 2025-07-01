@@ -36,9 +36,9 @@ def eckart_conditions(symtext, translational=True, rotational=True):
         y[3 * i + 1] = smass
         z[3 * i + 2] = smass
         atomx, atomy, atomz = mol.coords[i, 0], mol.coords[i, 1], mol.coords[i, 2]
-        tval0 = atomx * evec[0,0] + atomy * evec[1,0] + atomz * evec[2, 0];
-        tval1 = atomx * evec[0,1] + atomy * evec[1,1] + atomz * evec[2, 1];
-        tval2 = atomx * evec[0,2] + atomy * evec[1,2] + atomz * evec[2, 2];
+        tval0 = atomx * evec[0,0] + atomy * evec[1,0] + atomz * evec[2, 0]
+        tval1 = atomx * evec[0,1] + atomy * evec[1,1] + atomz * evec[2, 1]
+        tval2 = atomx * evec[0,2] + atomy * evec[1,2] + atomz * evec[2, 2]
         rx[3 * i + 0] = (tval1 * evec[0,2] - tval2 * evec[0,1]) * smass
         rx[3 * i + 1] = (tval1 * evec[1,2] - tval2 * evec[1,1]) * smass
         rx[3 * i + 2] = (tval1 * evec[2,2] - tval2 * evec[2,1]) * smass
@@ -77,6 +77,9 @@ def ProjectionOp(symtext, fxn_set, project_Eckart=True):
     numred = len(fxn_set)
     salcs = SALCs(symtext, fxn_set)
     orthogonalize = False
+    #project_Eckart = False
+    if project_Eckart:
+        eckart_cond = eckart_conditions(symtext)
     for ir, irrep in enumerate(symtext.irreps):
         if symtext.pg.is_linear:
             irrmat = None
@@ -94,7 +97,7 @@ def ProjectionOp(symtext, fxn_set, project_Eckart=True):
             # Project out Eckart conditions when constructing SALCs of Cartesian displacements
             if isinstance(fxn_set, CartesianCoordinates) and project_Eckart:
                 orthogonalize = True
-                eckart_cond = eckart_conditions(symtext)
+                #eckart_cond = eckart_conditions(symtext)
                 for i in range(irrep.d):
                     for j in range(irrep.d):
                         if not np.allclose(salc[i,j,:], np.zeros(salc[i,j,:].shape), atol=salcs.tol):
