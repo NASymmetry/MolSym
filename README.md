@@ -37,7 +37,8 @@ A python package for handling molecular symmetry.
 
 
 ## Capabilities
-- Point group detection
+- [Point group detection](https://github.com/NASymmetry/MolSym/wiki/Point-group-detection)
+- [Molecule symmetrization](https://github.com/NASymmetry/MolSym/wiki/Symmetrizing-a-molecule)
 - Symmetry element generation
 - Character table generation
 - SALC generation for atomic basis functions, internal coordinates, and cartesian coordinates
