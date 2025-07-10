@@ -41,7 +41,7 @@ A python package for handling molecular symmetry.
 - [Molecule symmetrization](https://github.com/NASymmetry/MolSym/wiki/Symmetrizing-a-molecule)
 - Symmetry element generation
 - Character table generation
-- SALC generation for atomic basis functions, internal coordinates, and cartesian coordinates
+- SALC generation for [atomic basis functions](https://github.com/NASymmetry/MolSym/wiki/SALCs#spherical-harmonics), [internal coordinates](https://github.com/NASymmetry/MolSym/wiki/SALCs#internal-coordinates), and [cartesian coordinates](https://github.com/NASymmetry/MolSym/wiki/SALCs#cartesian-coordinates)
 
 ## Installing
 As of now we do not have a better way to install the code other than cloning from GitHub.
