@@ -38,7 +38,11 @@ class Symtext():
             self.order = len(symels)
         self.irreps = irreps
         self.irrep_mats = irrep_mats
-        self.get_character_table()
+        if self.pg.is_linear:
+            self.get_character_table_linear()
+        else:
+            self.get_character_table()
+
 
     def __len__(self):
         return len(self.symels)
@@ -125,6 +129,18 @@ class Symtext():
         for irrep_idx, irrep in enumerate(self.irreps):
             for class_idx, class_name in enumerate(self.classes):
                 self.character_table[irrep_idx,class_idx] = np.trace(self.irrep_mats[irrep.symbol][self.symel_to_class_map.index(class_idx)])
+    
+    def get_character_table_linear(self):
+        if self.pg.family == "C":
+            self.classes = ["E", "C", "sigma_v"]
+            self.symel_to_class_map = [0, 1, 2]
+            self.class_orders = [1, 0, 0]
+            self.character_table = None
+        elif self.pg.family == "D":
+            self.classes = ["E", "C", "sigma_v", "i", "S", "C_2'"]
+            self.symel_to_class_map = [0, 1, 2, 3, 4, 5]
+            self.class_orders = [1, 0, 0, 1, 0, 0]
+            self.character_table = None
 
     def direct_product(self, *args):
         """
@@ -157,7 +173,6 @@ class Symtext():
         """
         p = np.multiply(dp_vector, self.class_orders)
         return round(p.sum()/(self.order)) > 0
-
 
     def reduction_coefficients(self, rrep_characters):
         """

@@ -19,9 +19,14 @@ def find_point_group(mol):
     paxis = [0,0,0]
     saxis = [0,0,0]
     moit = calcmoit(mol)
-    Ia_mol, Ib_mol, Ic_mol = np.sort(np.linalg.eigh(moit)[0])
+    I_evals, I_evecs = np.linalg.eigh(moit)
+    mask = np.argsort(I_evals)
+    Ia_vec, Ib_vec, Ic_vec = I_evecs[mask]
+    Ia_mol, Ib_mol, Ic_mol = I_evals[mask]
+    #Ia_mol, Ib_mol, Ic_mol = np.sort(np.linalg.eigh(moit)[0])
     # Linear tops
     if np.isclose(Ia_mol, 0.0, atol=mol.tol):
+        paxis = Ia_vec
         if isequivalent(mol, mol.transform(inversion_matrix())):
             pg = "D0h"
         else:
