@@ -7,7 +7,6 @@ from .point_group import PointGroup
 from .general_irrep_mats import pg_to_symels
 from .symtext_helper import get_atom_mapping, rotate_mol_to_symels, get_linear_atom_mapping, get_class_name
 from .multiplication_table import build_mult_table, subgroup_by_name, subgroup_axes, multiply, inverse
-from molsym.salcs.dipole import project_on_dipole
 class Symtext():
     """
     Fundamental object of MolSym, holds most of the symmetry information of the molecule.
