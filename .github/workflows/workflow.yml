@@ -33,6 +33,7 @@ jobs:
     - name: Install
       shell: bash -l {0}
       run: | # Install molsym
+        conda install -n test pip -y
         python -m pip install . --no-deps
     - name: Test with pytest
       shell: bash -l {0}
