@@ -78,7 +78,6 @@ def ProjectionOp(symtext, fxn_set, project_Eckart=True):
     salcs = SALCs(symtext, fxn_set)
     orthogonalize = False
     #orthogonalize = True
-    if manual_proj is None:    
     for ir, irrep in enumerate(symtext.irreps):
         if symtext.pg.is_linear:
             irrmat = None
