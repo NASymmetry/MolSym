@@ -123,7 +123,7 @@ def ProjectionOp(symtext, fxn_set, project_Eckart=True):
     salcs.finish_building(orthogonalize=orthogonalize, remove_complexity=remove_complexity)
     return salcs
 
-def ProjectOnObject(symtext, fxn_set, project_Eckart=True, manual_proj):
+def ProjectOnObject(symtext, fxn_set, manual_proj, project_Eckart=True):
     """
     Projection operator: projects the functions in fxn_set into SALCs.
 
