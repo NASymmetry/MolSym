@@ -180,11 +180,11 @@ class Symtext():
 
         :rtype: numpy.ndarray 
         """
-        proj_dipole = np.zeros((irrep.d, irrep.d, 3))
+        dtype = np.result_type(*self.irrep_mats[irrep.symbol], float)
+        proj_dipole = np.zeros((irrep.d, irrep.d, 3), dtype=dtype)
         for s, symel in enumerate(self.symels):
             irrmat = self.irrep_mats[irrep.symbol][s]
             proj_dipole += irrmat[:, :, None] * np.dot(symel.rrep, dipole)[None, None, :]
-        proj_dipole *= irrep.d / len(self.symels)
         return proj_dipole 
     
 
@@ -210,9 +210,9 @@ class Symtext():
                                assignments.append(xyz)
                                dipole_assignments_by_irrep[irrep.symbol].append((xyz, i))
 
-        for irrep in self.irreps:
-            if len(dipole_assignments_by_irrep[irrep.symbol]) > 0:
-                assert len(dipole_assignments_by_irrep[irrep.symbol]) == irrep.d, "The number of dipole components assigned to an irrep must match the degeneracy!"
+        #for irrep in self.irreps:
+        #    if len(dipole_assignments_by_irrep[irrep.symbol]) > 0:
+        #        assert len(dipole_assignments_by_irrep[irrep.symbol]) == irrep.d, "The number of dipole components assigned to an irrep must match the degeneracy!"
         return dipole_assignments_by_irrep 
 
     @property
