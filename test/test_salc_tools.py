@@ -415,10 +415,13 @@ def test_maps_to_negative(fn):
             atol=1e-4,
         )
 
+ 
         result = molsym.salcs.salc_tools.maps_to_negative(
             symtext,
             salcs[s],
+            tol=1e-8,
         )
+
 
         assert result == expected["maps_to_negative"], (
             f"{fn}: SALC index {s} expected "
@@ -468,3 +471,24 @@ def test_generate_symmetric_partner(fn):
             ref["pos_gradient"],
             atol=1e-5,
         )
+def test_maps_to_negative_molecule_tolerance():
+
+    mol = molsym.Molecule.from_file(TEST_DIR / "xyz" / "ammonia.xyz")
+
+    symtext = molsym.Symtext.from_molecule(mol)
+
+    cart_coords = molsym.salcs.CartesianCoordinates(symtext)
+
+    salcs = molsym.salcs.ProjectionOp(symtext, cart_coords)
+
+    salcs.sort_to("blocks")
+
+    # This SALC does not map under strict tolerance,
+    # but does under the molecule tolerance.
+
+    result = molsym.salcs.salc_tools.maps_to_negative(
+        symtext,
+        salcs[4],
+    )
+
+    assert result is True
