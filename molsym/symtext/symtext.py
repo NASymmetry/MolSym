@@ -7,7 +7,6 @@ from .point_group import PointGroup
 from .general_irrep_mats import pg_to_symels
 from .symtext_helper import get_atom_mapping, rotate_mol_to_symels, get_linear_atom_mapping, get_class_name
 from .multiplication_table import build_mult_table, subgroup_by_name, subgroup_axes, multiply, inverse
-
 class Symtext():
     """
     Fundamental object of MolSym, holds most of the symmetry information of the molecule.
@@ -39,7 +38,7 @@ class Symtext():
         self.irreps = irreps
         self.irrep_mats = irrep_mats
         self.get_character_table()
-
+        self.assign_dipole_irrep = self.dipole_components_to_irrep()
     def __len__(self):
         return len(self.symels)
 
@@ -174,6 +173,48 @@ class Symtext():
             p = np.multiply(p, self.character_table[irrep_idx,:])
             out[irrep_idx] = round(p.sum()/(self.order))
         return out
+
+    def proj_on_dipole(self, dipole, irrep):
+        """
+        Returns the projected dipole vector
+
+        :rtype: numpy.ndarray 
+        """
+        dtype = np.result_type(*self.irrep_mats[irrep.symbol], float)
+        proj_dipole = np.zeros((irrep.d, irrep.d, 3), dtype=dtype)
+        for s, symel in enumerate(self.symels):
+            irrmat = self.irrep_mats[irrep.symbol][s]
+            proj_dipole += irrmat[:, :, None] * np.dot(symel.rrep, dipole)[None, None, :]
+        proj_dipole *= irrep.d / len(self.symels)
+        return proj_dipole 
+    
+
+    def dipole_components_to_irrep(self):
+        """
+        Returns dictionary of irreps and their dipole operator components (if any)
+      
+        :rtype: dict 
+        """
+        dipole_assignments_by_irrep = {irrep.symbol: [] for irrep in self.irreps}
+        dip_xyz = np.eye(3)
+        assignments = []
+        for d, dip in enumerate(dip_xyz):
+            for irrep in self.irreps:
+                proj_dipole = self.proj_on_dipole(dip, irrep)
+                for xyz in range(0, 3):
+                   if xyz in assignments:
+                       continue
+                   for i in range(irrep.d):
+                       for j in range(irrep.d):
+                           dipole = proj_dipole[i,j]
+                           if np.isclose(1, dipole[xyz], atol=1e-4):
+                               assignments.append(xyz)
+                               dipole_assignments_by_irrep[irrep.symbol].append((xyz, i))
+
+        #for irrep in self.irreps:
+        #    if len(dipole_assignments_by_irrep[irrep.symbol]) > 0:
+        #        assert len(dipole_assignments_by_irrep[irrep.symbol]) == irrep.d, "The number of dipole components assigned to an irrep must match the degeneracy!"
+        return dipole_assignments_by_irrep 
 
     @property
     def rotational_symmetry_number(self):

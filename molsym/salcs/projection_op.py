@@ -77,6 +77,7 @@ def ProjectionOp(symtext, fxn_set, project_Eckart=True):
     numred = len(fxn_set)
     salcs = SALCs(symtext, fxn_set)
     orthogonalize = False
+    #orthogonalize = True
     for ir, irrep in enumerate(symtext.irreps):
         if symtext.pg.is_linear:
             irrmat = None
@@ -120,4 +121,71 @@ def ProjectionOp(symtext, fxn_set, project_Eckart=True):
         remove_complexity = False
     # Build convenience SALC data structures
     salcs.finish_building(orthogonalize=orthogonalize, remove_complexity=remove_complexity)
+    return salcs
+
+def ProjectOnObject(symtext, fxn_set, manual_proj, project_Eckart=True):
+    """
+    Projection operator: projects the functions in fxn_set into SALCs.
+
+    :type symtext: molsym.Symtext
+    :type fxn_set: molsym.FunctionSet
+    :rtype: molsym.SALCs
+    """
+    numred = len(fxn_set)
+    salcs = SALCs(symtext, fxn_set)
+    orthogonalize = False
+    #orthogonalize = True
+    list_salc_ids = []
+    index_for_irrep = []
+    print("Projecting on user-specified SALCs to determine what irreps they belong to")
+    for r, row in enumerate(manual_proj):
+        best_irrep = None
+        best_norm = 0.0
+
+        for irrep in symtext.irreps:
+            if symtext.pg.is_linear:
+                irrmat = None
+            else:
+                irrmat = symtext.irrep_mats[irrep.symbol]
+
+            dtype = np.complex128 if symtext.complex else float
+            total_big_salc = np.zeros((irrep.d, irrep.d, numred), dtype=dtype)
+
+            for se_fxn_set in fxn_set.SE_fxns:
+                #if not np.any(np.abs(row[se_fxn_set]) > 1e-4):
+                if not np.any(np.abs(row[se_fxn_set]) > symtext.mol.tol):
+                    continue
+
+                big_salc = np.zeros((irrep.d, irrep.d, numred), dtype=dtype)
+
+                for equivcoord in se_fxn_set:
+                    salc = np.zeros((irrep.d, irrep.d, numred), dtype=dtype)
+
+                    for sidx in range(len(symtext)):
+                        salc = fxn_set.special_function(salc,equivcoord,sidx,irrmat)
+
+                    salc *= irrep.d / symtext.order
+                    big_salc += salc * row[equivcoord]
+
+                total_big_salc += big_salc
+
+            proj_norm = np.linalg.norm(total_big_salc)
+
+            if proj_norm > best_norm:
+                best_norm = proj_norm
+                best_irrep = irrep.symbol
+
+        #if best_irrep is not None and best_norm > 1e-6:
+        if best_irrep is not None and best_norm > symtext.mol.tol:
+            list_salc_ids.append(best_irrep)
+            index_for_irrep.append(r) 
+    if symtext.complex:
+        remove_complexity = True
+    else:
+        remove_complexity = False
+    # Build convenience SALC data structures
+    salcs.finish_building(orthogonalize=orthogonalize, remove_complexity=remove_complexity)
+
+    salcs.manual_proj_irreps = list_salc_ids
+    salcs.manual_proj_indices = index_for_irrep
     return salcs

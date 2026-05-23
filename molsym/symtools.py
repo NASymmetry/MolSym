@@ -231,3 +231,6 @@ def distance(a,b):
     :rtype: float
     """
     return np.sqrt(((a-b)**2).sum())
+
+
+
