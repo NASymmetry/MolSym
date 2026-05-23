@@ -1,6 +1,9 @@
 import pytest
 import numpy as np
 import molsym
+from pathlib import Path
+
+TEST_DIR = Path(__file__).resolve().parent
 
 # Internal coordinate SALCs
 fns = ["water", "ammonia", "methanol", "methane"]#, "benzene"]
@@ -46,7 +49,7 @@ ic_irrep_labels_test_set = [["A_1", "A_1", "B_2"],
 
 @pytest.mark.parametrize("i", [i for i in range(len(fns))])
 def test_internal_coordinate_SALCs(i):
-    mol = molsym.Molecule.from_file("test/xyz/"+fns[i]+".xyz")
+    mol = molsym.Molecule.from_file(TEST_DIR / "xyz" / f"{fns[i]}.xyz")
     mol = molsym.symmetrize(mol)
     symtext = molsym.Symtext.from_molecule(mol)
     ic_fxn_set = molsym.salcs.internal_coordinates.InternalCoordinates(symtext, ics_test_set[i])
@@ -344,7 +347,7 @@ sph_irrep_labels_test_set = [
 
 @pytest.mark.parametrize("i", [i for i in range(len(fns))])
 def test_spherical_harmonic_SALCs(i):
-    mol = molsym.Molecule.from_file("test/xyz/"+fns[i]+".xyz")
+    mol = molsym.Molecule.from_file(TEST_DIR / "xyz" / f"{fns[i]}.xyz")
     mol = molsym.symmetrize(mol)
     symtext = molsym.Symtext.from_molecule(mol)
     sph_fxn_set = molsym.salcs.spherical_harmonics.SphericalHarmonics(symtext, basis_sets_test_set[i])
@@ -355,3 +358,229 @@ def test_spherical_harmonic_SALCs(i):
     print(np.max(np.abs(salcs.basis_transformation_matrix.T[checked:,:]-sph_salcs_test_set[i][checked:,:]), axis=1))
     assert all([np.isclose(sph_salcs_test_set[i][j], salcs.salcs[j].coeffs).all() for j in range(len(sph_fxn_set))])
     assert [salcs.salcs[j].irrep.symbol for j in range(len(sph_fxn_set))] == sph_irrep_labels_test_set[i]
+
+reference_data = {
+
+"water": [
+
+{
+    "coeffs": np.array([
+        -0.0, -0.0,  0.33454,
+         0.0,  0.0, -0.66637,
+         0.0,  0.0, -0.66637,
+    ]),
+    "maps_to_negative": False,
+},
+
+{
+    "coeffs": np.array([
+        -0.0,  0.0,  0.0,
+         0.0,  0.70711, 0.0,
+        -0.0, -0.70711, 0.0,
+    ]),
+    "maps_to_negative": False,
+},
+
+{
+    "coeffs": np.array([
+        -0.0,  0.27026, -0.0,
+        -0.0, -0.53833, -0.41675,
+        -0.0, -0.53833,  0.41675,
+    ]),
+    "maps_to_negative": True,
+},
+
+],
+
+"ammonia": [
+
+{
+    "coeffs": np.array([
+        -0.0, -0.0,  0.42140,
+         0.0,  0.0, -0.52359,
+         0.0,  0.0, -0.52359,
+         0.0,  0.0, -0.52359,
+    ]),
+    "maps_to_negative": False,
+},
+
+{
+    "coeffs": np.array([
+        -0.0,  0.0, -0.0,
+         0.28868,  0.50000,  0.0,
+         0.28868, -0.50000,  0.0,
+        -0.57735, -0.0,     -0.0,
+    ]),
+    "maps_to_negative": False,
+},
+
+{
+    "coeffs": np.array([
+         0.37111,  0.0, -0.0,
+        -0.46111,  0.0, -0.19339,
+        -0.46111,  0.0, -0.19339,
+        -0.46111, -0.0,  0.38678,
+    ]),
+    "maps_to_negative": False,
+},
+
+{
+    "coeffs": np.array([
+         0.0,  0.0, -0.0,
+         0.28868, -0.50000, -0.0,
+         0.28868,  0.50000,  0.0,
+        -0.57735, -0.0,      0.0,
+    ]),
+    "maps_to_negative": False,
+},
+
+{
+    "coeffs": np.array([
+         0.0,  0.37111, -0.0,
+         0.0, -0.46111, -0.33496,
+        -0.0, -0.46111,  0.33496,
+        -0.0, -0.46111,  0.0,
+    ]),
+    "maps_to_negative": False,
+},
+
+{
+    "coeffs": np.array([
+         0.0, -0.0,  0.0,
+        -0.50000, -0.28868,  0.0,
+         0.50000, -0.28868, -0.0,
+        -0.0,      0.57735,  0.0,
+    ]),
+    "maps_to_negative": True,
+},
+
+],"methane": [
+
+{
+    "coeffs": np.array([
+        -0.0,  0.0,  0.0,
+         0.28868, -0.28868,  0.28868,
+        -0.28868,  0.28868,  0.28868,
+         0.28868,  0.28868, -0.28868,
+        -0.28868, -0.28868, -0.28868,
+    ]),
+    "maps_to_negative": False,
+},
+
+{
+    "coeffs": np.array([
+         0.0, -0.0,  0.0,
+         0.20412, -0.20412, -0.40825,
+        -0.20412,  0.20412, -0.40825,
+         0.20412,  0.20412,  0.40825,
+        -0.20412, -0.20412,  0.40825,
+    ]),
+    "maps_to_negative": False,
+},
+
+{
+    "coeffs": np.array([
+        -0.0,  0.0,  0.0,
+        -0.35355, -0.35355, -0.0,
+         0.35355,  0.35355, -0.0,
+        -0.35355,  0.35355,  0.0,
+         0.35355, -0.35355,  0.0,
+    ]),
+    "maps_to_negative": True,
+},
+
+{
+    "coeffs": np.array([
+         0.50146, -0.0,  0.0,
+        -0.43259,  0.0, -0.0,
+        -0.43259,  0.0, -0.0,
+        -0.43259,  0.0, -0.0,
+        -0.43259,  0.0, -0.0,
+    ]),
+    "maps_to_negative": True,
+},
+
+{
+    "coeffs": np.array([
+        -0.0, -0.0, -0.0,
+        -0.0,  0.35355, -0.35355,
+         0.0,  0.35355,  0.35355,
+        -0.0, -0.35355,  0.35355,
+        -0.0, -0.35355, -0.35355,
+    ]),
+    "maps_to_negative": True,
+},
+
+{
+    "coeffs": np.array([
+         0.0,  0.50146,  0.0,
+        -0.0, -0.43259,  0.0,
+        -0.0, -0.43259,  0.0,
+        -0.0, -0.43259,  0.0,
+        -0.0, -0.43259,  0.0,
+    ]),
+    "maps_to_negative": True,
+},
+
+{
+    "coeffs": np.array([
+        -0.0, -0.0,  0.0,
+         0.35355,  0.0,  0.35355,
+         0.35355,  0.0, -0.35355,
+        -0.35355, -0.0,  0.35355,
+        -0.35355, -0.0, -0.35355,
+    ]),
+    "maps_to_negative": True,
+},
+
+{
+    "coeffs": np.array([
+        -0.0,  0.0,  0.50146,
+         0.0,  0.0, -0.43259,
+         0.0,  0.0, -0.43259,
+         0.0, -0.0, -0.43259,
+         0.0, -0.0, -0.43259,
+    ]),
+    "maps_to_negative": True,
+},
+
+{
+    "coeffs": np.array([
+         0.0,  0.0, -0.0,
+        -0.35355,  0.35355, -0.0,
+         0.35355, -0.35355,  0.0,
+         0.35355,  0.35355, -0.0,
+        -0.35355, -0.35355,  0.0,
+    ]),
+    "maps_to_negative": True,
+},
+
+],
+
+}
+expected_manual_proj_irreps = {
+    "water": ["A_1", "A_1", "B_2"],
+    "ammonia": ["A_1", "A_1", "E", "E", "E", "E"],
+    "methane": ["A_1", "E", "E", "T_2", "T_2", "T_2", "T_2", "T_2", "T_2"],
+}
+
+manual_proj_reference = {
+    fn: np.vstack([entry["coeffs"] for entry in salc_data])
+    for fn, salc_data in reference_data.items()
+}
+
+@pytest.mark.parametrize("fn", list(manual_proj_reference.keys()))
+def test_project_on_object(fn):
+    mol = molsym.Molecule.from_file(TEST_DIR / "xyz" / f"{fn}.xyz")
+    symtext = molsym.Symtext.from_molecule(mol)
+
+    cart_coords = molsym.salcs.CartesianCoordinates(symtext)
+    manual_proj = manual_proj_reference[fn]
+
+    salcs = molsym.salcs.projection_op.ProjectOnObject(
+    symtext,
+    cart_coords,
+    manual_proj,
+    )
+
+    assert salcs.manual_proj_irreps == expected_manual_proj_irreps[fn]

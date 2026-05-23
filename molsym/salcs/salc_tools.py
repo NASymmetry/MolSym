@@ -1,6 +1,6 @@
 import numpy as np
 
-def generate_symmetric_partner(symtext, salc, neg_data, data_type="dipole", tol=1e-8):
+def generate_symmetric_partner(symtext, salc, neg_data, data_type="dipole", tol=None):
     """
     Use molecular symmetry to generate + displacements from - displacements
     for quantities that transform as vectors (dipoles) or sets of atomic vectors (gradients).
@@ -18,8 +18,6 @@ def generate_symmetric_partner(symtext, salc, neg_data, data_type="dipole", tol=
             (N_atoms, 3) for gradients
     data_type : str, optional
         "dipole" or "gradient", controls how the transformation is applied.
-    tol : float
-        Numerical tolerance for comparing transformed vectors.
 
     Returns
     -------
@@ -29,6 +27,8 @@ def generate_symmetric_partner(symtext, salc, neg_data, data_type="dipole", tol=
         Index of the symmetry operation used (if any).
     """
 
+    if tol is None:
+        tol = symtext.mol.tol
     N = salc.coeffs.size // 3
     disp_matrix = salc.coeffs.reshape(N, 3)
 
@@ -40,7 +40,7 @@ def generate_symmetric_partner(symtext, salc, neg_data, data_type="dipole", tol=
         for a in range(N):
             b = symtext.atom_map[a, k]
             transformed[b] = op.rrep @ disp_matrix[a]
-        if np.allclose(transformed.flatten(), -salc.coeffs, atol=tol):
+        if np.allclose(transformed.flatten(), -salc.coeffs, atol=symtext.mol.tol):
             found_op = k
             R = op.rrep
             break
@@ -62,7 +62,7 @@ def generate_symmetric_partner(symtext, salc, neg_data, data_type="dipole", tol=
         raise ValueError(f"Unsupported data_type: {data_type}")
 
     return pos_data, found_op
-def maps_to_negative(symtext, salc, tol=1e-8):
+def maps_to_negative(symtext, salc, tol=None):
     """
     Test a SALC for +/- displacement equivalence.
 
@@ -84,6 +84,8 @@ def maps_to_negative(symtext, salc, tol=1e-8):
     bool
         The +/- displacements are equivalent.
     """
+    if tol is None:
+        tol = symtext.mol.tol
     N = salc.coeffs.size // 3
     disp_matrix = salc.coeffs.reshape(N, 3)
     n_ops = symtext.atom_map.shape[1]
