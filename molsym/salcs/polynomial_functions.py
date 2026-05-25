@@ -90,9 +90,6 @@ class PolynomialFunctions(FunctionSet):
             if start in done:
                 continue
     
-            # ------------------------------------------------------------
-            # 1. Find the invariant mixing component.
-            # ------------------------------------------------------------
             component = set([start])
             frontier = [start]
     
@@ -102,10 +99,7 @@ class PolynomialFunctions(FunctionSet):
                 for sidx in range(len(self.symtext)):
                     coeffs = self.fxn_map[sidx, coord, :]
     
-                    mapped = [
-                        i for i, coeff in enumerate(coeffs)
-                        if abs(coeff) > global_tol
-                    ]
+                    mapped = [i for i, coeff in enumerate(coeffs) if abs(coeff) > global_tol]
     
                     for idx in mapped:
                         if idx not in component:
@@ -115,14 +109,7 @@ class PolynomialFunctions(FunctionSet):
             component = sorted(component)
             done.update(component)
     
-            # ------------------------------------------------------------
-            # 2. Choose cyclic generator seeds inside this component.
-            #    A seed is kept if its group orbit increases the rank/span.
-            # ------------------------------------------------------------
-            component_pos = {
-                idx: pos
-                for pos, idx in enumerate(component)
-            }
+            component_pos = {idx: pos for pos, idx in enumerate(component)}
     
             current_basis = np.zeros((len(component), 0))
     
