@@ -7,6 +7,7 @@ from .point_group import PointGroup
 from .general_irrep_mats import pg_to_symels
 from .symtext_helper import get_atom_mapping, rotate_mol_to_symels, get_linear_atom_mapping, get_class_name
 from .multiplication_table import build_mult_table, subgroup_by_name, subgroup_axes, multiply, inverse
+from molsym.salcs.salc_tools import analyze_rotations, construct_polynomials
 class Symtext():
     """
     Fundamental object of MolSym, holds most of the symmetry information of the molecule.
@@ -157,8 +158,7 @@ class Symtext():
         p = np.multiply(dp_vector, self.class_orders)
         return round(p.sum()/(self.order)) > 0
 
-
-    def reduction_coefficients(self, rrep_characters):
+    def reduction_coefficients(self, rrep_characters, by_class=True):
         """
         Return reduction coefficients for the characters of a representation.
 
@@ -168,11 +168,27 @@ class Symtext():
         :rtype: NumPy array of shape (len(self.irreps),)
         """
         out = np.zeros(len(self.irreps), dtype=int)
+    
+        if by_class:
+            class_chars = rrep_characters
+        else:
+            symel_to_class_map = np.array(self.symel_to_class_map)
+            class_chars = np.zeros(
+                len(self.classes),
+                dtype=np.result_type(rrep_characters, float),
+            )
+    
+            for class_idx in range(len(self.classes)):
+                inds = np.where(symel_to_class_map == class_idx)[0]
+                class_chars[class_idx] = np.mean(rrep_characters[inds])
+    
         for irrep_idx, irrep in enumerate(self.irreps):
-            p = np.multiply(rrep_characters, self.class_orders)
-            p = np.multiply(p, self.character_table[irrep_idx,:])
-            out[irrep_idx] = round(p.sum()/(self.order))
+            p = np.multiply(class_chars, self.class_orders)
+            p = np.multiply(p, self.character_table[irrep_idx, :])
+            out[irrep_idx] = round(p.sum() / self.order)
+    
         return out
+
 
     def proj_on_dipole(self, dipole, irrep):
         """
@@ -276,3 +292,9 @@ class Symtext():
                 return self.subgroup_symtext(i)
             except:
                 pass
+
+    def analyze_rotations(self):
+        return analyze_rotations(self)
+
+    def construct_polynomials(self, degree=2, projector_type="projector_type", print_pretty=True):
+        return construct_polynomials(self,degree=degree,projector_type=projector_type,print_pretty=print_pretty)

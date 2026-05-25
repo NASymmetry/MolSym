@@ -1,4 +1,9 @@
 import numpy as np
+from math import comb
+from molsym.salcs.projection_op import ProjectionOp
+from molsym.salcs.axial_vector_functions import AxialVectorFunctions
+from molsym.salcs.polynomial_functions import PolynomialFunctions
+from molsym.molecule import *
 
 def generate_symmetric_partner(symtext, salc, neg_data, data_type="dipole", tol=None):
     """
@@ -103,3 +108,203 @@ def maps_to_negative(symtext, salc, tol=None):
             return True
 
     return False
+
+def character_by_operation(rep_mats):
+    return np.array([np.trace(D) for D in rep_mats], dtype=float)
+
+
+def axial_matrix(A, tol=global_tol):
+    det = np.linalg.det(A)
+
+    if abs(det - 1.0) < tol:
+        det = 1.0
+    elif abs(det + 1.0) < tol:
+        det = -1.0
+
+    return det * A
+
+def analyze_rotations(symtext, print_pretty=True):
+    rep_mats = []
+
+    for i, symel in enumerate(symtext.symels):
+        D = axial_matrix(symel.rrep, global_tol)
+        rep_mats.append(D)
+
+    op_chars = character_by_operation(rep_mats)
+    coeffs = symtext.reduction_coefficients(op_chars, False)
+
+    print("Reduction:")
+    print(format_reduction(coeffs, symtext))
+
+    fxn_set = AxialVectorFunctions(symtext)
+
+    salcs = ProjectionOp(symtext,fxn_set,project_Eckart=False)
+
+    if print_pretty:
+        print_axial_vector_salcs(salcs)
+
+    return salcs
+
+def axial_vector_salc_to_string(salc, fxn_set, tol=global_tol):
+    terms = []
+
+    for coeff, label in zip(salc.coeffs, fxn_set.labels):
+        if abs(coeff) < tol:
+            continue
+
+        if abs(coeff - 1.0) < tol:
+            term = label
+        elif abs(coeff + 1.0) < tol:
+            term = f"-{label}"
+        else:
+            term = f"{coeff:.6g}*{label}"
+
+        terms.append(term)
+
+    if not terms:
+        return "0"
+
+    return " + ".join(terms).replace("+ -", "- ")
+
+
+def print_axial_vector_salcs(salcs):
+    fxn_set = salcs.fxn_set
+
+    for irrep in salcs.irreps:
+        matching = [s for s in salcs.salcs if s.irrep.symbol == irrep.symbol]
+
+        if not matching:
+            continue
+
+        print(f"{irrep.symbol}:")
+
+        for s in matching:
+            expr = axial_vector_salc_to_string(s, fxn_set)
+            print(f"  P_{s.i}{s.j}({s.bfxn}): {expr}")
+
+def construct_rotations(symtext, print_pretty=True):
+    fxn_set = AxialVectorFunctions(symtext)
+    salcs = ProjectionOp(symtext, fxn_set, project_Eckart=False)
+
+    if print_pretty:
+        print_axial_vector_salcs(salcs)
+
+    return salcs
+
+def monomial_label(exp):
+    a, b, c = exp
+    pieces = []
+
+    for label, power in zip(("x", "y", "z"), (a, b, c)):
+        if power == 0:
+            continue
+        elif power == 1:
+            pieces.append(label)
+        else:
+            pieces.append(f"{label}^{power}")
+
+    return "*".join(pieces) if pieces else "1"
+
+def class_characters_from_operation_characters(symtext, op_chars):
+    return np.array([
+        np.mean([
+            op_chars[i]
+            for i, c in enumerate(symtext.symel_to_class_map)
+            if c == class_idx
+        ])
+        for class_idx in range(len(symtext.classes))
+    ])
+
+
+def format_reduction(coeffs, symtext):
+    pieces = []
+
+    for i, mult in enumerate(coeffs):
+        if mult == 0:
+            continue
+
+        symbol = symtext.irreps[i].symbol
+
+        if mult == 1:
+            pieces.append(symbol)
+        else:
+            pieces.append(f"{mult}{symbol}")
+
+    return " + ".join(pieces) if pieces else "0"
+
+
+def construct_polynomials(symtext, degree=2, projector_type="full", print_pretty=True):
+    fxn_set = PolynomialFunctions(symtext, degree=degree)
+    salcs = ProjectionOp(symtext, fxn_set, project_Eckart=False)
+    if print_pretty:
+        print_polynomial_salcs(salcs)
+    return salcs
+
+def polynomial_salc_to_string(salc, fxn_set, tol=global_tol, pretty=True):
+    """
+    Convert one polynomial SALC coefficient vector into a readable polynomial.
+    """
+    terms = []
+
+    for coeff, exp in zip(salc.coeffs, fxn_set.exponents):
+        if abs(coeff) < tol:
+            continue
+
+        label = monomial_label(exp)
+
+        if label == "1":
+            term = f"{coeff:.6g}"
+        elif abs(coeff - 1.0) < tol:
+            term = label
+        elif abs(coeff + 1.0) < tol:
+            term = f"-{label}"
+        else:
+            term = f"{coeff:.6g}*{label}"
+
+        terms.append(term)
+
+    if not terms:
+        return "0"
+
+    out = " + ".join(terms)
+    out = out.replace("+ -", "- ")
+
+    if pretty:
+        out = prettify_polynomial_string(out)
+
+    return out
+
+
+def prettify_polynomial_string(poly):
+    """
+    Minimal string cleanup for character-table-style display.
+    """
+    return (
+        poly
+        .replace("*", "")
+        .replace("^2", "²")
+        .replace("^3", "³")
+        .replace("^4", "⁴")
+        .replace("^5", "⁵")
+    )
+
+
+def print_polynomial_salcs(salcs, pretty=True):
+    """
+    Print polynomial SALCs grouped by irrep.
+    """
+    fxn_set = salcs.fxn_set
+
+    for irrep in salcs.irreps:
+        matching = [s for s in salcs.salcs if s.irrep.symbol == irrep.symbol]
+
+        if not matching:
+            continue
+
+        print(f"{irrep.symbol}:")
+
+        for s in matching:
+            poly = polynomial_salc_to_string(s,fxn_set,pretty=pretty)
+
+            print(f"  P_{s.i}{s.j}({s.bfxn}): {poly}")
+

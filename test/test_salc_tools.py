@@ -3,6 +3,12 @@ import numpy as np
 import molsym
 from pathlib import Path
 
+from molsym.salcs.salc_tools import (axial_matrix,character_by_operation,format_reduction,monomial_label,prettify_polynomial_string,polynomial_salc_to_string,print_polynomial_salcs)
+
+from molsym.salcs.polynomial_functions import PolynomialFunctions
+from molsym.salcs.projection_op import ProjectionOp
+from molsym.molecule import *
+
 TEST_DIR = Path(__file__).resolve().parent
 
 reference_data = {
@@ -492,3 +498,249 @@ def test_maps_to_negative_molecule_tolerance():
     )
 
     assert result is True
+
+MOLECULES = ["water", "ammonia", "methane"]
+REFERENCE_ROTATION_ANALYSIS = {
+    "water": {
+        "reduction": "A_2 + B_1 + B_2",
+        "functions": {
+            "A_2": ["Rz"],
+            "B_1": ["Ry"],
+            "B_2": ["Rx"],
+        },
+    },
+
+    "ammonia": {
+        "reduction": "A_2 + E",
+        "functions": {
+            "A_2": ["Rz"],
+            "E": ["Rx", "Ry"],
+        },
+    },
+
+    "methane": {
+        "reduction": "T_1",
+        "functions": {
+            "T_1": ["Rx", "Ry", "Rz"],
+        },
+    },
+}
+
+REFERENCE_DEGREE2_PRETTY = {
+    "water": {
+        "A_1": [
+            "x²",
+            "y²",
+            "z²",
+        ],
+        "A_2": [
+            "xy",
+        ],
+        "B_1": [
+            "xz",
+        ],
+        "B_2": [
+            "yz",
+        ],
+    },
+
+    "ammonia": {
+        "A_1": [
+            "0.707107x² + 0.707107y²",
+            "z²",
+        ],
+        "E": [
+            "0.707107x² - 0.707107y²",
+            "-xy",
+            "xz",
+            "yz",
+        ],
+    },
+
+    "methane": {
+        "A_1": [
+            "0.57735x² + 0.57735y² + 0.57735z²",
+        ],
+
+        "E": [
+            "0.408248x² + 0.408248y² - 0.816497z²",
+            "-0.707107x² + 0.707107y²",
+        ],
+
+        "T_2": [
+            "yz",
+            "xz",
+            "xy",
+        ],
+    },
+}
+
+def load_symtext(molecule):
+    xyz = TEST_DIR / "xyz" / f"{molecule}.xyz"
+    mol = molsym.Molecule.from_file(str(xyz))
+    return molsym.Symtext.from_molecule(mol)
+
+
+def test_axial_matrix_proper_rotation():
+    A = np.eye(3)
+    D = axial_matrix(A, tol=global_tol)
+    assert np.allclose(D, np.eye(3))
+
+
+def test_axial_matrix_improper_operation():
+    A = np.diag([1.0, 1.0, -1.0])
+    D = axial_matrix(A, tol=global_tol)
+    assert np.allclose(D, -A)
+
+
+def test_character_by_operation():
+    mats = np.array([
+        np.eye(3),
+        -np.eye(3),
+    ])
+
+    chars = character_by_operation(mats)
+
+    assert np.allclose(chars, [3.0, -3.0])
+
+
+@pytest.mark.parametrize("molecule", MOLECULES)
+def test_format_reduction_smoke(molecule):
+    symtext = load_symtext(molecule)
+
+    coeffs = np.zeros(len(symtext.irreps), dtype=int)
+    coeffs[0] = 1
+
+    reduction = format_reduction(coeffs, symtext)
+
+    assert symtext.irreps[0].symbol in reduction
+
+
+def test_monomial_label():
+    assert monomial_label((1, 0, 0)) == "x"
+    assert monomial_label((0, 1, 0)) == "y"
+    assert monomial_label((0, 0, 1)) == "z"
+    assert monomial_label((2, 0, 0)) == "x^2"
+    assert monomial_label((1, 1, 0)) == "x*y"
+    assert monomial_label((0, 0, 0)) == "1"
+
+
+def test_prettify_polynomial_string():
+    raw = "1*x^2 + 2*x*y - 3*z^3"
+    pretty = prettify_polynomial_string(raw)
+
+    assert "*" not in pretty
+    assert "x²" in pretty
+    assert "z³" in pretty
+
+
+def test_polynomial_salc_to_string_degree2_ammonia():
+    symtext = load_symtext("ammonia")
+    fxn_set = PolynomialFunctions(symtext, degree=2)
+
+    salcs = ProjectionOp(
+        symtext,
+        fxn_set,
+        project_Eckart=False,
+    )
+
+    strings = [
+        polynomial_salc_to_string(salc, fxn_set)
+        for salc in salcs.salcs
+    ]
+
+    joined = "\n".join(strings)
+
+    assert "z²" in joined
+    assert "xz" in joined
+    assert "yz" in joined
+
+
+def test_print_polynomial_salcs_degree2_ammonia(capsys):
+    symtext = load_symtext("ammonia")
+    fxn_set = PolynomialFunctions(symtext, degree=2)
+
+    salcs = ProjectionOp(
+        symtext,
+        fxn_set,
+        project_Eckart=False,
+    )
+
+    print_polynomial_salcs(salcs)
+
+    captured = capsys.readouterr().out
+
+    assert "A_1:" in captured
+    assert "E:" in captured
+    assert "z²" in captured
+    assert "xz" in captured
+    assert "yz" in captured
+
+
+def test_analyze_rotations_ammonia(capsys):
+    symtext = load_symtext("ammonia")
+
+    symtext.analyze_rotations()
+
+    captured = capsys.readouterr().out
+
+    assert "Reduction:" in captured
+    assert "A_2 + E" in captured
+    assert "Rz" in captured
+    assert "Rx" in captured
+    assert "Ry" in captured
+
+
+def test_construct_polynomials_degree2_ammonia(capsys):
+    symtext = load_symtext("ammonia")
+
+    symtext.construct_polynomials(
+        degree=2,
+        projector_type="full",
+        print_pretty=True,
+    )
+
+    captured = capsys.readouterr().out
+
+    assert "A_1:" in captured
+    assert "E:" in captured
+    assert "z²" in captured
+    assert "xz" in captured
+    assert "yz" in captured
+
+@pytest.mark.parametrize("molecule", MOLECULES)
+def test_rotation_analysis_reference(capsys, molecule):
+    symtext = load_symtext(molecule)
+
+    symtext.analyze_rotations()
+
+    captured = capsys.readouterr().out
+
+    ref = REFERENCE_ROTATION_ANALYSIS[molecule]
+
+    assert ref["reduction"] in captured
+
+    for irrep, functions in ref["functions"].items():
+        assert f"{irrep}:" in captured
+
+        for fxn in functions:
+            assert fxn in captured
+
+@pytest.mark.parametrize("molecule", MOLECULES)
+def test_degree2_polynomial_pretty_reference(capsys, molecule):
+    symtext = load_symtext(molecule)
+
+    symtext.construct_polynomials(
+        degree=2,
+        print_pretty=True,
+    )
+
+    captured = capsys.readouterr().out
+
+    ref = REFERENCE_DEGREE2_PRETTY[molecule]
+
+    for irrep, functions in ref.items():
+        assert f"{irrep}:" in captured
+
+        for fxn in functions:
+            assert fxn in captured
