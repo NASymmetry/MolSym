@@ -296,5 +296,5 @@ class Symtext():
     def analyze_rotations(self):
         return analyze_rotations(self)
 
-    def construct_polynomials(self, degree=2, projector_type="projector_type", print_pretty=True):
+    def construct_polynomials(self, degree=2, projector_type="full", print_pretty=True):
         return construct_polynomials(self,degree=degree,projector_type=projector_type,print_pretty=print_pretty)
