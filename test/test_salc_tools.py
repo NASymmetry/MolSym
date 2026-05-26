@@ -3,11 +3,21 @@ import numpy as np
 import molsym
 from pathlib import Path
 
-from molsym.salcs.salc_tools import (axial_matrix,character_by_operation,format_reduction,monomial_label,prettify_polynomial_string,polynomial_salc_to_string,print_polynomial_salcs)
+from molsym.salcs.salc_tools import (
+    analyze_rotations,
+    axial_matrix,
+    character_by_operation,
+    construct_polynomials,
+    format_reduction,
+    monomial_label,
+    prettify_polynomial_string,
+    polynomial_salc_to_string,
+    print_polynomial_salcs,
+)
 
 from molsym.salcs.polynomial_functions import PolynomialFunctions
 from molsym.salcs.projection_op import ProjectionOp
-from molsym.molecule import *
+from molsym.molecule import global_tol
 
 TEST_DIR = Path(__file__).resolve().parent
 
@@ -680,7 +690,7 @@ def test_print_polynomial_salcs_degree2_ammonia(capsys):
 def test_analyze_rotations_ammonia(capsys):
     symtext = load_symtext("ammonia")
 
-    symtext.analyze_rotations()
+    analyze_rotations(symtext)
 
     captured = capsys.readouterr().out
 
@@ -694,9 +704,9 @@ def test_analyze_rotations_ammonia(capsys):
 def test_construct_polynomials_degree2_ammonia(capsys):
     symtext = load_symtext("ammonia")
 
-    symtext.construct_polynomials(
+    construct_polynomials(
+        symtext,
         degree=2,
-        projector_type="full",
         print_pretty=True,
     )
 
@@ -712,7 +722,7 @@ def test_construct_polynomials_degree2_ammonia(capsys):
 def test_rotation_analysis_reference(capsys, molecule):
     symtext = load_symtext(molecule)
 
-    symtext.analyze_rotations()
+    analyze_rotations(symtext)
 
     captured = capsys.readouterr().out
 
@@ -730,7 +740,8 @@ def test_rotation_analysis_reference(capsys, molecule):
 def test_degree2_polynomial_pretty_reference(capsys, molecule):
     symtext = load_symtext(molecule)
 
-    symtext.construct_polynomials(
+    construct_polynomials(
+        symtext,
         degree=2,
         print_pretty=True,
     )

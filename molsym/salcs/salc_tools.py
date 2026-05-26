@@ -1,9 +1,10 @@
 import numpy as np
 from math import comb
+import re
 from molsym.salcs.projection_op import ProjectionOp
 from molsym.salcs.axial_vector_functions import AxialVectorFunctions
 from molsym.salcs.polynomial_functions import PolynomialFunctions
-from molsym.molecule import *
+from molsym.molecule import global_tol
 
 def generate_symmetric_partner(symtext, salc, neg_data, data_type="dipole", tol=None):
     """
@@ -133,8 +134,9 @@ def analyze_rotations(symtext, print_pretty=True):
     op_chars = character_by_operation(rep_mats)
     coeffs = symtext.reduction_coefficients(op_chars, False)
 
-    print("Reduction:")
-    print(format_reduction(coeffs, symtext))
+    if print_pretty:
+        print("Reduction:")
+        print(format_reduction(coeffs, symtext))
 
     fxn_set = AxialVectorFunctions(symtext)
 
@@ -182,15 +184,6 @@ def print_axial_vector_salcs(salcs):
             expr = axial_vector_salc_to_string(s, fxn_set)
             print(f"  P_{s.i}{s.j}({s.bfxn}): {expr}")
 
-def construct_rotations(symtext, print_pretty=True):
-    fxn_set = AxialVectorFunctions(symtext)
-    salcs = ProjectionOp(symtext, fxn_set, project_Eckart=False)
-
-    if print_pretty:
-        print_axial_vector_salcs(salcs)
-
-    return salcs
-
 def monomial_label(exp):
     a, b, c = exp
     pieces = []
@@ -204,17 +197,6 @@ def monomial_label(exp):
             pieces.append(f"{label}^{power}")
 
     return "*".join(pieces) if pieces else "1"
-
-def class_characters_from_operation_characters(symtext, op_chars):
-    return np.array([
-        np.mean([
-            op_chars[i]
-            for i, c in enumerate(symtext.symel_to_class_map)
-            if c == class_idx
-        ])
-        for class_idx in range(len(symtext.classes))
-    ])
-
 
 def format_reduction(coeffs, symtext):
     pieces = []
@@ -233,7 +215,7 @@ def format_reduction(coeffs, symtext):
     return " + ".join(pieces) if pieces else "0"
 
 
-def construct_polynomials(symtext, degree=2, projector_type="full", print_pretty=True):
+def construct_polynomials(symtext, degree=2, print_pretty=True):
     fxn_set = PolynomialFunctions(symtext, degree=degree)
     salcs = ProjectionOp(symtext, fxn_set, project_Eckart=False)
     if print_pretty:
@@ -279,14 +261,12 @@ def prettify_polynomial_string(poly):
     """
     Minimal string cleanup for character-table-style display.
     """
-    return (
-        poly
-        .replace("*", "")
-        .replace("^2", "²")
-        .replace("^3", "³")
-        .replace("^4", "⁴")
-        .replace("^5", "⁵")
-    )
+    superscript_map = str.maketrans("0123456789-+", "⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺")
+
+    for power in sorted(set(re.findall(r"\^[-+]?\d+", poly)), key=len, reverse=True):
+        poly = poly.replace(power, power[1:].translate(superscript_map))
+
+    return poly.replace("*", "")
 
 
 def print_polynomial_salcs(salcs, pretty=True):
@@ -307,4 +287,3 @@ def print_polynomial_salcs(salcs, pretty=True):
             poly = polynomial_salc_to_string(s,fxn_set,pretty=pretty)
 
             print(f"  P_{s.i}{s.j}({s.bfxn}): {poly}")
-

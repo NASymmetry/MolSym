@@ -7,7 +7,6 @@ from .point_group import PointGroup
 from .general_irrep_mats import pg_to_symels
 from .symtext_helper import get_atom_mapping, rotate_mol_to_symels, get_linear_atom_mapping, get_class_name
 from .multiplication_table import build_mult_table, subgroup_by_name, subgroup_axes, multiply, inverse
-from molsym.salcs.salc_tools import analyze_rotations, construct_polynomials
 class Symtext():
     """
     Fundamental object of MolSym, holds most of the symmetry information of the molecule.
@@ -162,8 +161,12 @@ class Symtext():
         """
         Return reduction coefficients for the characters of a representation.
 
-        :param rrep_characters: Characters for each class for a representation (reducible or irreducible)
+        :param rrep_characters: Character values as either class-level characters or per-operation characters.
         :type rrep_characters: NumPy array of shape (n,)
+        :param by_class: If True, ``rrep_characters`` is interpreted as one value per class.
+            If False, ``rrep_characters`` is interpreted as one value per symmetry operation and
+            values are averaged within each class before reduction.
+        :type by_class: bool
         :return: Integer array with number of occurences of each irrep. in rrep_characters.
         :rtype: NumPy array of shape (len(self.irreps),)
         """
@@ -292,9 +295,3 @@ class Symtext():
                 return self.subgroup_symtext(i)
             except:
                 pass
-
-    def analyze_rotations(self):
-        return analyze_rotations(self)
-
-    def construct_polynomials(self, degree=2, projector_type="full", print_pretty=True):
-        return construct_polynomials(self,degree=degree,projector_type=projector_type,print_pretty=print_pretty)

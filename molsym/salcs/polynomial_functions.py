@@ -1,7 +1,7 @@
 import numpy as np
 from math import comb
 from .function_set import FunctionSet
-from molsym.molecule import *
+from molsym.molecule import global_tol
 
 
 class PolynomialFunctions(FunctionSet):
