@@ -68,6 +68,7 @@ def generate_symmetric_partner(symtext, salc, neg_data, data_type="dipole", tol=
         raise ValueError(f"Unsupported data_type: {data_type}")
 
     return pos_data, found_op
+
 def maps_to_negative(symtext, salc, tol=None):
     """
     Test a SALC for +/- displacement equivalence.
@@ -142,10 +143,8 @@ def analyze_rotations(symtext, print_pretty=True):
 
     salcs = ProjectionOp(symtext,fxn_set,project_Eckart=False)
 
-    if print_pretty:
-        print_axial_vector_salcs(salcs)
-
     return salcs
+    return format_reduction(coeffs, symtext)
 
 def axial_vector_salc_to_string(salc, fxn_set, tol=global_tol):
     terms = []
@@ -168,21 +167,6 @@ def axial_vector_salc_to_string(salc, fxn_set, tol=global_tol):
 
     return " + ".join(terms).replace("+ -", "- ")
 
-
-def print_axial_vector_salcs(salcs):
-    fxn_set = salcs.fxn_set
-
-    for irrep in salcs.irreps:
-        matching = [s for s in salcs.salcs if s.irrep.symbol == irrep.symbol]
-
-        if not matching:
-            continue
-
-        print(f"{irrep.symbol}:")
-
-        for s in matching:
-            expr = axial_vector_salc_to_string(s, fxn_set)
-            print(f"  P_{s.i}{s.j}({s.bfxn}): {expr}")
 
 def monomial_label(exp):
     a, b, c = exp
@@ -219,8 +203,42 @@ def construct_polynomials(symtext, degree=2, print_pretty=True):
     fxn_set = PolynomialFunctions(symtext, degree=degree)
     salcs = ProjectionOp(symtext, fxn_set, project_Eckart=False)
     if print_pretty:
-        print_polynomial_salcs(salcs)
+        print(salcs)
     return salcs
+
+def internal_coordinate_salc_to_string(salc, fxn_set, tol=global_tol):
+    terms = []
+    labels = getattr(fxn_set, "labels", None)
+
+    for idx, (coeff, ic) in enumerate(zip(salc.coeffs, fxn_set.ic_list)):
+        if abs(coeff) < tol:
+            continue
+
+        if labels is not None:
+            label = labels[idx]
+        else:
+            label = getattr(ic, "symbol", None)
+
+            if label is None:
+                label = getattr(ic, "label", None)
+
+            if label is None:
+                label = str(ic)
+
+        if abs(coeff - 1.0) < tol:
+            term = label
+        elif abs(coeff + 1.0) < tol:
+            term = f"-{label}"
+        else:
+            term = f"{coeff:.6g}{label}"
+
+        terms.append(term)
+
+    if not terms:
+        return "0"
+
+    return " + ".join(terms).replace("+ -", "- ")
+
 
 def polynomial_salc_to_string(salc, fxn_set, tol=global_tol, pretty=True):
     """
@@ -269,21 +287,44 @@ def prettify_polynomial_string(poly):
     return poly.replace("*", "")
 
 
-def print_polynomial_salcs(salcs, pretty=True):
+class SALCFormatter:
     """
-    Print polynomial SALCs grouped by irrep.
+    Printable wrapper for SALCs.
+
+    The SALC objects remain generic numerical containers. The FunctionSet
+    decides how coefficient vectors should be rendered.
     """
-    fxn_set = salcs.fxn_set
 
-    for irrep in salcs.irreps:
-        matching = [s for s in salcs.salcs if s.irrep.symbol == irrep.symbol]
+    def __init__(self, salcs):
+        self.salcs = salcs
 
-        if not matching:
-            continue
+    def __str__(self):
+        lines = []
 
-        print(f"{irrep.symbol}:")
+        for irrep in self.salcs.irreps:
+            matching = [
+                s for s in self.salcs.salcs
+                if s.irrep.symbol == irrep.symbol
+            ]
 
-        for s in matching:
-            poly = polynomial_salc_to_string(s,fxn_set,pretty=pretty)
+            if not matching:
+                continue
 
-            print(f"  P_{s.i}{s.j}({s.bfxn}): {poly}")
+            lines.append(f"{irrep.symbol}:")
+
+            for s in matching:
+                if hasattr(self.salcs.fxn_set, "salc_to_string"):
+                    expr = self.salcs.fxn_set.salc_to_string(s)
+                else:
+                    expr = np.array2string(
+                        s.coeffs,
+                        precision=3,
+                        suppress_small=True,
+                    )
+
+                lines.append(f"  P_{s.i}{s.j}({s.bfxn}): {expr}")
+
+        return "\n".join(lines)
+
+def format_salcs(salcs):
+    return SALCFormatter(salcs)

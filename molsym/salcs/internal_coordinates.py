@@ -12,6 +12,7 @@ class IC():
         self.exchange_atoms = None
         self.perm_symmetry = list # Does nothing
 
+
     def is_equiv(self, ic):
         if isinstance(ic, self.__class__):
             if self.atom_list == ic.atom_list:
@@ -104,8 +105,18 @@ def user_to_IC(ic_list):
 
 class InternalCoordinates(FunctionSet):
     def __init__(self, symtext, fxn_list):
+        self.labels = [ic[1] for ic in fxn_list]
         self.ic_list = [user_to_IC(i) for i in fxn_list]
         super().__init__(symtext, fxn_list)
+
+        
+    def print_salcs(self, salcs):
+        from molsym.salcs.salc_tools import format_salcs
+        return str(format_salcs(salcs))
+
+    def salc_to_string(self, salc):
+        from molsym.salcs.salc_tools import internal_coordinate_salc_to_string
+        return internal_coordinate_salc_to_string(salc, self)
 
     def find_equiv_ic(self, ic):
         for idx, ic_i in enumerate(self.ic_list):

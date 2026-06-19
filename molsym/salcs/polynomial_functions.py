@@ -17,6 +17,15 @@ class PolynomialFunctions(FunctionSet):
         fxn_list = list(range(len(self.exponents)))
         super().__init__(symtext, fxn_list)
 
+    def print_salcs(self, salcs):
+        from molsym.salcs.salc_tools import format_salcs
+        #return str(format_polynomial_salcs(salcs))
+        return str(format_salcs(salcs))
+
+    def salc_to_string(self, salc):
+        from molsym.salcs.salc_tools import polynomial_salc_to_string
+        return polynomial_salc_to_string(salc, self)
+
     def get_fxn_map(self):
         """
         Build representation matrices for each symmetry operation.

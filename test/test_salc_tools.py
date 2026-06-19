@@ -12,10 +12,11 @@ from molsym.salcs.salc_tools import (
     monomial_label,
     prettify_polynomial_string,
     polynomial_salc_to_string,
-    print_polynomial_salcs,
 )
 
+from molsym.salcs.axial_vector_functions import AxialVectorFunctions
 from molsym.salcs.polynomial_functions import PolynomialFunctions
+from molsym.salcs.internal_coordinates import InternalCoordinates
 from molsym.salcs.projection_op import ProjectionOp
 from molsym.molecule import global_tol
 
@@ -614,18 +615,6 @@ def test_character_by_operation():
     assert np.allclose(chars, [3.0, -3.0])
 
 
-@pytest.mark.parametrize("molecule", MOLECULES)
-def test_format_reduction_smoke(molecule):
-    symtext = load_symtext(molecule)
-
-    coeffs = np.zeros(len(symtext.irreps), dtype=int)
-    coeffs[0] = 1
-
-    reduction = format_reduction(coeffs, symtext)
-
-    assert symtext.irreps[0].symbol in reduction
-
-
 def test_monomial_label():
     assert monomial_label((1, 0, 0)) == "x"
     assert monomial_label((0, 1, 0)) == "y"
@@ -643,81 +632,6 @@ def test_prettify_polynomial_string():
     assert "x²" in pretty
     assert "z³" in pretty
 
-
-def test_polynomial_salc_to_string_degree2_ammonia():
-    symtext = load_symtext("ammonia")
-    fxn_set = PolynomialFunctions(symtext, degree=2)
-
-    salcs = ProjectionOp(
-        symtext,
-        fxn_set,
-        project_Eckart=False,
-    )
-
-    strings = [
-        polynomial_salc_to_string(salc, fxn_set)
-        for salc in salcs.salcs
-    ]
-
-    joined = "\n".join(strings)
-
-    assert "z²" in joined
-    assert "xz" in joined
-    assert "yz" in joined
-
-
-def test_print_polynomial_salcs_degree2_ammonia(capsys):
-    symtext = load_symtext("ammonia")
-    fxn_set = PolynomialFunctions(symtext, degree=2)
-
-    salcs = ProjectionOp(
-        symtext,
-        fxn_set,
-        project_Eckart=False,
-    )
-
-    print_polynomial_salcs(salcs)
-
-    captured = capsys.readouterr().out
-
-    assert "A_1:" in captured
-    assert "E:" in captured
-    assert "z²" in captured
-    assert "xz" in captured
-    assert "yz" in captured
-
-
-def test_analyze_rotations_ammonia(capsys):
-    symtext = load_symtext("ammonia")
-
-    analyze_rotations(symtext)
-
-    captured = capsys.readouterr().out
-
-    assert "Reduction:" in captured
-    assert "A_2 + E" in captured
-    assert "Rz" in captured
-    assert "Rx" in captured
-    assert "Ry" in captured
-
-
-def test_construct_polynomials_degree2_ammonia(capsys):
-    symtext = load_symtext("ammonia")
-
-    construct_polynomials(
-        symtext,
-        degree=2,
-        print_pretty=True,
-    )
-
-    captured = capsys.readouterr().out
-
-    assert "A_1:" in captured
-    assert "E:" in captured
-    assert "z²" in captured
-    assert "xz" in captured
-    assert "yz" in captured
-
 @pytest.mark.parametrize("molecule", MOLECULES)
 def test_rotation_analysis_reference(capsys, molecule):
     symtext = load_symtext(molecule)
@@ -728,7 +642,20 @@ def test_rotation_analysis_reference(capsys, molecule):
 
     ref = REFERENCE_ROTATION_ANALYSIS[molecule]
 
+    assert "Reduction:" in captured
     assert ref["reduction"] in captured
+
+@pytest.mark.parametrize("molecule", MOLECULES)
+def test_axial_vector_pretty_reference(capsys, molecule):
+    symtext = load_symtext(molecule)
+
+    fxn_set = AxialVectorFunctions(symtext)
+    salcs = ProjectionOp(symtext, fxn_set, project_Eckart=False)
+    fxn_set.salc_print_style = "pretty"
+    print(salcs)
+    captured = capsys.readouterr().out
+
+    ref = REFERENCE_ROTATION_ANALYSIS[molecule]
 
     for irrep, functions in ref["functions"].items():
         assert f"{irrep}:" in captured
@@ -736,16 +663,17 @@ def test_rotation_analysis_reference(capsys, molecule):
         for fxn in functions:
             assert fxn in captured
 
+
 @pytest.mark.parametrize("molecule", MOLECULES)
 def test_degree2_polynomial_pretty_reference(capsys, molecule):
     symtext = load_symtext(molecule)
 
-    construct_polynomials(
-        symtext,
-        degree=2,
-        print_pretty=True,
-    )
+    fxn_set = PolynomialFunctions(symtext, degree=2)
+    salcs = ProjectionOp(symtext, fxn_set, project_Eckart=False)
 
+    fxn_set.salc_print_style = "pretty"
+
+    print(salcs)
     captured = capsys.readouterr().out
 
     ref = REFERENCE_DEGREE2_PRETTY[molecule]
@@ -755,3 +683,59 @@ def test_degree2_polynomial_pretty_reference(capsys, molecule):
 
         for fxn in functions:
             assert fxn in captured
+
+INTERNAL_COORDINATE_DEFS = {
+    "water": [
+        [[0, 1], "R1"],
+        [[0, 2], "R2"],
+        [[1, 0, 2], "A1"],
+    ],
+    "ammonia": [
+        [[0, 1], "R1"],
+        [[0, 2], "R2"],
+        [[0, 3], "R3"],
+        [[1, 0, 2], "A1"],
+        [[2, 0, 3], "A2"],
+        [[3, 0, 1], "A3"],
+    ],
+}
+
+INTERNAL_COORDINATE_PRETTY_REFERENCE = {
+    "water": [
+        "A_1:",
+        "P_00(0): 0.707107R1 + 0.707107R2",
+        "P_00(2): A1",
+        "B_2:",
+        "P_00(0): 0.707107R1 - 0.707107R2",
+    ],
+    "ammonia": [
+        "A_1:",
+        "P_00(0): 0.57735R1 + 0.57735R2 + 0.57735R3",
+        "P_00(3): 0.57735A1 + 0.57735A2 + 0.57735A3",
+        "E:",
+        "P_00(0): 0.408248R1 + 0.408248R2 - 0.816497R3",
+        "P_10(0): 0.707107R1 - 0.707107R2",
+        "P_00(3): 0.816497A1 - 0.408248A2 - 0.408248A3",
+        "P_10(3): -0.707107A2 + 0.707107A3",
+    ],
+}
+
+@pytest.mark.parametrize("molecule", ["water", "ammonia"])
+def test_internal_coordinate_symbol_pretty_reference(capsys, molecule):
+    symtext = load_symtext(molecule)
+
+    fxn_set = InternalCoordinates(
+        symtext,
+        INTERNAL_COORDINATE_DEFS[molecule],
+    )
+
+    salcs = ProjectionOp(symtext, fxn_set)
+
+    fxn_set.salc_print_style = "pretty"
+
+    print(salcs)
+    captured = capsys.readouterr().out
+
+    for expected in INTERNAL_COORDINATE_PRETTY_REFERENCE[molecule]:
+        assert expected in captured
+

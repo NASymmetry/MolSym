@@ -15,6 +15,16 @@ class AxialVectorFunctions(FunctionSet):
         fxn_list = [0, 1, 2]
         super().__init__(symtext, fxn_list)
 
+    def print_salcs(self, salcs):
+        from molsym.salcs.salc_tools import format_salcs
+        #return str(format_axial_vector_salcs(salcs))
+        return str(format_salcs(salcs))
+   
+    def salc_to_string(self, salc):
+        from molsym.salcs.salc_tools import axial_vector_salc_to_string
+        return axial_vector_salc_to_string(salc, self)
+
+
     def get_fxn_map(self):
         """
         Shape:
