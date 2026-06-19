@@ -19,7 +19,6 @@ class PolynomialFunctions(FunctionSet):
 
     def print_salcs(self, salcs):
         from molsym.salcs.salc_tools import format_salcs
-        #return str(format_polynomial_salcs(salcs))
         return str(format_salcs(salcs))
 
     def salc_to_string(self, salc):

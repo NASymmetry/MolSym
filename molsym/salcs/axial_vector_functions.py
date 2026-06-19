@@ -17,7 +17,6 @@ class AxialVectorFunctions(FunctionSet):
 
     def print_salcs(self, salcs):
         from molsym.salcs.salc_tools import format_salcs
-        #return str(format_axial_vector_salcs(salcs))
         return str(format_salcs(salcs))
    
     def salc_to_string(self, salc):

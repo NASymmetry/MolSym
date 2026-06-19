@@ -88,6 +88,8 @@ def test_axial_vector_salcs_match_character_projectors(molecule):
         P_char *= irrep.d / symtext.order
 
         assert np.allclose(P_salc,P_char,atol=symtext.mol.tol)
+
+
 @pytest.mark.parametrize("molecule", MOLECULES)
 def test_axial_vector_known_reductions(molecule):
     mol = molsym.Molecule.from_file(str(TEST_DIR / "xyz" / f"{molecule}.xyz"))

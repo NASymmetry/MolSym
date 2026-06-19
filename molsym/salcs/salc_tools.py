@@ -1,5 +1,4 @@
 import numpy as np
-from math import comb
 import re
 from molsym.salcs.projection_op import ProjectionOp
 from molsym.salcs.axial_vector_functions import AxialVectorFunctions
@@ -144,7 +143,6 @@ def analyze_rotations(symtext, print_pretty=True):
     salcs = ProjectionOp(symtext,fxn_set,project_Eckart=False)
 
     return salcs
-    return format_reduction(coeffs, symtext)
 
 def axial_vector_salc_to_string(salc, fxn_set, tol=global_tol):
     terms = []

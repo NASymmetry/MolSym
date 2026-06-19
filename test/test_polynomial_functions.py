@@ -173,7 +173,7 @@ def subspace_projector(vectors):
 
 
 @pytest.mark.parametrize("molecule, degree", CASES)
-def test_degree_2_polynomial_reductions(molecule, degree):
+def test_polynomial_reductions(molecule, degree):
     symtext = load_symtext(molecule)
     fxn_set = PolynomialFunctions(symtext, degree=degree)
     salcs = ProjectionOp(
@@ -199,7 +199,7 @@ def test_degree_2_polynomial_reductions(molecule, degree):
 
 
 @pytest.mark.parametrize("molecule, degree", CASES)
-def test_degree_2_polynomial_salcs_match_reference_subspaces(molecule, degree):
+def test_polynomial_salcs_match_reference_subspaces(molecule, degree):
     symtext = load_symtext(molecule)
     fxn_set = PolynomialFunctions(symtext, degree=degree)
     salcs = ProjectionOp(
@@ -227,7 +227,7 @@ def test_degree_2_polynomial_salcs_match_reference_subspaces(molecule, degree):
         )
 
 @pytest.mark.parametrize("molecule, degree", CASES)
-def test_degree_2_polynomial_fxn_map_characters_reduce_correctly(molecule, degree):
+def test_polynomial_fxn_map_characters_reduce_correctly(molecule, degree):
     symtext = load_symtext(molecule)
     fxn_set = PolynomialFunctions(symtext, degree=degree)
     op_chars = np.array([
