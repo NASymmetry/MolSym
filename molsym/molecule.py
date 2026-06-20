@@ -1,5 +1,4 @@
 import numpy as np
-import qcelemental as qcel
 from dataclasses import dataclass
 from copy import deepcopy
 import sys
@@ -62,6 +61,7 @@ class Molecule():
         :type schema: dict
         :rtype: molsym.Molecule
         """
+        import qcelemental as qcel
         atoms = schema["symbols"]
         natoms = len(atoms)
         coords = np.reshape(schema["geometry"], (natoms,3))
@@ -96,9 +96,10 @@ class Molecule():
         :type fn: str
         :rtype: molsym.Molecule
         """
+        import qcelemental as qcel
         with open(fn, "r") as lfn:
             strang = lfn.read()
-        
+
         schema = qcel.models.Molecule.from_data(strang).dict()
         if keep_angstrom:
             schema["geometry"] *= qcel.constants.bohr2angstroms
@@ -114,6 +115,7 @@ class Molecule():
         :type schema: dict
         :rtype: molsym.Molecule
         """
+        import qcelemental as qcel
         atoms = schema["elem"] # was symbols
         natoms = len(atoms)
         coords = np.reshape(schema["geom"], (natoms,3)) # was geometry
@@ -124,6 +126,7 @@ class Molecule():
         return cls(atoms, coords, masses)
 
     def to_xyz_string(self, already_angstrom=False):
+        import qcelemental as qcel
         # Will save xyz in Angstrom, undoing the previous
         # Ang->Bohr from Molecule.from_schema
         if already_angstrom:

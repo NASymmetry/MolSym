@@ -19,7 +19,11 @@ readme = "README.md"
 requires-python = ">=3.9"
 [options]
 install_requires = [
-    "numpy >= 1.23.4",
+    "numpy >= 1.23.4"
+    ]
+
+[options.extras_require]
+qcel = [
     "qcelemental >= 0.25.1"
     ]
 
