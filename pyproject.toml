@@ -1,29 +1,36 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=64"]
 build-backend = "setuptools.build_meta"
 
-[metadata]
+[project]
 name = "MolSym"
 version = "0.2.1"
-authors = [
-    "Stephen Goodlett <smg13363@uga.edu>",
-    "Nate Kitzmiller <nathaniel.kitzmiller@uga.edu>",
-    ]
 description = "A program for molecular symmetry detection and SALC construction"
-long_description = "file: README.md"
-license = "MIT"
-classifiers = [
-    "Programming Language :: Python :: 3"
-    ]
 readme = "README.md"
 requires-python = ">=3.9"
-[options]
-install_requires = [
-    "numpy >= 1.23.4"
-    ]
+license = "MIT"
+authors = [
+    { name = "Stephen Goodlett", email = "smg13363@uga.edu" },
+    { name = "Nate Kitzmiller", email = "nathaniel.kitzmiller@uga.edu" },
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "numpy >= 1.23.4",
+]
 
-[options.extras_require]
+# qcelemental is optional so the core molsym install/API path stays NumPy-only
+# (carried forward from #65). Install with `pip install MolSym[qcel]` to enable
+# the qcelemental-backed features.
+[project.optional-dependencies]
 qcel = [
-    "qcelemental >= 0.25.1"
-    ]
+    "qcelemental >= 0.25.1",
+]
 
+[project.urls]
+Homepage = "https://github.com/NASymmetry/MolSym"
+Documentation = "https://molsym.readthedocs.io"
+
+[tool.setuptools.packages.find]
+include = ["molsym*"]

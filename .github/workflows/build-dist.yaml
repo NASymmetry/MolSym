@@ -1,0 +1,41 @@
+name: Build distributions
+on:
+  # Validate packaging changes on PRs and the default branch, and build the
+  # release artifacts when a GitHub Release is published. The Publish workflow
+  # reacts to a successful release build via workflow_run and uploads the
+  # result to PyPI.
+  pull_request:
+    paths:
+      - '.github/workflows/build-dist.yaml'
+      - 'pyproject.toml'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/build-dist.yaml'
+      - 'pyproject.toml'
+  release:
+    types: [published]
+  workflow_dispatch:
+jobs:
+  build:
+    name: Build
+    if: github.repository == 'NASymmetry/MolSym' || github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+      - name: Install build tooling
+        run: python -m pip install --upgrade build twine
+      # MolSym is pure Python, so a single universal sdist + wheel pair works on
+      # every platform and Python version.
+      - name: Build sdist and wheel
+        run: python -m build --outdir dist
+      - name: Check metadata
+        run: twine check --strict dist/*
+      - name: Upload distributions
+        uses: actions/upload-artifact@v4
+        with:
+          name: molsym-dist
+          path: dist/*
