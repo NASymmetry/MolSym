@@ -1,6 +1,5 @@
 import numpy as np
 import re
-import qcelemental as qcel
 from molsym.molecule import Molecule
 from molsym import find_point_group
 from .point_group import PointGroup
@@ -87,6 +86,7 @@ class Symtext():
         :type fn: str
         :rtype: molsym.Symtext
         """
+        import qcelemental as qcel
         with open(fn, "r") as lfn:
             strang = lfn.read()
         schema = qcel.models.Molecule.from_data(strang).dict()
