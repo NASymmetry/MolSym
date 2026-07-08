@@ -27,7 +27,7 @@ class PolynomialFunctions(FunctionSet):
 
     def get_fxn_map(self):
         """
-        Build representation matrices for each symmetry operation.
+        Build polynomial transformatation matrices for each symmetry operation.
 
         Shape:
             (nsymel, nfxn, nfxn)
@@ -42,36 +42,13 @@ class PolynomialFunctions(FunctionSet):
             A = np.array(symel.rrep, dtype=float)
             A[np.abs(A) < global_tol] = 0.0
 
-            D = polynomial_representation_matrix(A,self.exponents,tol=global_tol)
+            T = polynomial_transformation_matrix(A,self.exponents,tol=global_tol)
 
-            # D[row, col] maps input col -> output row.
+            # T[row, col] maps input col -> output row.
             # Store as input_idx, output_idx for special_function convenience.
-            fxn_map[sidx, :, :] = D.T
+            fxn_map[sidx, :, :] = T.T
 
         return fxn_map
-    def orbit_span_indices(self, seed, component):
-        """
-        Determine which monomials inside a connected polynomial-mixing
-        component are reached by the group orbit of one seed monomial.
-
-        A monomial is considered reached if some symmetry operation maps
-        the seed monomial onto it with nonzero coefficient.
-
-        :type seed: int
-        :type component: list[int]
-        :return: Set of reachable monomial indices
-        :rtype: set[int]
-        """
-        reached = set()
-    
-        for sidx in range(len(self.symtext)):
-            coeffs = self.fxn_map[sidx, seed, :]
-    
-            for idx, coeff in enumerate(coeffs):
-                if idx in component and abs(coeff) > global_tol:
-                    reached.add(idx)
-    
-        return reached
     
     def get_symmetry_equiv_functions(self):
         """
@@ -184,7 +161,6 @@ class PolynomialFunctions(FunctionSet):
                 salc[:, :, out_idx] += irrmat[sidx, :, :] * coeff
 
         return salc
-
 
 def monomial_exponents(degree):
     """
@@ -309,29 +285,41 @@ def transform_monomial(exp, A, tol=global_tol):
     return poly
 
 
-def polynomial_representation_matrix(A, basis, tol=global_tol):
+def polynomial_transformation_matrix(A, basis, tol=global_tol):
     """
-    Construct the polynomial representation matrix D(g) for a symmetry
-    operation acting on a Cartesian monomial basis.
+    Construct the matrix representation of a linear coordinate transformation
+    on a homogeneous Cartesian polynomial basis.
 
-    Each column corresponds to one input monomial basis function, and
-    each row gives the coefficients of the transformed polynomial.
+    Given a 3×3 matrix ``A`` acting on Cartesian coordinates, this function
+    computes the corresponding transformation matrix acting on the polynomial
+    basis specified by ``basis``. Each column corresponds to one input basis
+    function, and each row contains the coefficients of its transformed
+    polynomial expressed in the same basis.
 
-    :type A: np.ndarray
-    :type basis: list[tuple[int,int,int]]
-    :type tol: float
-    :return: Polynomial representation matrix
-    :rtype: np.ndarray
+    Parameters
+    ----------
+    A : np.ndarray
+        3×3 linear transformation acting on Cartesian coordinates.
+    basis : list[tuple[int, int, int]]
+        Homogeneous polynomial basis represented by exponent tuples
+        ``(a, b, c)``, corresponding to monomials ``x^a y^b z^c``.
+    tol : float
+        Values with magnitude below this tolerance are set to zero.
+
+    Returns
+    -------
+    np.ndarray
+        Transformation matrix acting on the polynomial basis.
     """
     index = {exp: i for i, exp in enumerate(basis)}
-    D = np.zeros((len(basis), len(basis)))
+    T = np.zeros((len(basis), len(basis)))
 
     for col, exp in enumerate(basis):
         transformed = transform_monomial(exp, A, tol)
 
         for out_exp, coeff in transformed.items():
             row = index[out_exp]
-            D[row, col] += coeff
+            T[row, col] += coeff
 
-    D[np.abs(D) < tol] = 0.0
-    return D
+    T[np.abs(T) < tol] = 0.0
+    return T
