@@ -1,8 +1,5 @@
 import numpy as np
 import re
-from molsym.salcs.projection_op import ProjectionOp
-from molsym.salcs.axial_vector_functions import AxialVectorFunctions
-from molsym.salcs.polynomial_functions import PolynomialFunctions
 from molsym.molecule import global_tol
 
 def generate_symmetric_partner(symtext, salc, neg_data, data_type="dipole", tol=None):
@@ -126,26 +123,6 @@ def axial_matrix(A, tol=global_tol):
 
     return det * A
 
-def analyze_rotations(symtext, print_pretty=True):
-    rep_mats = []
-
-    for i, symel in enumerate(symtext.symels):
-        D = axial_matrix(symel.rrep, global_tol)
-        rep_mats.append(D)
-
-    op_chars = character_by_operation(rep_mats)
-    coeffs = symtext.reduction_coefficients(op_chars, False)
-
-    if print_pretty:
-        print("Reduction:")
-        print(format_reduction(coeffs, symtext))
-
-    fxn_set = AxialVectorFunctions(symtext)
-
-    salcs = ProjectionOp(symtext,fxn_set,project_Eckart=False)
-
-    return salcs
-
 def axial_vector_salc_to_string(salc, fxn_set, tol=global_tol):
     terms = []
 
@@ -198,13 +175,6 @@ def format_reduction(coeffs, symtext):
 
     return " + ".join(pieces) if pieces else "0"
 
-
-def construct_polynomials(symtext, degree=2, print_pretty=True):
-    fxn_set = PolynomialFunctions(symtext, degree=degree)
-    salcs = ProjectionOp(symtext, fxn_set, project_Eckart=False)
-    if print_pretty:
-        print(salcs)
-    return salcs
 
 def internal_coordinate_salc_to_string(salc, fxn_set, tol=global_tol):
     terms = []

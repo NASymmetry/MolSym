@@ -1,6 +1,7 @@
 from copy import deepcopy
 import numpy as np
 from molsym.salcs.function_set import FunctionSet
+from molsym.salcs.salc_tools import format_salcs, internal_coordinate_salc_to_string
 
 class IC():
     def __init__(self, atom_list):
@@ -111,11 +112,9 @@ class InternalCoordinates(FunctionSet):
 
         
     def print_salcs(self, salcs):
-        from molsym.salcs.salc_tools import format_salcs
         return str(format_salcs(salcs))
 
     def salc_to_string(self, salc):
-        from molsym.salcs.salc_tools import internal_coordinate_salc_to_string
         return internal_coordinate_salc_to_string(salc, self)
 
     def find_equiv_ic(self, ic):

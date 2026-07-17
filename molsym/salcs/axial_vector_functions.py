@@ -1,5 +1,6 @@
 import numpy as np
 from .function_set import FunctionSet
+from .salc_tools import axial_matrix, axial_vector_salc_to_string, format_salcs
 
 
 class AxialVectorFunctions(FunctionSet):
@@ -16,13 +17,10 @@ class AxialVectorFunctions(FunctionSet):
         super().__init__(symtext, fxn_list)
 
     def print_salcs(self, salcs):
-        from molsym.salcs.salc_tools import format_salcs
         return str(format_salcs(salcs))
-   
-    def salc_to_string(self, salc):
-        from molsym.salcs.salc_tools import axial_vector_salc_to_string
-        return axial_vector_salc_to_string(salc, self)
 
+    def salc_to_string(self, salc):
+        return axial_vector_salc_to_string(salc, self)
 
     def get_fxn_map(self):
         """
@@ -32,8 +30,6 @@ class AxialVectorFunctions(FunctionSet):
         Convention:
             fxn_map[sidx, input_idx, output_idx] = coefficient
         """
-        from molsym.salcs.salc_tools import axial_matrix
-
         fxn_map = np.zeros((len(self.symtext), 3, 3))
 
         for sidx, symel in enumerate(self.symtext.symels):

@@ -1,6 +1,7 @@
 import numpy as np
 from math import comb
 from .function_set import FunctionSet
+from .salc_tools import format_salcs, polynomial_salc_to_string
 from molsym.molecule import global_tol
 
 
@@ -18,11 +19,9 @@ class PolynomialFunctions(FunctionSet):
         super().__init__(symtext, fxn_list)
 
     def print_salcs(self, salcs):
-        from molsym.salcs.salc_tools import format_salcs
         return str(format_salcs(salcs))
 
     def salc_to_string(self, salc):
-        from molsym.salcs.salc_tools import polynomial_salc_to_string
         return polynomial_salc_to_string(salc, self)
 
     def get_fxn_map(self):
@@ -40,9 +39,8 @@ class PolynomialFunctions(FunctionSet):
 
         for sidx, symel in enumerate(self.symtext.symels):
             A = np.array(symel.rrep, dtype=float)
-            A[np.abs(A) < global_tol] = 0.0
 
-            T = polynomial_transformation_matrix(A,self.exponents,tol=global_tol)
+            T = polynomial_transformation_matrix(A, self.exponents)
 
             # T[row, col] maps input col -> output row.
             # Store as input_idx, output_idx for special_function convenience.
@@ -187,7 +185,7 @@ def monomial_exponents(degree):
     return basis
 
 
-def multinomial_terms_for_power(linear_coeffs, power, tol=global_tol):
+def multinomial_terms_for_power(linear_coeffs, power):
     """
     Expand a linear polynomial raised to an integer power using the
     multinomial theorem.
@@ -200,7 +198,6 @@ def multinomial_terms_for_power(linear_coeffs, power, tol=global_tol):
 
     :type linear_coeffs: np.ndarray
     :type power: int
-    :type tol: float
     :return: Polynomial dictionary mapping exponent tuples to coefficients
     :rtype: dict[tuple[int,int,int], float]
     """
@@ -211,7 +208,7 @@ def multinomial_terms_for_power(linear_coeffs, power, tol=global_tol):
         for j in range(power - i + 1):
             k = power - i - j
 
-            coeff = (
+            terms[(i, j, k)] = (
                 comb(power, i)
                 * comb(power - i, j)
                 * (ax ** i)
@@ -219,24 +216,18 @@ def multinomial_terms_for_power(linear_coeffs, power, tol=global_tol):
                 * (az ** k)
             )
 
-            if abs(coeff) > tol:
-                terms[(i, j, k)] = coeff
-
     return terms
 
 
-def multiply_poly_dicts(p1, p2, tol=global_tol):
+def multiply_poly_dicts(p1, p2):
     """
     Multiply two multivariate polynomial dictionaries.
 
     Polynomial dictionaries map exponent tuples to coefficients:
         (a,b,c) -> coeff
 
-    Terms with coefficients below tolerance are discarded.
-
     :type p1: dict
     :type p2: dict
-    :type tol: float
     :return: Product polynomial dictionary
     :rtype: dict
     """
@@ -247,14 +238,10 @@ def multiply_poly_dicts(p1, p2, tol=global_tol):
             exp = tuple(e1[i] + e2[i] for i in range(3))
             out[exp] = out.get(exp, 0.0) + c1 * c2
 
-    return {
-        exp: coeff
-        for exp, coeff in out.items()
-        if abs(coeff) > tol
-    }
+    return out
 
 
-def transform_monomial(exp, A, tol=global_tol):
+def transform_monomial(exp, A):
     """
     Transform one Cartesian monomial under a coordinate transformation.
 
@@ -267,25 +254,24 @@ def transform_monomial(exp, A, tol=global_tol):
 
     :type exp: tuple[int,int,int]
     :type A: np.ndarray
-    :type tol: float
     :return: Polynomial dictionary representation of transformed monomial
     :rtype: dict[tuple[int,int,int], float]
     """
     a, b, c = exp
 
-    px = multinomial_terms_for_power(A[0, :], a, tol)
-    py = multinomial_terms_for_power(A[1, :], b, tol)
-    pz = multinomial_terms_for_power(A[2, :], c, tol)
+    px = multinomial_terms_for_power(A[0, :], a)
+    py = multinomial_terms_for_power(A[1, :], b)
+    pz = multinomial_terms_for_power(A[2, :], c)
 
     poly = {(0, 0, 0): 1.0}
-    poly = multiply_poly_dicts(poly, px, tol)
-    poly = multiply_poly_dicts(poly, py, tol)
-    poly = multiply_poly_dicts(poly, pz, tol)
+    poly = multiply_poly_dicts(poly, px)
+    poly = multiply_poly_dicts(poly, py)
+    poly = multiply_poly_dicts(poly, pz)
 
     return poly
 
 
-def polynomial_transformation_matrix(A, basis, tol=global_tol):
+def polynomial_transformation_matrix(A, basis):
     """
     Construct the matrix representation of a linear coordinate transformation
     on a homogeneous Cartesian polynomial basis.
@@ -303,8 +289,6 @@ def polynomial_transformation_matrix(A, basis, tol=global_tol):
     basis : list[tuple[int, int, int]]
         Homogeneous polynomial basis represented by exponent tuples
         ``(a, b, c)``, corresponding to monomials ``x^a y^b z^c``.
-    tol : float
-        Values with magnitude below this tolerance are set to zero.
 
     Returns
     -------
@@ -315,11 +299,10 @@ def polynomial_transformation_matrix(A, basis, tol=global_tol):
     T = np.zeros((len(basis), len(basis)))
 
     for col, exp in enumerate(basis):
-        transformed = transform_monomial(exp, A, tol)
+        transformed = transform_monomial(exp, A)
 
         for out_exp, coeff in transformed.items():
             row = index[out_exp]
             T[row, col] += coeff
 
-    T[np.abs(T) < tol] = 0.0
     return T

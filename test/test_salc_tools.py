@@ -4,10 +4,8 @@ import molsym
 from pathlib import Path
 
 from molsym.salcs.salc_tools import (
-    analyze_rotations,
     axial_matrix,
     character_by_operation,
-    construct_polynomials,
     format_reduction,
     monomial_label,
     prettify_polynomial_string,
@@ -636,7 +634,12 @@ def test_prettify_polynomial_string():
 def test_rotation_analysis_reference(capsys, molecule):
     symtext = load_symtext(molecule)
 
-    analyze_rotations(symtext)
+    rep_mats = [axial_matrix(symel.rrep, global_tol) for symel in symtext.symels]
+    op_chars = character_by_operation(rep_mats)
+    coeffs = symtext.reduction_coefficients(op_chars, False)
+
+    print("Reduction:")
+    print(format_reduction(coeffs, symtext))
 
     captured = capsys.readouterr().out
 
