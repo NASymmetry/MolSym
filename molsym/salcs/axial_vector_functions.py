@@ -32,22 +32,13 @@ class AxialVectorFunctions(FunctionSet):
         Convention:
             fxn_map[sidx, input_idx, output_idx] = coefficient
         """
+        from molsym.salcs.salc_tools import axial_matrix
+
         fxn_map = np.zeros((len(self.symtext), 3, 3))
 
         for sidx, symel in enumerate(self.symtext.symels):
             A = np.array(symel.rrep, dtype=float)
-            A[np.abs(A) < self.symtext.mol.tol] = 0.0
-
-            det = np.linalg.det(A)
-
-            if abs(det - 1.0) < self.symtext.mol.tol:
-                det = 1.0
-            elif abs(det + 1.0) < self.symtext.mol.tol:
-                det = -1.0
-            else:
-                raise ValueError(f"Operation determinant is not ±1: det={det}")
-
-            D = det * A
+            D = axial_matrix(A, self.symtext.mol.tol)
 
             # D[row, col] maps input col -> output row.
             # Store input_idx, output_idx for special_function.

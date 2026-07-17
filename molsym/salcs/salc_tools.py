@@ -117,10 +117,12 @@ def character_by_operation(rep_mats):
 def axial_matrix(A, tol=global_tol):
     det = np.linalg.det(A)
 
-    if abs(det - 1.0) < tol:
+    if np.isclose(det, 1.0, atol=tol):
         det = 1.0
-    elif abs(det + 1.0) < tol:
+    elif np.isclose(det, -1.0, atol=tol):
         det = -1.0
+    else:
+        raise ValueError(f"Operation determinant is not ±1: det={det}")
 
     return det * A
 
@@ -151,9 +153,9 @@ def axial_vector_salc_to_string(salc, fxn_set, tol=global_tol):
         if abs(coeff) < tol:
             continue
 
-        if abs(coeff - 1.0) < tol:
+        if np.isclose(coeff, 1.0, atol=tol):
             term = label
-        elif abs(coeff + 1.0) < tol:
+        elif np.isclose(coeff, -1.0, atol=tol):
             term = f"-{label}"
         else:
             term = f"{coeff:.6g}*{label}"
@@ -223,9 +225,9 @@ def internal_coordinate_salc_to_string(salc, fxn_set, tol=global_tol):
             if label is None:
                 label = str(ic)
 
-        if abs(coeff - 1.0) < tol:
+        if np.isclose(coeff, 1.0, atol=tol):
             term = label
-        elif abs(coeff + 1.0) < tol:
+        elif np.isclose(coeff, -1.0, atol=tol):
             term = f"-{label}"
         else:
             term = f"{coeff:.6g}{label}"
@@ -252,9 +254,9 @@ def polynomial_salc_to_string(salc, fxn_set, tol=global_tol, pretty=True):
 
         if label == "1":
             term = f"{coeff:.6g}"
-        elif abs(coeff - 1.0) < tol:
+        elif np.isclose(coeff, 1.0, atol=tol):
             term = label
-        elif abs(coeff + 1.0) < tol:
+        elif np.isclose(coeff, -1.0, atol=tol):
             term = f"-{label}"
         else:
             term = f"{coeff:.6g}*{label}"
