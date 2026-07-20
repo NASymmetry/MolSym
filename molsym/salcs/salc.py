@@ -40,11 +40,18 @@ class SALCs():
     def __len__(self):
         return len(self.salcs)
 
+    
     def __str__(self) -> str:
+        style = getattr(self.fxn_set, "salc_print_style", "default")
+
+        if style == "pretty" and hasattr(self.fxn_set, "print_salcs"):
+            return self.fxn_set.print_salcs(self)
+
         out = ""
-        for i in self.salcs:
-            out += str(i)
+        for salc in self.salcs:
+            out += str(salc)
         return out
+ 
     
     def __repr__(self) -> str:
         return self.__str__()

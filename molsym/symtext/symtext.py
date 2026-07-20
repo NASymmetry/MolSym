@@ -157,22 +157,41 @@ class Symtext():
         p = np.multiply(dp_vector, self.class_orders)
         return round(p.sum()/(self.order)) > 0
 
-
-    def reduction_coefficients(self, rrep_characters):
+    def reduction_coefficients(self, rrep_characters, by_class=True):
         """
         Return reduction coefficients for the characters of a representation.
 
-        :param rrep_characters: Characters for each class for a representation (reducible or irreducible)
+        :param rrep_characters: Character values as either class-level characters or per-operation characters.
         :type rrep_characters: NumPy array of shape (n,)
+        :param by_class: If True, ``rrep_characters`` is interpreted as one value per class.
+            If False, ``rrep_characters`` is interpreted as one value per symmetry operation and
+            values are averaged within each class before reduction.
+        :type by_class: bool
         :return: Integer array with number of occurences of each irrep. in rrep_characters.
         :rtype: NumPy array of shape (len(self.irreps),)
         """
         out = np.zeros(len(self.irreps), dtype=int)
+    
+        if by_class:
+            class_chars = rrep_characters
+        else:
+            symel_to_class_map = np.array(self.symel_to_class_map)
+            class_chars = np.zeros(
+                len(self.classes),
+                dtype=np.result_type(rrep_characters, float),
+            )
+    
+            for class_idx in range(len(self.classes)):
+                inds = np.where(symel_to_class_map == class_idx)[0]
+                class_chars[class_idx] = np.mean(rrep_characters[inds])
+    
         for irrep_idx, irrep in enumerate(self.irreps):
-            p = np.multiply(rrep_characters, self.class_orders)
-            p = np.multiply(p, self.character_table[irrep_idx,:])
-            out[irrep_idx] = round(p.sum()/(self.order))
+            p = np.multiply(class_chars, self.class_orders)
+            p = np.multiply(p, self.character_table[irrep_idx, :])
+            out[irrep_idx] = round(p.sum() / self.order)
+    
         return out
+
 
     def proj_on_dipole(self, dipole, irrep):
         """
