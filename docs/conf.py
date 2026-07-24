@@ -22,7 +22,8 @@ copyright = '2024, Stephen Goodlett, Nathaniel Kitzmiller'
 author = 'Stephen Goodlett, Nathaniel Kitzmiller'
 
 # The full version, including alpha/beta/rc tags
-release = '1.0.0'
+# Keep in sync with the "version" field in pyproject.toml
+release = '0.2.1'
 
 
 # -- General configuration ---------------------------------------------------
@@ -37,7 +38,7 @@ extensions = [
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['docs/_templates']
+templates_path = ['_templates']
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.

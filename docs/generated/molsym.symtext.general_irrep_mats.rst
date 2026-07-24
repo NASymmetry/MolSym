@@ -16,6 +16,10 @@ molsym.symtext.general\_irrep\_mats
       Dihn
       Zn
       direct_product
+      mult_CSC2sigma
+      mult_iCnm
+      mult_sigmahCnm
+      omega
       pg_to_symels
    
    
