@@ -20,8 +20,13 @@ jobs:
       PYVER: ${{ matrix.cfg.python-version }}
       CONDA_ENV: ${{ matrix.cfg.conda-env }}
     steps:
+    # Version is derived from git tags via setuptools_scm, which needs full
+    # history and tags to find them (actions/checkout defaults to a shallow,
+    # tag-less fetch).
     - uses: actions/checkout@v2
-    
+      with:
+        fetch-depth: 0
+
     - name: Create Environment
       uses: conda-incubator/setup-miniconda@v2
       with:

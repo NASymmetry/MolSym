@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=64"]
+requires = ["setuptools>=64", "setuptools_scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "MolSym"
-version = "0.2.1"
+dynamic = ["version"]
 description = "A program for molecular symmetry detection and SALC construction"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -34,3 +34,8 @@ Documentation = "https://molsym.readthedocs.io"
 
 [tool.setuptools.packages.find]
 include = ["molsym*"]
+
+[tool.setuptools_scm]
+# Derives the package version from the current git tag (e.g. tag "v1.0.1"
+# becomes version "1.0.1") instead of a hand-maintained version string, so it
+# can never drift from the tag a release was actually cut from.
