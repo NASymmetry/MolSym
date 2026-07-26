@@ -58,6 +58,78 @@ def test_internal_coordinate_SALCs(i):
     assert [salcs.salcs[j].irrep.symbol for j in range(len(ic_fxn_set))] == ic_irrep_labels_test_set[i]
 
 # Cartesian geometry SALCs with and without Eckart
+eckart_fns = ["water", "ammonia", "methane"]
+
+@pytest.mark.parametrize("fn", eckart_fns)
+def test_eckart_conditions_shapes_and_orthonormality(fn):
+    mol = molsym.Molecule.from_file(TEST_DIR / "xyz" / f"{fn}.xyz")
+    symtext = molsym.Symtext.from_molecule(mol)
+    n = 3 * mol.natoms
+
+    both = molsym.salcs.projection_op.eckart_conditions(symtext)
+    trans_only = molsym.salcs.projection_op.eckart_conditions(symtext, translational=True, rotational=False)
+    rot_only = molsym.salcs.projection_op.eckart_conditions(symtext, translational=False, rotational=True)
+
+    assert both.shape == (6, n)
+    assert trans_only.shape == (3, n)
+    assert rot_only.shape == (3, n)
+    np.testing.assert_allclose(both @ both.T, np.eye(6), atol=1e-8)
+
+def test_eckart_conditions_requires_translational_or_rotational():
+    mol = molsym.Molecule.from_file(TEST_DIR / "xyz" / "water.xyz")
+    symtext = molsym.Symtext.from_molecule(mol)
+    with pytest.raises(Exception):
+        molsym.salcs.projection_op.eckart_conditions(symtext, translational=False, rotational=False)
+
+@pytest.mark.parametrize("fn", eckart_fns)
+@pytest.mark.parametrize("project_Eckart,dof_removed", [
+    (True, 6),
+    (False, 0),
+    ("translational", 3),
+    ("rotational", 3),
+])
+def test_project_Eckart_salc_count(fn, project_Eckart, dof_removed):
+    # project_Eckart=True removes both translations and rotations (3N-6 vibrational
+    # SALCs remain); False removes neither (3N); 'translational'/'rotational' each
+    # remove only that 3-dimensional subspace (3N-3 remain).
+    mol = molsym.Molecule.from_file(TEST_DIR / "xyz" / f"{fn}.xyz")
+    symtext = molsym.Symtext.from_molecule(mol)
+    cart_coords = molsym.salcs.CartesianCoordinates(symtext)
+    salcs = molsym.salcs.projection_op.ProjectionOp(symtext, cart_coords, project_Eckart=project_Eckart)
+    assert len(salcs) == 3 * mol.natoms - dof_removed
+
+@pytest.mark.parametrize("fn", eckart_fns)
+def test_project_Eckart_translational_removes_translations(fn):
+    mol = molsym.Molecule.from_file(TEST_DIR / "xyz" / f"{fn}.xyz")
+    symtext = molsym.Symtext.from_molecule(mol)
+    cart_coords = molsym.salcs.CartesianCoordinates(symtext)
+
+    t = molsym.salcs.projection_op.eckart_conditions(symtext, translational=True, rotational=False)
+
+    salcs = molsym.salcs.projection_op.ProjectionOp(symtext, cart_coords, project_Eckart="translational")
+
+    for s in salcs.salcs:
+        np.testing.assert_allclose(t @ s.coeffs, np.zeros(3), atol=1e-8)
+
+@pytest.mark.parametrize("fn", eckart_fns)
+def test_project_Eckart_rotational_removes_rotations(fn):
+    mol = molsym.Molecule.from_file(TEST_DIR / "xyz" / f"{fn}.xyz")
+    symtext = molsym.Symtext.from_molecule(mol)
+    cart_coords = molsym.salcs.CartesianCoordinates(symtext)
+
+    r = molsym.salcs.projection_op.eckart_conditions(symtext, translational=False, rotational=True)
+
+    salcs = molsym.salcs.projection_op.ProjectionOp(symtext, cart_coords, project_Eckart="rotational")
+
+    for s in salcs.salcs:
+        np.testing.assert_allclose(r @ s.coeffs, np.zeros(3), atol=1e-8)
+
+def test_project_Eckart_invalid_value_raises():
+    mol = molsym.Molecule.from_file(TEST_DIR / "xyz" / "water.xyz")
+    symtext = molsym.Symtext.from_molecule(mol)
+    cart_coords = molsym.salcs.CartesianCoordinates(symtext)
+    with pytest.raises(ValueError):
+        molsym.salcs.projection_op.ProjectionOp(symtext, cart_coords, project_Eckart="dragons?")
 
 
 # Spherical harmonics SALCs

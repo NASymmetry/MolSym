@@ -72,6 +72,11 @@ def ProjectionOp(symtext, fxn_set, project_Eckart=True):
 
     :type symtext: molsym.Symtext
     :type fxn_set: molsym.FunctionSet
+    :param project_Eckart: Only applies when fxn_set is CartesianCoordinates.
+        True projects out both translations and rotations (default), False
+        projects out neither, and 'translational' or 'rotational' projects
+        out only that subset of the Eckart conditions.
+    :type project_Eckart: bool or str
     :rtype: molsym.SALCs
     """
     numred = len(fxn_set)
@@ -95,7 +100,14 @@ def ProjectionOp(symtext, fxn_set, project_Eckart=True):
             # Project out Eckart conditions when constructing SALCs of Cartesian displacements
             if isinstance(fxn_set, CartesianCoordinates) and project_Eckart:
                 orthogonalize = True
-                eckart_cond = eckart_conditions(symtext)
+                if project_Eckart is True:
+                    eckart_cond = eckart_conditions(symtext)
+                elif project_Eckart == "translational":
+                    eckart_cond = eckart_conditions(symtext, translational=True, rotational=False)
+                elif project_Eckart == "rotational":
+                    eckart_cond = eckart_conditions(symtext, translational=False, rotational=True)
+                else:
+                    raise ValueError(f"Invalid value for project_Eckart: {project_Eckart!r}. Must be True, False, 'translational', or 'rotational'.")
                 for i in range(irrep.d):
                     for j in range(irrep.d):
                         if not np.allclose(salc[i,j,:], np.zeros(salc[i,j,:].shape), atol=salcs.tol):
