@@ -13,6 +13,7 @@ molsym.salcs.projection\_op
 
    .. autosummary::
    
+      ProjectOnObject
       ProjectionOp
       eckart_conditions
       project_out_Eckart

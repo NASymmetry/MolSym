@@ -15,14 +15,19 @@ import sys
 sys.path.insert(0, os.path.abspath('..'))
 #sys.path.insert(0, "/home/sgoodlett/anaconda3/envs/psi4sym/lib/python3.12/site-packages")
 
+from setuptools_scm import get_version
+
 # -- Project information -----------------------------------------------------
 
 project = 'MolSym'
 copyright = '2024, Stephen Goodlett, Nathaniel Kitzmiller'
 author = 'Stephen Goodlett, Nathaniel Kitzmiller'
 
-# The full version, including alpha/beta/rc tags
-release = '1.0.0'
+# Derived from the current git tag (e.g. tag "v1.0.1" becomes "1.0.1"), the
+# same way pyproject.toml resolves its own version, so this can't drift from
+# the actual release the way a hand-maintained string did. fallback_version
+# covers building from a source tree with no git metadata at all.
+release = get_version(root="..", relative_to=__file__, fallback_version="0.0.0")
 
 
 # -- General configuration ---------------------------------------------------
@@ -37,7 +42,7 @@ extensions = [
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['docs/_templates']
+templates_path = ['_templates']
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.

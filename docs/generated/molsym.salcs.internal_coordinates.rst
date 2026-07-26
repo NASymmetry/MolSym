@@ -9,6 +9,12 @@ molsym.salcs.internal\_coordinates
 
    
    
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      user_to_IC
+   
    
 
    
@@ -17,7 +23,15 @@ molsym.salcs.internal\_coordinates
 
    .. autosummary::
    
+      Bend
+      IC
       InternalCoordinates
+      LinX
+      LinY
+      Linear
+      OutOfPlane
+      Stretch
+      Torsion
    
    
 
