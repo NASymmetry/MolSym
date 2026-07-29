@@ -61,7 +61,7 @@ MolSym is tested with Python 3.9-3.13, but should work for more recent versions 
 ### Development installation
 To work on MolSym itself, clone the repository and install it in editable mode:
 
-  `git clone git@github.com:NASymmetry/MolSym.git`
+  `git clone https://github.com/NASymmetry/MolSym.git  # or git@github.com:NASymmetry/MolSym.git`
 
   `cd MolSym`
 
