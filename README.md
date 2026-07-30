@@ -44,23 +44,29 @@ A python package for handling molecular symmetry.
 - SALC generation for [atomic basis functions](https://github.com/NASymmetry/MolSym/wiki/SALCs#spherical-harmonics), [internal coordinates](https://github.com/NASymmetry/MolSym/wiki/SALCs#internal-coordinates), and [cartesian coordinates](https://github.com/NASymmetry/MolSym/wiki/SALCs#cartesian-coordinates)
 
 ## Installing
-As of now we do not have a better way to install the code other than cloning from GitHub.
-Create a new conda environment with:
+We recommend installing MolSym into its own environment. For example, with conda:
 
   `conda create -n "NameYourEnvironment" python=3.X`
 
-MolSym is tested with Python 3.9-3.13, but should work for more recent versions and some older versions as well.
-  
-  `git clone git@github.com:NASymmetry/MolSym.git`
+  `conda activate "NameYourEnvironment"`
 
-Install the necessary dependencies using `pip`.
-  
-  `pip install -r <Path to MolSym directory>/requirements.tx`
+MolSym is available on [PyPI](https://pypi.org/project/molsym/) and can be installed with `pip`:
 
-Alternatively, most Python environments come equipped with all but one dependency, so if `pip` is not desired, installing `QCElemental` is all that should be required.
+  `pip install molsym`
 
-  `conda install -c conda-forge qcelemental`
+MolSym is tested with Python 3.9-3.13, but should work for more recent versions and some older versions as well. Some features rely on the optional `QCElemental` dependency, which can be pulled in with:
 
-Finally append the MolSym directory to your `PYTHONPATH`.
-  
- `export PYTHONPATH=$PYTHONPATH:<Path to MolSym directory>`
+  `pip install "molsym[qcel]"`
+
+### Development installation
+To work on MolSym itself, clone the repository and install it in editable mode:
+
+  `git clone https://github.com/NASymmetry/MolSym.git  # or git@github.com:NASymmetry/MolSym.git`
+
+  `cd MolSym`
+
+  `pip install -e .`
+
+Include the optional `QCElemental`-backed features with:
+
+  `pip install -e ".[qcel]"`
