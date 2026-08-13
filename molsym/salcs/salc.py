@@ -179,6 +179,57 @@ class SALCs():
                 out.append([sidx+1])
         return out
 
+    def _gram_schmidt_partner_block(self, salcs_in_this_irrep, n_pf_sets, d):
+        """
+        Gram-Schmidt orthogonalize one partner component's copies and apply
+        the same (conjugated) transform to the other partner components.
+
+        :type salcs_in_this_irrep: List[int]
+        :type n_pf_sets: int
+        :type d: int
+        """
+        B1 = self.basis_transformation_matrix[:, salcs_in_this_irrep[:n_pf_sets]]
+        trans_mat = np.eye(n_pf_sets, dtype=B1.dtype)
+        for col_idx in range(1, n_pf_sets):
+            for gs_idx in range(col_idx):
+                proj = np.vdot(B1[:, gs_idx], B1[:, col_idx])
+                B1[:, col_idx] -= proj * B1[:, gs_idx]
+                trans_mat[:, col_idx] -= proj * trans_mat[:, gs_idx]
+            nrm = np.linalg.norm(B1[:, col_idx])
+            B1[:, col_idx] /= nrm
+            self.salcs[salcs_in_this_irrep[col_idx]].coeffs = B1[:, col_idx]
+            trans_mat[:, col_idx] /= nrm
+        trans_mat_conj = np.conj(trans_mat)
+        for pf_idx in range(1, d):
+            pfxn_set = [pf_idx * n_pf_sets + i for i in range(n_pf_sets)]
+            Bi = self.basis_transformation_matrix[:, [salcs_in_this_irrep[idx] for idx in pfxn_set]]
+            Bi_trans = Bi @ trans_mat_conj
+            for Bidx, salc_idx in enumerate(pfxn_set):
+                self.salcs[salcs_in_this_irrep[salc_idx]].coeffs = Bi_trans[:, Bidx] / np.linalg.norm(Bi_trans[:, Bidx])
+
+    def _orthogonalize_complex_conjugate_pairs(self):
+        """
+        Orthogonalize complex-conjugate-paired irreps (e.g. E(1)'/E(2)')
+        before remove_complexity splits them into real and imaginary parts.
+        """
+        handled = set()
+        for irrep_idx, irrep in enumerate(self.irreps):
+            if irrep_idx in handled or irrep.d != 1 or "(1)" not in irrep.symbol:
+                continue
+            partner_symbol = irrep.symbol.replace("(1)", "(2)")
+            partner_idx = next((i for i, ir in enumerate(self.irreps) if ir.symbol == partner_symbol), None)
+            if partner_idx is None:
+                continue
+            primary_idxs = self.salcs_by_irrep[irrep_idx]
+            partner_idxs = self.salcs_by_irrep[partner_idx]
+            matched_partner = [next((p for p in partner_idxs if self.ispartner(self.salcs[k], self.salcs[p])), None)
+                                for k in primary_idxs]
+            if None in matched_partner or len(matched_partner) != len(partner_idxs):
+                continue
+            self._gram_schmidt_partner_block(primary_idxs + matched_partner, n_pf_sets=len(primary_idxs), d=2)
+            handled.add(irrep_idx)
+            handled.add(partner_idx)
+
     def finish_building(self, orthogonalize=False, remove_complexity=False):
         """
             Remove complexities if seperably degenerate.
@@ -187,6 +238,8 @@ class SALCs():
             :type orthogonalize: bool
             :type remove_complexity: bool
         """
+        if remove_complexity and orthogonalize:
+            self._orthogonalize_complex_conjugate_pairs()
         if remove_complexity: # TODO: Have symtext for groups with reduced complexity, handling irreps such as E2_1g, E2_2g ---> E2g
             self.remove_complex = True
             pfxns = self.sort_partner_functions()
@@ -215,25 +268,6 @@ class SALCs():
                         self.salcs[salc].coeffs = B[:,idx]
                     #raise Exception("BEANS")
                 else:
-                    n_pf_sets = round(len(self.salcs_by_irrep[irrep_idx]) / irrep.d)
                     salcs_in_this_irrep = self.salcs_by_irrep[irrep_idx]
-                    B1 = self.basis_transformation_matrix[:,salcs_in_this_irrep]
-                    # Gram-Schmidt orthogonalize columns of B1
-                    trans_mat = np.eye(n_pf_sets)
-                    for col_idx in range(1, n_pf_sets):
-                        for gs_idx in range(col_idx):
-                            proj = np.dot(B1[:,gs_idx],B1[:,col_idx])
-                            B1[:,col_idx] -= proj * B1[:,gs_idx]
-                            trans_mat[:,col_idx] -= proj * trans_mat[:,gs_idx]
-                        nrm = np.linalg.norm(B1[:,col_idx])
-                        B1[:,col_idx] /= nrm
-                        self.salcs[salcs_in_this_irrep[col_idx]].coeffs = B1[:,col_idx]
-                        trans_mat[:,col_idx] /= nrm
-                    B1 = self.basis_transformation_matrix[:,salcs_in_this_irrep]
-                    # Transform other partner function sets according to the Gram-Schmidt orthogonalization of B1
-                    for pf_idx in range(1,irrep.d):
-                        pfxn_set = [pf_idx*n_pf_sets + i for i in range(n_pf_sets)]
-                        Bi = self.basis_transformation_matrix[:,[salcs_in_this_irrep[idx] for idx in pfxn_set]]
-                        Bi_trans = Bi @ trans_mat
-                        for Bidx, salc_idx in enumerate(pfxn_set):
-                            self.salcs[salcs_in_this_irrep[salc_idx]].coeffs = Bi_trans[:,Bidx] / np.linalg.norm(Bi_trans[:,Bidx])
+                    n_pf_sets = round(len(salcs_in_this_irrep) / irrep.d)
+                    self._gram_schmidt_partner_block(salcs_in_this_irrep, n_pf_sets, irrep.d)
