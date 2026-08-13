@@ -54,14 +54,18 @@ MolSym is available on [PyPI](https://pypi.org/project/molsym/) and can be insta
 
   `pip install molsym`
 
-MolSym is tested with Python 3.9-3.13, but should work for more recent versions and some older versions as well. Some features rely on the optional `QCElemental` dependency, which can be pulled in with:
+MolSym is also available on conda-forge and can be installed with `conda`:
+
+  `conda install -c conda-forge molsym`
+
+MolSym is tested with Python 3.9–3.13, but should work for more recent versions and some older versions as well. Some features rely on the optional `QCElemental` dependency, which can be pulled in with:
 
   `pip install "molsym[qcel]"`
 
 ### Development installation
 To work on MolSym itself, clone the repository and install it in editable mode:
 
-  `git clone https://github.com/NASymmetry/MolSym.git  # or git@github.com:NASymmetry/MolSym.git`
+  `git clone https://github.com/NASymmetry/MolSym.git # or git@github.com:NASymmetry/MolSym.git`
 
   `cd MolSym`
 
