@@ -81,8 +81,7 @@ def ProjectionOp(symtext, fxn_set, project_Eckart=True):
     """
     numred = len(fxn_set)
     salcs = SALCs(symtext, fxn_set)
-    orthogonalize = False
-    #orthogonalize = True
+    orthogonalize = isinstance(fxn_set, CartesianCoordinates)
     for ir, irrep in enumerate(symtext.irreps):
         if symtext.pg.is_linear:
             irrmat = None
@@ -96,10 +95,8 @@ def ProjectionOp(symtext, fxn_set, project_Eckart=True):
             for sidx in range(len(symtext)):
                 salc = fxn_set.special_function(salc, equivcoord, sidx, irrmat)
             salc *= irrep.d/symtext.order
-            
             # Project out Eckart conditions when constructing SALCs of Cartesian displacements
             if isinstance(fxn_set, CartesianCoordinates) and project_Eckart:
-                orthogonalize = True
                 if project_Eckart is True:
                     eckart_cond = eckart_conditions(symtext)
                 elif project_Eckart == "translational":
@@ -135,7 +132,7 @@ def ProjectionOp(symtext, fxn_set, project_Eckart=True):
     salcs.finish_building(orthogonalize=orthogonalize, remove_complexity=remove_complexity)
     return salcs
 
-def ProjectOnObject(symtext, fxn_set, manual_proj, project_Eckart=True):
+def ProjectOnObject(symtext, fxn_set, manual_proj):
     """
     Projection operator: projects the functions in fxn_set into SALCs.
 
@@ -145,8 +142,6 @@ def ProjectOnObject(symtext, fxn_set, manual_proj, project_Eckart=True):
     """
     numred = len(fxn_set)
     salcs = SALCs(symtext, fxn_set)
-    orthogonalize = False
-    #orthogonalize = True
     list_salc_ids = []
     index_for_irrep = []
     print("Projecting on user-specified SALCs to determine what irreps they belong to")
@@ -195,8 +190,7 @@ def ProjectOnObject(symtext, fxn_set, manual_proj, project_Eckart=True):
         remove_complexity = True
     else:
         remove_complexity = False
-    # Build convenience SALC data structures
-    salcs.finish_building(orthogonalize=orthogonalize, remove_complexity=remove_complexity)
+    salcs.finish_building(remove_complexity=remove_complexity)
 
     salcs.manual_proj_irreps = list_salc_ids
     salcs.manual_proj_indices = index_for_irrep
