@@ -6,6 +6,8 @@ from .point_group import PointGroup
 from .general_irrep_mats import pg_to_symels
 from .symtext_helper import get_atom_mapping, rotate_mol_to_symels, get_linear_atom_mapping, get_class_name
 from .multiplication_table import build_mult_table, subgroup_by_name, subgroup_axes, multiply, inverse
+from molsym.salcs.nonstandard_frame import derive_nonstandard_irrep_mats
+from copy import deepcopy
 class Symtext():
     """
     Fundamental object of MolSym, holds most of the symmetry information of the molecule.
@@ -38,6 +40,7 @@ class Symtext():
         self.irrep_mats = irrep_mats
         self.get_character_table()
         self.assign_dipole_irrep = self.dipole_components_to_irrep()
+        self.is_nonstandard = False
     def __len__(self):
         return len(self.symels)
 
@@ -56,6 +59,24 @@ class Symtext():
         irreps = []
         irrep_mats = []
         return Symtext(mol, rotate_to_std, reverse_rotate, pg, symels, atom_map, mult_table, irreps, irrep_mats)
+
+
+    @classmethod
+    def nonstandard_symtext(cls, symtext, max_degree=10):
+        """
+        Return both the original-orientation SymText.
+        """
+        standard_symtext = symtext
+        nonstandard_symtext = deepcopy(symtext)
+
+        nonstandard_symtext.mol = symtext.mol.transform(symtext.reverse_rotate)
+        Q = symtext.reverse_rotate
+        for symel in nonstandard_symtext.symels:
+            R_std = np.array(symel.rrep, dtype=float)
+            symel.rrep = Q @ R_std @ Q.T
+        nonstandard_symtext.irrep_mats = derive_nonstandard_irrep_mats(standard_symtext, nonstandard_symtext, max_degree=max_degree)
+        nonstandard_symtext.is_nonstandard = True
+        return nonstandard_symtext
 
     @classmethod
     def from_molecule(cls, mol):
