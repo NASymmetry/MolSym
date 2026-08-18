@@ -64,7 +64,7 @@ eckart_fns = ["water", "ammonia", "methane"]
 # project_Eckart (neither removed, both removed, translational only, rotational only).
 cart_eckart_ref = {
     "water": {
-        False: {
+        None: {
             "coeffs": [
                 [0.00000000, 0.00000000, 1.00000000, 0.00000000, 0.00000000, 0.00000000, 0.00000000, 0.00000000, 0.00000000],
                 [0.00000000, 0.00000000, 0.00000000, 0.00000000, 0.70710678, 0.00000000, -0.00000000, -0.70710678, 0.00000000],
@@ -78,7 +78,7 @@ cart_eckart_ref = {
             ],
             "irreps": ['A_1', 'A_1', 'A_1', 'A_2', 'B_1', 'B_1', 'B_2', 'B_2', 'B_2'],
         },
-        True: {
+        "both": {
             "coeffs": [
                 [-0.00000000, -0.00000000, 0.33453680, 0.00000000, 0.00000000, -0.66636519, 0.00000000, 0.00000000, -0.66636519],
                 [-0.00000000, 0.00000000, -0.00000000, 0.00000000, 0.70710678, 0.00000000, 0.00000000, -0.70710678, 0.00000000],
@@ -110,7 +110,7 @@ cart_eckart_ref = {
         },
     },
     "ammonia": {
-        False: {
+        None: {
             "coeffs": [
                 [0.00000000, 0.00000000, 1.00000000, 0.00000000, 0.00000000, 0.00000000, 0.00000000, 0.00000000, 0.00000000, 0.00000000, 0.00000000, 0.00000000],
                 [0.00000000, 0.00000000, 0.00000000, 0.28867513, 0.50000000, 0.00000000, 0.28867513, -0.50000000, 0.00000000, -0.57735027, 0.00000000, 0.00000000],
@@ -127,7 +127,7 @@ cart_eckart_ref = {
             ],
             "irreps": ['A_1', 'A_1', 'A_1', 'A_2', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E'],
         },
-        True: {
+        "both": {
             "coeffs": [
                 [-0.00000000, -0.00000000, 0.42139549, 0.00000000, 0.00000000, -0.52358566, 0.00000000, 0.00000000, -0.52358566, 0.00000000, 0.00000000, -0.52358566],
                 [0.00000000, -0.00000000, 0.00000000, 0.28867513, 0.50000000, 0.00000000, 0.28867513, -0.50000000, -0.00000000, -0.57735027, 0.00000000, -0.00000000],
@@ -168,7 +168,7 @@ cart_eckart_ref = {
         },
     },
     "methane": {
-        False: {
+        None: {
             "coeffs": [
                 [0.00000000, 0.00000000, 0.00000000, 0.28867513, -0.28867513, 0.28867513, -0.28867513, 0.28867513, 0.28867513, 0.28867513, 0.28867513, -0.28867513, -0.28867513, -0.28867513, -0.28867513],
                 [0.00000000, 0.00000000, 0.00000000, 0.20412415, -0.20412415, -0.40824829, -0.20412415, 0.20412415, -0.40824829, 0.20412415, 0.20412415, 0.40824829, -0.20412415, -0.20412415, 0.40824829],
@@ -188,7 +188,7 @@ cart_eckart_ref = {
             ],
             "irreps": ['A_1', 'E', 'E', 'T_1', 'T_1', 'T_1', 'T_2', 'T_2', 'T_2', 'T_2', 'T_2', 'T_2', 'T_2', 'T_2', 'T_2'],
         },
-        True: {
+        "both": {
             "coeffs": [
                 [-0.00000000, -0.00000000, -0.00000000, 0.28867513, -0.28867513, 0.28867513, -0.28867513, 0.28867513, 0.28867513, 0.28867513, 0.28867513, -0.28867513, -0.28867513, -0.28867513, -0.28867513],
                 [0.00000000, -0.00000000, 0.00000000, 0.20412415, -0.20412415, -0.40824829, -0.20412415, 0.20412415, -0.40824829, 0.20412415, 0.20412415, 0.40824829, -0.20412415, -0.20412415, 0.40824829],
@@ -240,7 +240,7 @@ cart_eckart_ref = {
 }
 
 @pytest.mark.parametrize("fn", eckart_fns)
-@pytest.mark.parametrize("project_Eckart", [False, True, "translational", "rotational"])
+@pytest.mark.parametrize("project_Eckart", [None, "both", "translational", "rotational"])
 def test_project_Eckart_salc_values(fn, project_Eckart):
     mol = molsym.Molecule.from_file(TEST_DIR / "xyz" / f"{fn}.xyz")
     mol = molsym.symmetrize(mol)
@@ -278,15 +278,15 @@ def test_eckart_conditions_requires_translational_or_rotational():
 
 @pytest.mark.parametrize("fn", eckart_fns)
 @pytest.mark.parametrize("project_Eckart,dof_removed", [
-    (True, 6),
-    (False, 0),
+    ("both", 6),
+    (None, 0),
     ("translational", 3),
     ("rotational", 3),
 ])
 def test_project_Eckart_salc_count(fn, project_Eckart, dof_removed):
-    # project_Eckart=True removes both translations and rotations (3N-6 vibrational
-    # SALCs remain); False removes neither (3N); 'translational'/'rotational' each
-    # remove only that 3-dimensional subspace (3N-3 remain).
+    # project_Eckart='both' removes both translations and rotations (3N-6
+    # vibrational SALCs remain); None removes neither (3N); 'translational'/
+    # 'rotational' each remove only that 3-dimensional subspace (3N-3 remain).
     mol = molsym.Molecule.from_file(TEST_DIR / "xyz" / f"{fn}.xyz")
     mol = molsym.symmetrize(mol)
     symtext = molsym.Symtext.from_molecule(mol)
@@ -858,7 +858,7 @@ def test_project_on_object(fn):
 
 # Complex SALCs (C3h has symtext.complex=True) with and without Eckart projection
 c3h_eckart_ref = {
-    False: {
+    None: {
         "coeffs": [
             [0.00000000, 0.00000000, 0.00000000, 0.57735027, 0.00000000, 0.00000000, -0.28867513, 0.50000000, 0.00000000, -0.28867513, -0.50000000, 0.00000000, 0.00000000, 0.00000000, 0.00000000, 0.00000000, 0.00000000, 0.00000000, 0.00000000, 0.00000000, 0.00000000],
             [0.00000000, 0.00000000, 0.00000000, 0.00000000, 0.57735027, 0.00000000, -0.50000000, -0.28867513, 0.00000000, 0.50000000, -0.28867513, 0.00000000, 0.00000000, 0.00000000, 0.00000000, 0.00000000, 0.00000000, 0.00000000, 0.00000000, 0.00000000, 0.00000000],
@@ -884,7 +884,7 @@ c3h_eckart_ref = {
         ],
         "irreps": ["A'", "A'", "A'", "A'", "E(1)'", "E(2)'", "E(1)'", "E(2)'", "E(1)'", "E(2)'", "E(1)'", "E(2)'", "E(1)'", "E(2)'", "A''", "A''", "A''", "E(1)''", "E(2)''", "E(1)''", "E(2)''"],
     },
-    True: {
+    "both": {
         "coeffs": [
             [0.00000000, -0.00000000, 0.00000000, 0.57735027, -0.00000000, 0.00000000, -0.28867513, 0.50000000, 0.00000000, -0.28867513, -0.50000000, 0.00000000, 0.00000000, -0.00000000, 0.00000000, 0.00000000, 0.00000000, 0.00000000, -0.00000000, -0.00000000, 0.00000000],
             [0.00000000, -0.00000000, 0.00000000, 0.00000000, 0.25903742, 0.00000000, -0.22433299, -0.12951871, 0.00000000, 0.22433299, -0.12951871, 0.00000000, 0.25798883, -0.44684976, 0.00000000, 0.25798883, 0.44684976, 0.00000000, -0.51597766, -0.00000000, 0.00000000],
@@ -952,7 +952,7 @@ c3h_eckart_ref = {
     },
 }
 
-@pytest.mark.parametrize("project_Eckart", [False, True, "translational", "rotational"])
+@pytest.mark.parametrize("project_Eckart", [None, "both", "translational", "rotational"])
 def test_c3h_complex_salc_values(project_Eckart):
     mol = molsym.Molecule.from_file(TEST_DIR / "sxyz" / "C3h.xyz")
     mol = molsym.symmetrize(mol)
@@ -1097,7 +1097,7 @@ def test_c3h_complex_salcs_before_removal():
     np.testing.assert_allclose(np.imag(real_part), 0, atol=1e-8)
     np.testing.assert_allclose(np.imag(imag_part), 0, atol=1e-8)
 
-    ref = c3h_eckart_ref[True]
+    ref = c3h_eckart_ref["both"]
     ref_e1 = np.array([ref["coeffs"][j] for j, sym in enumerate(ref["irreps"]) if sym == "E(1)'"])
     ref_e2 = np.array([ref["coeffs"][j] for j, sym in enumerate(ref["irreps"]) if sym == "E(2)'"])
     np.testing.assert_allclose(np.real(real_part), ref_e1, atol=1e-8)

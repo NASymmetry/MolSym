@@ -66,17 +66,17 @@ def eckart_conditions(symtext, translational=True, rotational=True):
     else:
         raise Exception("Calling this function is rather silly if you don't want either output...")
 
-def ProjectionOp(symtext, fxn_set, project_Eckart=True):
+def ProjectionOp(symtext, fxn_set, project_Eckart="both"):
     """
     Projection operator: projects the functions in fxn_set into SALCs.
 
     :type symtext: molsym.Symtext
     :type fxn_set: molsym.FunctionSet
     :param project_Eckart: Only applies when fxn_set is CartesianCoordinates.
-        True projects out both translations and rotations (default), False
+        'both' projects out both translations and rotations (default), None
         projects out neither, and 'translational' or 'rotational' projects
         out only that subset of the Eckart conditions.
-    :type project_Eckart: bool or str
+    :type project_Eckart: str or None
     :rtype: molsym.SALCs
     """
     numred = len(fxn_set)
@@ -96,15 +96,15 @@ def ProjectionOp(symtext, fxn_set, project_Eckart=True):
                 salc = fxn_set.special_function(salc, equivcoord, sidx, irrmat)
             salc *= irrep.d/symtext.order
             # Project out Eckart conditions when constructing SALCs of Cartesian displacements
-            if isinstance(fxn_set, CartesianCoordinates) and project_Eckart:
-                if project_Eckart is True:
+            if isinstance(fxn_set, CartesianCoordinates) and project_Eckart is not None:
+                if project_Eckart == "both":
                     eckart_cond = eckart_conditions(symtext)
                 elif project_Eckart == "translational":
                     eckart_cond = eckart_conditions(symtext, translational=True, rotational=False)
                 elif project_Eckart == "rotational":
                     eckart_cond = eckart_conditions(symtext, translational=False, rotational=True)
                 else:
-                    raise ValueError(f"Invalid value for project_Eckart: {project_Eckart!r}. Must be True, False, 'translational', or 'rotational'.")
+                    raise ValueError(f"Invalid value for project_Eckart: {project_Eckart!r}. Must be 'both', 'translational', 'rotational', or None.")
                 for i in range(irrep.d):
                     for j in range(irrep.d):
                         if not np.allclose(salc[i,j,:], np.zeros(salc[i,j,:].shape), atol=salcs.tol):

@@ -653,7 +653,7 @@ def test_axial_vector_pretty_reference(capsys, molecule):
     symtext = load_symtext(molecule)
 
     fxn_set = AxialVectorFunctions(symtext)
-    salcs = ProjectionOp(symtext, fxn_set, project_Eckart=False)
+    salcs = ProjectionOp(symtext, fxn_set, project_Eckart=None)
     fxn_set.salc_print_style = "pretty"
     print(salcs)
     captured = capsys.readouterr().out
@@ -672,7 +672,7 @@ def test_degree2_polynomial_pretty_reference(capsys, molecule):
     symtext = load_symtext(molecule)
 
     fxn_set = PolynomialFunctions(symtext, degree=2)
-    salcs = ProjectionOp(symtext, fxn_set, project_Eckart=False)
+    salcs = ProjectionOp(symtext, fxn_set, project_Eckart=None)
 
     fxn_set.salc_print_style = "pretty"
 
