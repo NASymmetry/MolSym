@@ -57,12 +57,6 @@ class CartesianCoordinates(FunctionSet):
                 done += reduced_equiv_set
         return symm_equiv
 
-    def get_symmetry_equiv_functions_nonstandard(self):
-        """
-        Finds the sets of functions that are invariant under all of the symmetry elements.
-
-        :rtype: List[List[int]]
-        """
         # get_symmetry_equiv_functions above assumes one seed (ProjectionOp
         # uses min() of the set) always spans the set it returns for a given
         # coordinate. That's only true when symel.rrep is sparse enough that
@@ -74,6 +68,13 @@ class CartesianCoordinates(FunctionSet):
         # newly touched coordinate (not just the original one) first,
         # since two coordinates can be genuinely different orbits that
         # still overlap in support through a third coordinate.
+
+    def get_symmetry_equiv_functions_nonstandard(self):
+        """
+        Finds the sets of functions that are invariant under all of the symmetry elements.
+
+        :rtype: List[List[int]]
+        """
         symm_equiv = []
         done = []
         xyz = np.array([0,1,2], dtype=int)
