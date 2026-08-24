@@ -1,6 +1,7 @@
 import molsym
 from molsym import symtools
 import numpy as np
+import warnings
 from dataclasses import dataclass
 from .cartesian_coordinates import CartesianCoordinates
 from molsym.symtext.general_irrep_mats import Irrep
@@ -230,6 +231,25 @@ class SALCs():
             handled.add(irrep_idx)
             handled.add(partner_idx)
 
+    def _warn_if_not_orthogonal(self):
+        """
+        Warn if the un-Gram-Schmidt'd SALCs aren't actually orthogonal.
+        """
+        for irrep_idx, irrep in enumerate(self.irreps):
+            salc_idxs = self.salcs_by_irrep[irrep_idx]
+            if len(salc_idxs) < 2:
+                continue
+            B = self.basis_transformation_matrix[:, salc_idxs]
+            gram = np.conj(B).T @ B
+            maxoff = np.max(np.abs(gram - np.diag(np.diag(gram))))
+            if maxoff > self.tol:
+                warnings.warn(
+                    f"SALCs for irrep {irrep.symbol} are not orthogonal "
+                    f"(max |off-diagonal Gram element| = {maxoff:.4g}); "
+                    "call finish_building(orthogonalize=True) if these SALCs "
+                    "will be used as a change-of-basis (e.g. transforming a Hessian)."
+                )
+
     def finish_building(self, orthogonalize=False, remove_complexity=False):
         """
             Remove complexities if seperably degenerate.
@@ -266,8 +286,9 @@ class SALCs():
                         B[:,col] /= np.linalg.norm(B[:,col])
                     for idx, salc in enumerate(self.salcs_by_irrep[irrep_idx]):
                         self.salcs[salc].coeffs = B[:,idx]
-                    #raise Exception("BEANS")
                 else:
                     salcs_in_this_irrep = self.salcs_by_irrep[irrep_idx]
                     n_pf_sets = round(len(salcs_in_this_irrep) / irrep.d)
                     self._gram_schmidt_partner_block(salcs_in_this_irrep, n_pf_sets, irrep.d)
+        else:
+            self._warn_if_not_orthogonal()
