@@ -179,7 +179,7 @@ def test_polynomial_reductions(molecule, degree):
     salcs = ProjectionOp(
         symtext,
         fxn_set,
-        project_Eckart=False,
+        project_Eckart=None,
     )
 
     actual = {}
@@ -205,7 +205,7 @@ def test_polynomial_salcs_match_reference_subspaces(molecule, degree):
     salcs = ProjectionOp(
         symtext,
         fxn_set,
-        project_Eckart=False,
+        project_Eckart=None,
     )
 
     for irrep_symbol, reference_vectors in REFERENCE_FUNCTIONS[degree][molecule].items():
@@ -242,7 +242,7 @@ def test_polynomial_fxn_map_characters_reduce_correctly(molecule, degree):
     salcs = ProjectionOp(
         symtext,
         fxn_set,
-        project_Eckart=False,
+        project_Eckart=None,
     )
 
     actual_coeffs = np.zeros(len(symtext.irreps), dtype=int)

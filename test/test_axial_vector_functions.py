@@ -47,7 +47,7 @@ def test_axial_vector_reduction_matches_salcs(molecule):
 
     expected_coeffs = symtext.reduction_coefficients(rep_chars_by_operation,by_class=False)
 
-    salcs = ProjectionOp(symtext,fxn_set,project_Eckart=False)
+    salcs = ProjectionOp(symtext,fxn_set,project_Eckart=None)
 
     actual_coeffs = np.zeros(len(symtext.irreps), dtype=int)
 
@@ -66,7 +66,7 @@ def test_axial_vector_salcs_match_character_projectors(molecule):
     symtext = molsym.Symtext.from_molecule(mol)
     fxn_set = AxialVectorFunctions(symtext)
 
-    salcs = ProjectionOp(symtext,fxn_set,project_Eckart=False)
+    salcs = ProjectionOp(symtext,fxn_set,project_Eckart=None)
 
     T_mats = np.array([fxn_set.fxn_map[sidx].T for sidx in range(len(symtext))])
 
@@ -96,7 +96,7 @@ def test_axial_vector_known_reductions(molecule):
     symtext = molsym.Symtext.from_molecule(mol)
 
     fxn_set = AxialVectorFunctions(symtext)
-    salcs = ProjectionOp(symtext, fxn_set, project_Eckart=False)
+    salcs = ProjectionOp(symtext, fxn_set, project_Eckart=None)
 
     actual = {}
 
