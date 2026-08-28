@@ -621,7 +621,7 @@ def test_spherical_harmonic_SALCs(i):
     mol = molsym.Molecule.from_file(TEST_DIR / "xyz" / f"{fns[i]}.xyz")
     mol = molsym.symmetrize(mol)
     symtext = molsym.Symtext.from_molecule(mol)
-    sph_fxn_set = molsym.salcs.spherical_harmonics.SphericalHarmonics(symtext, basis_sets_test_set[i])
+    sph_fxn_set = molsym.salcs.spherical_harmonics.SphericalHarmonics(symtext, basis_sets_test_set[i], order="psi4")
     salcs = molsym.salcs.projection_op.ProjectionOp(symtext, sph_fxn_set)
     np.set_printoptions(precision=3,linewidth=1500,threshold=np.inf,suppress=True)
     checked = 0
@@ -1111,7 +1111,7 @@ def test_c3h_spherical_harmonic_salc_values():
 
     # B: s+p, each O: s+p, each H: s
     basis_sets = [[0,0,1],[0,0,1],[0,0,1],[0,0,1],[0],[0],[0]]
-    sph_fxn_set = molsym.salcs.spherical_harmonics.SphericalHarmonics(symtext, basis_sets)
+    sph_fxn_set = molsym.salcs.spherical_harmonics.SphericalHarmonics(symtext, basis_sets, order="psi4")
     salcs = molsym.salcs.projection_op.ProjectionOp(symtext, sph_fxn_set)
 
     assert [s.irrep.symbol for s in salcs.salcs] == c3h_sph_ref["irreps"]

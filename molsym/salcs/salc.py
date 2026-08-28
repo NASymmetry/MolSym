@@ -292,3 +292,59 @@ class SALCs():
                     self._gram_schmidt_partner_block(salcs_in_this_irrep, n_pf_sets, irrep.d)
         else:
             self._warn_if_not_orthogonal()
+
+    @staticmethod
+    def salc_to_phi(salcs, nfxn):
+        """
+        Stacks SALC coefficient vectors into the columns of a matrix.
+    
+        :type salcs: molsym.SALC or list of molsym.SALC
+        :type nfxn: int
+        :rtype: NumPy array of shape (nfxn,len(salcs))
+        """
+        if not isinstance(salcs, (list, tuple)):
+            salcs = [salcs]
+    
+        Phi = np.zeros((nfxn, len(salcs)))
+    
+        for col, salc in enumerate(salcs):
+            coeffs = np.asarray(salc.coeffs, dtype=float)
+    
+            if coeffs.shape[0] != nfxn:
+                raise ValueError(
+                    f"SALC coeff length {coeffs.shape[0]} does not match nfxn={nfxn}"
+                )
+    
+            Phi[:, col] = coeffs
+    
+        return Phi
+    
+    
+    # Splits a flat, partner-sorted SALC list back into one candidate partner
+    # set per irrep copy, for select_dprime_partner_sets to try each in turn.
+    @staticmethod
+    def grouped_partner_sets(sorted_salcs):
+        """
+        Groups SALCs (already sorted by partner) into one list per irrep copy.
+    
+        :type sorted_salcs: list of molsym.SALC
+        :rtype: list of list of molsym.SALC
+        """
+        partner_sets = []
+        i = 0
+    
+        while i < len(sorted_salcs):
+            salc = sorted_salcs[i]
+            d = salc.irrep.d
+            group = sorted_salcs[i:i + d]
+    
+            if len(group) != d:
+                raise ValueError("Incomplete SALC partner set")
+    
+            if any(s.irrep.symbol != salc.irrep.symbol for s in group):
+                raise ValueError("Partner set contains mixed irreps")
+    
+            partner_sets.append(group)
+            i += d
+    
+        return partner_sets

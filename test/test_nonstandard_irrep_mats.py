@@ -2,15 +2,16 @@
 Tests for deriving nonstandard-frame irrep matrices
 (Symtext.nonstandard_symtext and molsym.salcs.nonstandard_frame).
 
-The pseudoinverse/intertwiner method: rotate a known-correct standard-frame
-SALC into the nonstandard frame by an exact change of coordinates, then
-solve D'(g) = Phi'^+ T'(g) Phi' directly for the operation matrices of the
-rotated frame (see select_dprime_partner_sets). These tests check the
-properties that make the result trustworthy: that it's a genuine
-representation of the group (satisfies the multiplication table, is
-orthogonal), that its characters match the frame-invariant character table,
-and that the degree-escalation/candidate-rejection logic actually recovers
-from a bad candidate rather than silently returning something wrong.
+The intertwiner method: rotate a known-correct standard-frame SALC into the
+nonstandard frame by the exact orthogonal real spherical harmonic rotation
+matrix for the given angular momentum l (see sh_rep), then solve
+D'(g) = Phi'.T T'(g) Phi' directly for the operation matrices of the rotated
+frame (see select_dprime_partner_sets). These tests check the properties
+that make the result trustworthy: that it's a genuine representation of the
+group (satisfies the multiplication table, is orthogonal), that its
+characters match the frame-invariant character table, and that the
+l-escalation/candidate-rejection logic actually recovers from a bad
+candidate rather than silently returning something wrong.
 """
 import numpy as np
 import pytest
@@ -18,7 +19,7 @@ from copy import deepcopy
 from pathlib import Path
 
 import molsym
-from molsym.salcs.polynomial_functions import PolynomialFunctions
+from molsym.salcs.spherical_harmonics import SphericalHarmonicFunctions
 from molsym.salcs.projection_op import ProjectionOp
 
 TEST_DIR = Path(__file__).resolve().parent
@@ -145,17 +146,18 @@ def test_missing_irrep_raises_runtime_error():
 
 
 def test_multiplicity_recovers_from_a_bad_candidate(monkeypatch):
-    # Ammonia's E irrep resolves at degree 1, where there's only a single
+    # Ammonia's E irrep resolves at l=1, where there's only a single
     # candidate partner set -- so this poisons that sole candidate to be
     # rank-deficient and checks that the real selection code rejects it and
-    # escalates to degree 2 (where E has multiplicity 2, i.e. two genuine
+    # escalates to l=2 (where E has multiplicity 2, i.e. two genuine
     # candidates) rather than silently accepting something broken.
     import molsym.salcs.nonstandard_frame as nf
+    from molsym.salcs.salc import SALCs
 
     standard_symtext = _ammonia_symtext()
     nonstandard_symtext = _rotate(standard_symtext)
 
-    real_salc_to_phi = nf.salc_to_phi
+    real_salc_to_phi = SALCs.salc_to_phi
     poisoned = {"done": False}
 
     def poisoned_salc_to_phi(salcs, nfxn):
@@ -167,15 +169,15 @@ def test_multiplicity_recovers_from_a_bad_candidate(monkeypatch):
             Phi[:, 1] = Phi[:, 0]  # duplicate a column -> rank-deficient
         return Phi
 
-    monkeypatch.setattr(nf, "salc_to_phi", poisoned_salc_to_phi)
+    monkeypatch.setattr(SALCs, "salc_to_phi", staticmethod(poisoned_salc_to_phi))
 
     Q = standard_symtext.reverse_rotate
     selected_mats, selected_info = nf.select_dprime_partner_sets(
-        standard_symtext, nonstandard_symtext, Q, max_degree=5,
-        polynomial_function_cls=PolynomialFunctions, projection_op_cls=ProjectionOp,
+        standard_symtext, nonstandard_symtext, Q, max_l=5,
+        sh_function_cls=SphericalHarmonicFunctions, projection_op_cls=ProjectionOp,
     )
 
-    assert selected_info["E"]["degree"] == 2  # escalated past the poisoned degree-1 candidate
+    assert selected_info["E"]["l"] == 2  # escalated past the poisoned l=1 candidate
 
     D = [np.array(m) for m in selected_mats["E"]]
     chars_recovered = [np.trace(m) for m in D]

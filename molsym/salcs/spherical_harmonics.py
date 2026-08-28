@@ -5,12 +5,13 @@ J. Ivanic and K. Rudenberg: doi/10.1021/jp953350u
 """
 
 import numpy as np
-from molsym.salcs.function_set import FunctionSet
+from molsym.salcs.function_set import FunctionSet, DenseFunctionSet
 
 #0, 1+, 1-, 2+, 2- .... l+, l-
 def generateshuffle(l):
     """
-    Return list ordering m_l by 0, 1, -1, 2, -2, ..., l, -l.
+    Return the permutation that reorders m_l from -l...l (increasing) into
+    psi4's convention: 0, 1, -1, 2, -2, ..., l, -l.
 
     :type l: int
     :rtype: List[int]
@@ -25,7 +26,7 @@ def generateshuffle(l):
     beeb = list(beeb)
     return beeb
 
-def generateRotations(Lmax, rot):
+def generateRotations(Lmax, rot, order="increasing"):
     """
     This code generates the rotation matrices for real spherical harmonics by a recursion relation
     found in "Rotation Matrices for Real Spherical Harmonics. Direct Determination by Recursion."
@@ -33,23 +34,24 @@ def generateRotations(Lmax, rot):
 
     :param Lmax: Maximum angular momentum to treat
     :param rot: Cartesian transformation matrix of a symmetry operation
+    :param order: m_l ordering of the returned matrices, either "increasing"
+        (-l, ..., -1, 0, 1, ..., l; the default) or "psi4" (0, 1, -1, 2, -2, ..., l, -l)
     :type Lmax: int
     :type rot: NumPy array of shape (3,3)
+    :type order: str
     :return: List of arrays, each describing how each m_l transforms under a symmetry operation
     :rtype: List[NumPy array of shape (l,l)]
     """
+    if order not in ("increasing", "psi4"):
+        raise ValueError(f"Unknown spherical harmonic ordering '{order}', expected 'increasing' or 'psi4'")
     Rsh = []
     rrot = adapt(rot)
     Rsh.append(np.eye(1))
     l = 1
     while l < Lmax + 1:
         if l == 1:
-            psi4 = True
-            #psi4 = False
-            if psi4:
-                Rsh.append(rrot)
-            else:
-                Rsh.append(rrot)
+            # rrot is already in -1, 0, 1 (increasing) order
+            Rsh.append(rrot)
         if l > 1:
             R = np.zeros((2*l + 1, 2*l + 1))
             for m1 in range(-l,l + 1):
@@ -64,15 +66,16 @@ def generateRotations(Lmax, rot):
                     R[m1 + l, m2 + l] = u + v + w
             Rsh.append(R)
         l += 1
-   
-    if Lmax >= 1:
-        Rsh[1] = rot[:, [2, 0, 1]] 
-        Rsh[1] = Rsh[1][[2, 0, 1], :] 
-    for r, rsh in enumerate(Rsh):
-        if r > 1:
-            beeb = generateshuffle(r)
-            Rsh[r] = Rsh[r][:, beeb]
-            Rsh[r] = Rsh[r][beeb, :]
+
+    if order == "psi4":
+        if Lmax >= 1:
+            Rsh[1] = rot[:, [2, 0, 1]]
+            Rsh[1] = Rsh[1][[2, 0, 1], :]
+        for r, rsh in enumerate(Rsh):
+            if r > 1:
+                beeb = generateshuffle(r)
+                Rsh[r] = Rsh[r][:, beeb]
+                Rsh[r] = Rsh[r][beeb, :]
     return Rsh
 
 def UWVCoefficient(l, m1, m2):
@@ -184,26 +187,77 @@ def obstruct(atom1, atom2, nbas_vec):
             obstruction += x
     return obstruction
 
-def rotate_em(maxam, ops):
+def rotate_em(maxam, ops, order="increasing"):
     """
     Collect parameterized rsh rotations for each symmetry operation.
 
     :type maxam: int
     :type ops: List[molsym.Symel]
+    :type order: str
     :rtype: List[List[NumPy array of shape (l,l)]]
     """
     rsh_rot_per_op = []
     for i, op in enumerate(ops):
-        rsh_rot_per_op.append(generateRotations(maxam, op.rrep))
+        rsh_rot_per_op.append(generateRotations(maxam, op.rrep, order=order))
     return rsh_rot_per_op
+
+def sh_rep(A, l, order="increasing"):
+    """
+    Builds the (2l+1)x(2l+1) representation matrix of A on angular momentum l.
+
+    :type A: NumPy array of shape (3,3)
+    :type l: int
+    :type order: str
+    :rtype: NumPy array of shape (2l+1,2l+1)
+    """
+    return generateRotations(l, np.asarray(A, dtype=float), order=order)[l]
+
+# Auxiliary, molecule-independent carrier space (analogous to
+# PolynomialFunctions) used by nonstandard_frame.py to find partner SALCs for
+# point-group irreps, built from the exact orthogonal sh_rep matrices instead
+# of homogeneous-polynomial ones, which are not generally orthogonal.
+class SphericalHarmonicFunctions(DenseFunctionSet):
+    """
+    FunctionSet for a single shell of real spherical harmonics of angular
+    momentum l, centered at the origin.
+    """
+    def __init__(self, symtext, l=1, order="increasing"):
+        self.l = l
+        self.order = order
+        fxn_list = list(range(2 * l + 1))
+        super().__init__(symtext, fxn_list)
+
+    def get_fxn_map(self):
+        """
+        Shape:
+            (nsymel, 2l+1, 2l+1)
+
+        Convention:
+            fxn_map[sidx, input_idx, output_idx] = coefficient
+        """
+        nfxn = 2 * self.l + 1
+        fxn_map = np.zeros((len(self.symtext), nfxn, nfxn))
+
+        for sidx, symel in enumerate(self.symtext.symels):
+            A = np.array(symel.rrep, dtype=float)
+            T = sh_rep(A, self.l, order=self.order)
+            fxn_map[sidx, :, :] = T.T
+
+        return fxn_map
 
 class SphericalHarmonics(FunctionSet):
     """
     FunctionSet for spherical harmonic basis functions.
     """
-    def __init__(self, symtext, fxn_list) -> None:
+    def __init__(self, symtext, fxn_list, order="increasing") -> None:
+        """
+        :param order: m_l ordering used within each shell, either "increasing"
+            (-l, ..., -1, 0, 1, ..., l; the default) or "psi4" (0, 1, -1, 2, -2, ..., l, -l)
+        :type order: str
+        """
         self.fxns = fxn_list
         self.symtext = symtext
+        self.order = order
         self.maxam = self.get_maxam()
         self.nbas_vec = []
         for i in self.fxns:
@@ -213,7 +267,7 @@ class SphericalHarmonics(FunctionSet):
         for atom_idx in range(len(self.symtext.mol)):
             for shell_idx in range(len(self.fxns[atom_idx])):
                 l = self.fxns[atom_idx][shell_idx]
-                for bfxn in range(2*l+1): # ml = 0, 1, -1, 2, -2, ...
+                for bfxn in range(2*l+1): # local index into the shell, ordered per self.order
                     self.big_info.append([atom_idx, shell_idx, l, bfxn])
         
         self.fxn_map = self.get_fxn_map()
@@ -253,7 +307,7 @@ class SphericalHarmonics(FunctionSet):
         :rtype: NumPy array of shape (nbfxn, nsymels, nbfxn)
         """
         # Spherical harmonic map for l up to maxam, not including l = 0
-        self.rotated = rotate_em(self.maxam, self.symtext.symels) # symel x l x ml
+        self.rotated = rotate_em(self.maxam, self.symtext.symels, order=self.order) # symel x l x ml
         fxn_map = np.zeros((len(self), len(self.symtext), len(self))) # basis_function x symel x basis_function
         for bfxn_i in range(len(self)):
             atom_i, sh, l, ml = self.big_info[bfxn_i]
