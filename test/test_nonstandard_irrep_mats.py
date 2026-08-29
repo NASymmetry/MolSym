@@ -59,6 +59,91 @@ SYMTEXT_BUILDERS = {
     "boric acid (C3h, complex point group)": _boric_acid_symtext,
 }
 
+# subgroup -> whether it has two independent, symmetry-defined axes (a real
+# paxis and saxis), so its reoriented geometry is fully pinned down and must
+# be reproducible across frames. Single-axis groups (Cs, C3, S4, C1, Ci) get
+# an arbitrary secondary axis from rotate_mol_to_symels's fallback (crossing
+# a *lab-frame* basis vector with paxis: see rotate_mol_to_symels), which
+# legitimately differs depending on which direction paxis itself points --
+# so only their abstract structure (point group, order, atom_map), not their
+# absolute orientation, is expected to match between frames.
+SUBGROUPS_TO_TEST = {
+    "ammonia (C3v, real 2D E)": {"C3v": True, "Cs": False, "C3": False},
+    "methane (Td, real 3D T1/T2)": {"D2d": True, "C3v": True, "S4": False, "C2v": True},
+    "boric acid (C3h, complex point group)": {"C3": False, "Cs": False},
+}
+
+
+@pytest.mark.parametrize("label", SUBGROUPS_TO_TEST)
+def test_subgroup_symtext_from_nonstandard_frame_matches_standard(label):
+    # subgroup_symtext -> subgroup_axes reads symel.vector to pick the new
+    # frame's principal/secondary axes. If nonstandard_symtext left those
+    # stale (still describing the standard frame) while rotating symel.rrep
+    # and mol, subgroup_axes would hand rotate_mol_to_symels axes expressed
+    # in the wrong frame, silently reorienting the subgroup molecule
+    # inconsistently -- this checks the subgroup derived from a nonstandard
+    # symtext lands in exactly the same place as the one from its standard
+    # counterpart.
+    standard_symtext = SYMTEXT_BUILDERS[label]()
+    nonstandard_symtext = molsym.Symtext.nonstandard_symtext(standard_symtext, max_degree=6)
+
+    for subgroup_str, fully_pinned in SUBGROUPS_TO_TEST[label].items():
+        sub_std = standard_symtext.subgroup_symtext(subgroup_str)
+        sub_nonstd = nonstandard_symtext.subgroup_symtext(subgroup_str)
+
+        assert sub_nonstd.pg.str == sub_std.pg.str == subgroup_str
+        assert sub_nonstd.order == sub_std.order
+        assert sub_nonstd.complex == sub_std.complex
+        np.testing.assert_array_equal(sub_nonstd.atom_map, sub_std.atom_map)
+        if fully_pinned:
+            np.testing.assert_allclose(sub_nonstd.mol.coords, sub_std.mol.coords, atol=1e-6)
+
+
+def test_largest_D2h_subgroup_from_nonstandard_frame_matches_standard():
+    standard_symtext = _methane_symtext()
+    nonstandard_symtext = molsym.Symtext.nonstandard_symtext(standard_symtext, max_degree=6)
+
+    sub_std = standard_symtext.largest_D2h_subgroup()
+    sub_nonstd = nonstandard_symtext.largest_D2h_subgroup()
+
+    assert sub_nonstd.pg.str == sub_std.pg.str
+    assert sub_nonstd.order == sub_std.order
+    np.testing.assert_array_equal(sub_nonstd.atom_map, sub_std.atom_map)
+    np.testing.assert_allclose(sub_nonstd.mol.coords, sub_std.mol.coords, atol=1e-6)
+
+
+@pytest.mark.parametrize("label", SYMTEXT_BUILDERS)
+def test_assign_dipole_irrep_is_recomputed_not_stale(label):
+    # assign_dipole_irrep is computed once in __init__ from the standard-frame
+    # symels/irrep_mats. deepcopy carries that cached value over verbatim, so
+    # if nonstandard_symtext doesn't explicitly recompute it after rotating
+    # symels and re-deriving irrep_mats, it silently reports which Cartesian
+    # axis each irrep's dipole component sits on using stale, standard-frame
+    # axes -- wrong for the (generally arbitrarily oriented) nonstandard frame.
+    standard_symtext = SYMTEXT_BUILDERS[label]()
+    nonstandard_symtext = molsym.Symtext.nonstandard_symtext(standard_symtext, max_degree=6)
+
+    assert nonstandard_symtext.assign_dipole_irrep == nonstandard_symtext.dipole_components_to_irrep()
+
+
+@pytest.mark.parametrize("label", SYMTEXT_BUILDERS)
+def test_dipole_active_irreps_is_frame_independent(label):
+    # dipole_active_irreps only uses symel.rrep traces (basis-independent),
+    # unlike dipole_components_to_irrep's exact-raw-axis-alignment check,
+    # which reports no activity at all for a generic (nonstandard) orientation
+    # even when an irrep genuinely is IR-active -- this is what
+    # assemble_dipder_from_dipoles's degeneracy-exploitation path (psi4
+    # driver_findif.py) should gate on instead, so it still engages under a
+    # nonstandard symtext.
+    standard_symtext = SYMTEXT_BUILDERS[label]()
+    nonstandard_symtext = molsym.Symtext.nonstandard_symtext(standard_symtext, max_degree=6)
+
+    std_active = standard_symtext.dipole_active_irreps()
+    nonstd_active = nonstandard_symtext.dipole_active_irreps()
+
+    assert std_active == nonstd_active
+    assert len(std_active) > 0
+
 
 @pytest.mark.parametrize("label", SYMTEXT_BUILDERS)
 def test_is_nonstandard_flag(label):

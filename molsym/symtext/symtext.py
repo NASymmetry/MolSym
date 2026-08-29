@@ -6,8 +6,6 @@ from .point_group import PointGroup
 from .general_irrep_mats import pg_to_symels
 from .symtext_helper import get_atom_mapping, rotate_mol_to_symels, get_linear_atom_mapping, get_class_name
 from .multiplication_table import build_mult_table, subgroup_by_name, subgroup_axes, multiply, inverse
-from molsym.salcs.nonstandard_frame import derive_nonstandard_irrep_mats
-from copy import deepcopy
 class Symtext():
     """
     Fundamental object of MolSym, holds most of the symmetry information of the molecule.
@@ -64,19 +62,17 @@ class Symtext():
     @classmethod
     def nonstandard_symtext(cls, symtext, max_degree=10):
         """
-        Return both the original-orientation SymText.
-        """
-        standard_symtext = symtext
-        nonstandard_symtext = deepcopy(symtext)
+        Return the original-orientation Symtext.
 
-        nonstandard_symtext.mol = symtext.mol.transform(symtext.reverse_rotate)
-        Q = symtext.reverse_rotate
-        for symel in nonstandard_symtext.symels:
-            R_std = np.array(symel.rrep, dtype=float)
-            symel.rrep = Q @ R_std @ Q.T
-        nonstandard_symtext.irrep_mats = derive_nonstandard_irrep_mats(standard_symtext, nonstandard_symtext, max_degree=max_degree)
-        nonstandard_symtext.is_nonstandard = True
-        return nonstandard_symtext
+        :type symtext: molsym.Symtext
+        :type max_degree: int
+        :rtype: molsym.Symtext
+        """
+        # deferred import: molsym.salcs already imports from molsym.symtext,
+        # so importing it back here at module level would invert that
+        # dependency direction.
+        from molsym.salcs.nonstandard_frame import build_nonstandard_symtext
+        return build_nonstandard_symtext(symtext, max_degree=max_degree)
 
     @classmethod
     def from_molecule(cls, mol):
@@ -176,7 +172,7 @@ class Symtext():
         :rtype: bool
         """
         p = np.multiply(dp_vector, self.class_orders)
-        return round(p.sum()/(self.order)) > 0
+        return round((p.sum()/(self.order)).real) > 0
 
     def reduction_coefficients(self, rrep_characters, by_class=True):
         """
@@ -209,7 +205,12 @@ class Symtext():
         for irrep_idx, irrep in enumerate(self.irreps):
             p = np.multiply(class_chars, self.class_orders)
             p = np.multiply(p, self.character_table[irrep_idx, :])
-            out[irrep_idx] = round(p.sum() / self.order)
+            # p.sum()/order is real for any genuine reduction (a real
+            # reducible rep like translations pairs complex-conjugate
+            # irreps like E(1)/E(2) with matching real coefficients), so
+            # any imaginary part left is floating-point noise from the
+            # complex character table.
+            out[irrep_idx] = round((p.sum() / self.order).real)
     
         return out
 
@@ -254,7 +255,28 @@ class Symtext():
         #for irrep in self.irreps:
         #    if len(dipole_assignments_by_irrep[irrep.symbol]) > 0:
         #        assert len(dipole_assignments_by_irrep[irrep.symbol]) == irrep.d, "The number of dipole components assigned to an irrep must match the degeneracy!"
-        return dipole_assignments_by_irrep 
+        return dipole_assignments_by_irrep
+
+    def dipole_active_irreps(self):
+        """
+        Returns the set of irrep symbols with nonzero dipole (translational)
+        activity: irreps present in the decomposition of the x, y, z vector
+        representation (the symel.rrep matrices themselves).
+
+        Unlike dipole_components_to_irrep, this only uses traces of
+        symel.rrep, so it's frame-independent -- it gives the same answer
+        regardless of the molecule's orientation. dipole_components_to_irrep
+        instead checks for exact alignment with a raw Cartesian axis, which
+        only resolves cleanly in the standard-frame convention (where x, y,
+        z are chosen to line up with the symmetry axes); in an arbitrary
+        (e.g. nonstandard-frame) orientation it reports no activity at all,
+        even for genuinely IR-active irreps.
+
+        :rtype: set of str
+        """
+        trans_characters = np.array([np.trace(np.asarray(symel.rrep, dtype=float)) for symel in self.symels])
+        coeffs = self.reduction_coefficients(trans_characters, by_class=False)
+        return {irrep.symbol for irrep, c in zip(self.irreps, coeffs) if c > 0}
 
     @property
     def rotational_symmetry_number(self):

@@ -249,10 +249,12 @@ class SphericalHarmonics(FunctionSet):
     """
     FunctionSet for spherical harmonic basis functions.
     """
-    def __init__(self, symtext, fxn_list, order="increasing") -> None:
+    def __init__(self, symtext, fxn_list, order="psi4") -> None:
         """
-        :param order: m_l ordering used within each shell, either "increasing"
-            (-l, ..., -1, 0, 1, ..., l; the default) or "psi4" (0, 1, -1, 2, -2, ..., l, -l)
+        :param order: m_l ordering used within each shell, either "psi4"
+            (0, 1, -1, 2, -2, ..., l, -l; the default, kept for backward
+            compatibility with existing callers) or "increasing"
+            (-l, ..., -1, 0, 1, ..., l)
         :type order: str
         """
         self.fxns = fxn_list

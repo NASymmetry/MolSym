@@ -1,9 +1,41 @@
 import numpy as np
+from copy import deepcopy
 
 from molsym.salcs.spherical_harmonics import sh_rep, SphericalHarmonicFunctions
 
-# Residual check for a candidate D': how close T'(g) Phi' is to Phi' D'(g)
-# for every operation. Used to reject a bad partner-set candidate.
+def build_nonstandard_symtext(symtext, max_degree=10):
+    """
+    Returns the original-orientation Symtext, with irrep matrices derived
+    for that orientation's own symmetry operations.
+
+    :type symtext: molsym.Symtext
+    :type max_degree: int, maximum angular momentum l to search before giving up
+    :rtype: molsym.Symtext
+    """
+    if symtext.pg.is_linear:
+        raise ValueError(
+            f"nonstandard_symtext does not support linear point groups (got {symtext.pg.str}): "
+            "their symmetry elements are abstract (rrep=None) and have no discrete "
+            "Cartesian rotation to carry over to the original frame."
+        )
+
+    standard_symtext = symtext
+    nonstandard_symtext = deepcopy(symtext)
+
+    nonstandard_symtext.mol = symtext.mol.transform(symtext.reverse_rotate)
+    Q = symtext.reverse_rotate
+    for symel in nonstandard_symtext.symels:
+        R_std = np.array(symel.rrep, dtype=float)
+        symel.rrep = Q @ R_std @ Q.T
+        if symel.vector is not None:
+            symel.vector = Q @ symel.vector
+    nonstandard_symtext.irrep_mats = derive_nonstandard_irrep_mats(standard_symtext, nonstandard_symtext, max_degree=max_degree)
+    nonstandard_symtext.is_nonstandard = True
+    nonstandard_symtext.assign_dipole_irrep = nonstandard_symtext.dipole_components_to_irrep()
+
+    return nonstandard_symtext
+
+# How close T'(g) Phi' is to Phi' D'(g) for every operation.
 def check_dprime_intertwining(Tprime_ops, Phi_prime, Dprime_ops):
     """
     Checks how well D'(g) intertwines with T'(g) through Phi_prime for every operation.
@@ -22,11 +54,9 @@ def check_dprime_intertwining(Tprime_ops, Phi_prime, Dprime_ops):
 
     return np.array(errors)
 
-# Entry point: for each irrep, escalate angular momentum l until a partner
-# set is found in that l-shell whose rotated SALCs (see sh_rep -- an exact
-# orthogonal change of basis, unlike a homogeneous-polynomial one) intertwine
-# correctly with the nonstandard frame's own operations (see compute_dprime),
-# then keep that D'.
+# For each irrep, escalate angular momentum l until a partner set is found
+# in that l-shell whose rotated SALCs intertwine correctly with the
+# nonstandard frame's own operations, then keep that D'.
 def select_dprime_partner_sets(standard_symtext, nonstandard_symtext, Q, max_l, sh_function_cls, projection_op_cls, residual_tol=1e-8):
     """
     Selects one good spherical-harmonic partner set per irrep and solves for D'.
@@ -47,7 +77,7 @@ def select_dprime_partner_sets(standard_symtext, nonstandard_symtext, Q, max_l, 
     selected_info = {}
 
     # 1D irreps are frame-invariant, so copy them directly instead of
-    # solving -- also avoids a real bug where complex-conjugate pairs fail the solve below.
+    # solving -- the general solve below fails for complex-conjugate irrep pairs.
     for irrep in standard_symtext.irreps:
         if irrep.d == 1:
             selected_dprime_mats[irrep.symbol] = list(standard_symtext.irrep_mats[irrep.symbol])
@@ -82,8 +112,7 @@ def select_dprime_partner_sets(standard_symtext, nonstandard_symtext, Q, max_l, 
 
             # sh_rep(A, l) is a direct representation (sh_rep(A,l) sh_rep(B,l)
             # = sh_rep(AB,l)), matching how symel.rrep is used elsewhere with
-            # no transpose/inverse -- unlike the old polynomial_transformation_matrix
-            # pullback convention, which needed sh_rep's argument transposed here.
+            # no transpose/inverse.
             Phi_prime = sh_rep(Q, l) @ Phi_std
 
             Dprime_ops, residuals = compute_dprime(Tprime_ops, Phi_prime)
@@ -103,12 +132,6 @@ def select_dprime_partner_sets(standard_symtext, nonstandard_symtext, Q, max_l, 
                 "Phi_std": Phi_std,
                 "Phi_prime": Phi_prime,
             }
-
-            print(
-                f"Selected D' for {irrep_symbol}: "
-                f"l={l}, partner_set={partner_set_idx}, "
-                f"max residual={max_residual:.3e}"
-            )
 
         all_symbols = {ir.symbol for ir in salc_container.irreps}
         if all(symbol in selected_dprime_mats for symbol in all_symbols):
@@ -133,11 +156,9 @@ def original_frame_sh_ops(symels, l):
     return [sh_rep(np.asarray(symel.rrep, dtype=float), l) for symel in symels]
 
 
-# The actual solve: D'(g) from an exact orthogonal change of basis, given a
-# rotated SALC and the nonstandard frame's operations. Phi_prime has
-# orthonormal columns (Phi_std is QR'd in select_dprime_partner_sets before
-# being carried over by the orthogonal sh_rep matrix), so its transpose is a
-# left inverse and no pseudoinverse/least-squares fit is needed here.
+# D'(g) from an exact orthogonal change of basis. Phi_prime has orthonormal
+# columns (Phi_std is QR'd in select_dprime_partner_sets before being carried
+# over by the orthogonal sh_rep matrix), so its transpose is a left inverse.
 def compute_dprime(Tprime_ops, Phi_prime):
     """
     Solves D'(g) = Phi_prime.T T'(g) Phi_prime for every operation.
@@ -159,8 +180,6 @@ def compute_dprime(Tprime_ops, Phi_prime):
     return Dprime_ops, np.array(residuals)
 
 
-# Public entry point called by Symtext.nonstandard_symtext to populate
-# nonstandard_symtext.irrep_mats.
 def derive_nonstandard_irrep_mats(standard_symtext, nonstandard_symtext, max_degree=10):
     """
     Derives nonstandard-frame irrep matrices by rotating known-correct
