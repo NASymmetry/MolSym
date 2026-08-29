@@ -220,7 +220,7 @@ class Symtext():
         proj_dipole = np.zeros((irrep.d, irrep.d, 3), dtype=dtype)
         for s, symel in enumerate(self.symels):
             irrmat = self.irrep_mats[irrep.symbol][s]
-            proj_dipole += irrmat[:, :, None] * np.dot(symel.rrep, dipole)[None, None, :]
+            proj_dipole += np.conj(irrmat[:, :, None]) * np.dot(symel.rrep, dipole)[None, None, :]
         proj_dipole *= irrep.d / len(self.symels)
         return proj_dipole 
     

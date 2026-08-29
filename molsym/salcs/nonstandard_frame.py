@@ -156,12 +156,13 @@ def original_frame_sh_ops(symels, l):
     return [sh_rep(np.asarray(symel.rrep, dtype=float), l) for symel in symels]
 
 
-# D'(g) from an exact orthogonal change of basis. Phi_prime has orthonormal
-# columns (Phi_std is QR'd in select_dprime_partner_sets before being carried
-# over by the orthogonal sh_rep matrix), so its transpose is a left inverse.
+# D'(g) from an exact orthogonal (or, for complex Phi_prime, unitary) change
+# of basis. Phi_prime has orthonormal columns (Phi_std is QR'd in
+# select_dprime_partner_sets before being carried over by the orthogonal
+# sh_rep matrix), so its conjugate transpose is a left inverse.
 def compute_dprime(Tprime_ops, Phi_prime):
     """
-    Solves D'(g) = Phi_prime.T T'(g) Phi_prime for every operation.
+    Solves D'(g) = Phi_prime^H T'(g) Phi_prime for every operation.
 
     :type Tprime_ops: list of NumPy arrays of shape (nfxn,nfxn)
     :type Phi_prime: NumPy array of shape (nfxn,d)
@@ -169,11 +170,12 @@ def compute_dprime(Tprime_ops, Phi_prime):
         intertwining residual for each operation.
     :rtype: tuple(list, NumPy array)
     """
+    Phi_prime_H = Phi_prime.conj().T
     Dprime_ops = []
     residuals = []
 
     for T in Tprime_ops:
-        D = Phi_prime.T @ T @ Phi_prime
+        D = Phi_prime_H @ T @ Phi_prime
         Dprime_ops.append(D)
         residuals.append(np.linalg.norm(T @ Phi_prime - Phi_prime @ D))
 

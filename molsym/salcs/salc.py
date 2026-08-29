@@ -281,7 +281,7 @@ class SALCs():
                     B = self.basis_transformation_matrix[:,self.salcs_by_irrep[irrep_idx]]
                     for col in range(1,B.shape[1]):
                         for gs_idx in range(col):
-                            proj = np.dot(B[:,gs_idx], B[:,col])
+                            proj = np.vdot(B[:,gs_idx], B[:,col])
                             B[:,col] -= proj * B[:,gs_idx]
                         B[:,col] /= np.linalg.norm(B[:,col])
                     for idx, salc in enumerate(self.salcs_by_irrep[irrep_idx]):
@@ -304,19 +304,20 @@ class SALCs():
         """
         if not isinstance(salcs, (list, tuple)):
             salcs = [salcs]
-    
-        Phi = np.zeros((nfxn, len(salcs)))
-    
+
+        dtype = np.result_type(*(salc.coeffs for salc in salcs), float)
+        Phi = np.zeros((nfxn, len(salcs)), dtype=dtype)
+
         for col, salc in enumerate(salcs):
-            coeffs = np.asarray(salc.coeffs, dtype=float)
-    
+            coeffs = np.asarray(salc.coeffs)
+
             if coeffs.shape[0] != nfxn:
                 raise ValueError(
                     f"SALC coeff length {coeffs.shape[0]} does not match nfxn={nfxn}"
                 )
-    
+
             Phi[:, col] = coeffs
-    
+
         return Phi
     
     
