@@ -153,6 +153,17 @@ def test_is_nonstandard_flag(label):
     assert nonstandard_symtext.is_nonstandard is True
 
 
+def test_nonstandard_symtext_rejects_already_nonstandard_input():
+    # nonstandard_symtext keeps the original reverse_rotate on its output, so
+    # calling it again on that output would apply Q a second time (landing
+    # in a Q^2 frame) instead of raising -- is_nonstandard is exactly the
+    # flag needed to catch this misuse.
+    standard_symtext = _ammonia_symtext()
+    nonstandard_symtext = molsym.Symtext.nonstandard_symtext(standard_symtext, max_degree=6)
+    with pytest.raises(ValueError):
+        molsym.Symtext.nonstandard_symtext(nonstandard_symtext, max_degree=6)
+
+
 @pytest.mark.parametrize("label", SYMTEXT_BUILDERS)
 def test_irrep_mats_satisfy_group_multiplication_table(label):
     standard_symtext = SYMTEXT_BUILDERS[label]()

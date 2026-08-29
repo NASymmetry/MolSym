@@ -12,6 +12,12 @@ def build_nonstandard_symtext(symtext, max_degree=10):
     :type max_degree: int, maximum angular momentum l to search before giving up
     :rtype: molsym.Symtext
     """
+    if symtext.is_nonstandard:
+        raise ValueError(
+            "nonstandard_symtext was given an already-nonstandard Symtext: "
+            "applying reverse_rotate again would rotate by Q a second time."
+        )
+
     if symtext.pg.is_linear:
         raise ValueError(
             f"nonstandard_symtext does not support linear point groups (got {symtext.pg.str}): "
