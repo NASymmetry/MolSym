@@ -204,12 +204,7 @@ class Symtext():
     
         for irrep_idx, irrep in enumerate(self.irreps):
             p = np.multiply(class_chars, self.class_orders)
-            p = np.multiply(p, self.character_table[irrep_idx, :])
-            # p.sum()/order is real for any genuine reduction (a real
-            # reducible rep like translations pairs complex-conjugate
-            # irreps like E(1)/E(2) with matching real coefficients), so
-            # any imaginary part left is floating-point noise from the
-            # complex character table.
+            p = np.multiply(p, np.conj(self.character_table[irrep_idx, :]))
             out[irrep_idx] = round((p.sum() / self.order).real)
     
         return out

@@ -26,7 +26,7 @@ def generateshuffle(l):
     beeb = list(beeb)
     return beeb
 
-def generateRotations(Lmax, rot, order="increasing"):
+def generateRotations(Lmax, rot, order="psi4"):
     """
     This code generates the rotation matrices for real spherical harmonics by a recursion relation
     found in "Rotation Matrices for Real Spherical Harmonics. Direct Determination by Recursion."
@@ -34,8 +34,8 @@ def generateRotations(Lmax, rot, order="increasing"):
 
     :param Lmax: Maximum angular momentum to treat
     :param rot: Cartesian transformation matrix of a symmetry operation
-    :param order: m_l ordering of the returned matrices, either "increasing"
-        (-l, ..., -1, 0, 1, ..., l; the default) or "psi4" (0, 1, -1, 2, -2, ..., l, -l)
+    :param order: m_l ordering of the returned matrices, either "psi4"
+        (0, 1, -1, 2, -2, ..., l, -l; the default) or "increasing" (-l, ..., -1, 0, 1, ..., l)
     :type Lmax: int
     :type rot: NumPy array of shape (3,3)
     :type order: str
@@ -187,7 +187,7 @@ def obstruct(atom1, atom2, nbas_vec):
             obstruction += x
     return obstruction
 
-def rotate_em(maxam, ops, order="increasing"):
+def rotate_em(maxam, ops, order="psi4"):
     """
     Collect parameterized rsh rotations for each symmetry operation.
 
