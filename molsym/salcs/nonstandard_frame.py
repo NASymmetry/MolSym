@@ -9,7 +9,8 @@ def build_nonstandard_symtext(symtext, max_degree=10):
     for that orientation's own symmetry operations.
 
     :type symtext: molsym.Symtext
-    :type max_degree: int, maximum angular momentum l to search before giving up
+    :param max_degree: maximum angular momentum l to search before giving up
+    :type max_degree: int
     :rtype: molsym.Symtext
     """
     if symtext.is_nonstandard:

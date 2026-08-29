@@ -65,6 +65,7 @@ class Symtext():
         Return the original-orientation Symtext.
 
         :type symtext: molsym.Symtext
+        :param max_degree: maximum angular momentum l to search before giving up
         :type max_degree: int
         :rtype: molsym.Symtext
         """
