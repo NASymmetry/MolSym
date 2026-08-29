@@ -59,6 +59,12 @@ SYMTEXT_BUILDERS = {
     "boric acid (C3h, complex point group)": _boric_acid_symtext,
 }
 
+SYMTEXT_XYZ_FILES = {
+    "ammonia (C3v, real 2D E)": "ammonia_rotated.xyz",
+    "methane (Td, real 3D T1/T2)": "methane_rotated.xyz",
+    "boric acid (C3h, complex point group)": "boric_acid_rotated.xyz",
+}
+
 # subgroup -> whether it has two independent, symmetry-defined axes (a real
 # paxis and saxis), so its reoriented geometry is fully pinned down and must
 # be reproducible across frames. Single-axis groups (Cs, C3, S4, C1, Ci) get
@@ -162,6 +168,26 @@ def test_nonstandard_symtext_rejects_already_nonstandard_input():
     nonstandard_symtext = molsym.Symtext.nonstandard_symtext(standard_symtext, max_degree=6)
     with pytest.raises(ValueError):
         molsym.Symtext.nonstandard_symtext(nonstandard_symtext, max_degree=6)
+
+
+@pytest.mark.parametrize("label", SYMTEXT_BUILDERS)
+def test_nonstandard_symtext_mol_matches_original_geometry(label):
+    # The other tests here (multiplication table, orthogonality, characters,
+    # subgroup reconstruction) are all self-consistency or frame-invariant
+    # checks: they'd still pass even if reverse_rotate were applied with a
+    # transposed or sign-flipped Q, since everything downstream (symels,
+    # irrep_mats) is rotated by that same wrong Q consistently. The only way
+    # to catch that class of error is to compare against geometry that never
+    # went through nonstandard_symtext at all -- the original, COM-centered
+    # input coordinates.
+    standard_symtext = SYMTEXT_BUILDERS[label]()
+    nonstandard_symtext = molsym.Symtext.nonstandard_symtext(standard_symtext, max_degree=6)
+
+    reference_mol = molsym.Molecule.from_file(TEST_DIR / "xyz" / SYMTEXT_XYZ_FILES[label])
+    reference_mol.translate(reference_mol.find_com())
+
+    assert (nonstandard_symtext.mol.atoms == reference_mol.atoms).all()
+    np.testing.assert_allclose(nonstandard_symtext.mol.coords, reference_mol.coords, atol=1e-6)
 
 
 @pytest.mark.parametrize("label", SYMTEXT_BUILDERS)

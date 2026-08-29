@@ -256,17 +256,7 @@ class Symtext():
     def dipole_active_irreps(self):
         """
         Returns the set of irrep symbols with nonzero dipole (translational)
-        activity: irreps present in the decomposition of the x, y, z vector
-        representation (the symel.rrep matrices themselves).
-
-        Unlike dipole_components_to_irrep, this only uses traces of
-        symel.rrep, so it's frame-independent -- it gives the same answer
-        regardless of the molecule's orientation. dipole_components_to_irrep
-        instead checks for exact alignment with a raw Cartesian axis, which
-        only resolves cleanly in the standard-frame convention (where x, y,
-        z are chosen to line up with the symmetry axes); in an arbitrary
-        (e.g. nonstandard-frame) orientation it reports no activity at all,
-        even for genuinely IR-active irreps.
+        activity. Frame-independent, unlike dipole_components_to_irrep.
 
         :rtype: set of str
         """

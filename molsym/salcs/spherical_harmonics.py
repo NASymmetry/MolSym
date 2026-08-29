@@ -213,9 +213,8 @@ def sh_rep(A, l, order="increasing"):
     return generateRotations(l, np.asarray(A, dtype=float), order=order)[l]
 
 # Auxiliary, molecule-independent carrier space (analogous to
-# PolynomialFunctions) used by nonstandard_frame.py to find partner SALCs for
-# point-group irreps, built from the exact orthogonal sh_rep matrices instead
-# of homogeneous-polynomial ones, which are not generally orthogonal.
+# PolynomialFunctions) used by nonstandard_frame.py to find partner SALCs
+# for point-group irreps.
 class SphericalHarmonicFunctions(DenseFunctionSet):
     """
     FunctionSet for a single shell of real spherical harmonics of angular
