@@ -10,8 +10,8 @@ readme = "README.md"
 requires-python = ">=3.9"
 license = "MIT"
 authors = [
-    { name = "Stephen Goodlett", email = "smg13363@uga.edu" },
-    { name = "Nate Kitzmiller", email = "nathaniel.kitzmiller@uga.edu" },
+    { name = "Stephen Goodlett", email = "stephen.goodlett@org.chemie.uni-giessen.de" },
+    { name = "Nate Kitzmiller", email = "nate.kitzmiller@indwes.edu" },
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -20,12 +20,9 @@ dependencies = [
     "numpy >= 1.23.4",
 ]
 
-# qcelemental is optional so the core molsym install/API path stays NumPy-only
-# (carried forward from #65). Install with `pip install MolSym[qcel]` to enable
-# the qcelemental-backed features.
 [project.optional-dependencies]
 qcel = [
-    "qcelemental >= 0.25.1",
+    "qcelemental >= 0.50.0",
 ]
 
 [project.urls]
@@ -36,6 +33,3 @@ Documentation = "https://molsym.readthedocs.io"
 include = ["molsym*"]
 
 [tool.setuptools_scm]
-# Derives the package version from the current git tag (e.g. tag "v1.0.1"
-# becomes version "1.0.1") instead of a hand-maintained version string, so it
-# can never drift from the tag a release was actually cut from.

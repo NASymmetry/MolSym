@@ -89,7 +89,7 @@ class Symtext():
         import qcelemental as qcel
         with open(fn, "r") as lfn:
             strang = lfn.read()
-        schema = qcel.models.Molecule.from_data(strang).dict()
+        schema = qcel.models.v2.Molecule.from_data(strang).model_dump()
         mol = Molecule.from_schema(schema)
         return cls.from_molecule(mol)
     

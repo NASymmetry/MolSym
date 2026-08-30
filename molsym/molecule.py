@@ -100,7 +100,7 @@ class Molecule():
         with open(fn, "r") as lfn:
             strang = lfn.read()
 
-        schema = qcel.models.Molecule.from_data(strang).dict()
+        schema = qcel.models.v2.Molecule.from_data(strang).model_dump()
         if keep_angstrom:
             schema["geometry"] *= qcel.constants.bohr2angstroms
         return cls.from_schema(schema)
@@ -131,8 +131,8 @@ class Molecule():
         # Ang->Bohr from Molecule.from_schema
         if already_angstrom:
             self.coords /= qcel.constants.bohr2angstroms
-        qcmol = qcel.models.Molecule(
-            **{"symbols": self.atoms, 
+        qcmol = qcel.models.v2.Molecule(
+            **{"symbols": self.atoms,
             "geometry": self.coords})
         return qcmol.to_string("xyz")
 
