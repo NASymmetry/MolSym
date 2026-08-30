@@ -58,7 +58,7 @@ MolSym is also available on conda-forge and can be installed with `conda`:
 
   `conda install -c conda-forge molsym`
 
-MolSym is tested with Python 3.9–3.13, but should work for more recent versions and some older versions as well. Some features rely on the optional `QCElemental` dependency, which can be pulled in with:
+MolSym is tested with Python 3.10–3.14. Some features rely on the optional `QCElemental` dependency, which can be pulled in with:
 
   `pip install "molsym[qcel]"`
 

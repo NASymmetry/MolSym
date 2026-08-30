@@ -7,7 +7,7 @@ name = "MolSym"
 dynamic = ["version"]
 description = "A program for molecular symmetry detection and SALC construction"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = "MIT"
 authors = [
     { name = "Stephen Goodlett", email = "stephen.goodlett@org.chemie.uni-giessen.de" },
