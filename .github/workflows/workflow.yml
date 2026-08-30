@@ -2,28 +2,47 @@ name: CI
 on: [push, pull_request]
 jobs:
   run:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.cfg.os }}
     strategy:
       fail-fast: false
       matrix:
         cfg:
           - conda-env: base
+            os: ubuntu-latest
+            installer-url: https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
             python-version: "3.10"
           - conda-env: base
+            os: ubuntu-latest
+            installer-url: https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
             python-version: "3.11"
           - conda-env: base
+            os: ubuntu-latest
+            installer-url: https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
             python-version: "3.12"
           - conda-env: base
+            os: ubuntu-latest
+            installer-url: https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
             python-version: "3.13"
           - conda-env: base
+            os: ubuntu-latest
+            installer-url: https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+            python-version: "3.14"
+          - conda-env: base
+            os: macos-15-intel
+            installer-url: https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh
+            python-version: "3.14"
+          - conda-env: base
+            os: macos-latest
+            installer-url: https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh
+            python-version: "3.14"
+          - conda-env: base
+            os: windows-latest
+            installer-url: https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe
             python-version: "3.14"
     env:
       PYVER: ${{ matrix.cfg.python-version }}
       CONDA_ENV: ${{ matrix.cfg.conda-env }}
     steps:
-    # Version is derived from git tags via setuptools_scm, which needs full
-    # history and tags to find them (actions/checkout defaults to a shallow,
-    # tag-less fetch).
     - uses: actions/checkout@v2
       with:
         fetch-depth: 0
@@ -31,7 +50,7 @@ jobs:
     - name: Create Environment
       uses: conda-incubator/setup-miniconda@v2
       with:
-        installer-url: https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+        installer-url: ${{ matrix.cfg.installer-url }}
         activate-environment: test
         environment-file: ${{ matrix.cfg.conda-env }}.yaml
         python-version: ${{ matrix.cfg.python-version }}
