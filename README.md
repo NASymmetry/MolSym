@@ -7,6 +7,9 @@
     <th>CI</th>
     <th>Coverage</th>
     <th>Citation</th>
+    <th>PyPI</th>
+    <th>conda-forge</th>
+    <th>License</th>
   </tr>
   <tr>
     <td align="center">
@@ -27,6 +30,21 @@
      <td align="center">
       <a href=https://doi.org/10.1063/5.0216738>
       <img src=https://img.shields.io/badge/JCP-10.1063/5.0216738-purple.svg>
+      </a>
+    </td>
+    <td align="center">
+      <a href=https://pypi.org/project/MolSym/>
+      <img src=https://img.shields.io/pypi/v/MolSym.svg alt='PyPI version' />
+      </a>
+    </td>
+    <td align="center">
+      <a href=https://anaconda.org/conda-forge/molsym>
+      <img src=https://img.shields.io/conda/vn/conda-forge/molsym.svg alt='conda-forge version' />
+      </a>
+    </td>
+    <td align="center">
+      <a href=https://github.com/NASymmetry/MolSym/blob/main/LICENSE.txt>
+      <img src=https://img.shields.io/github/license/NASymmetry/MolSym.svg alt='License' />
       </a>
     </td>
   </tr>
