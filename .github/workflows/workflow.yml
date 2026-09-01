@@ -4,10 +4,9 @@ jobs:
   run:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         cfg:
-          - conda-env: base
-            python-version: 3.9
           - conda-env: base
             python-version: "3.10"
           - conda-env: base
@@ -16,6 +15,8 @@ jobs:
             python-version: "3.12"
           - conda-env: base
             python-version: "3.13"
+          - conda-env: base
+            python-version: "3.14"
     env:
       PYVER: ${{ matrix.cfg.python-version }}
       CONDA_ENV: ${{ matrix.cfg.conda-env }}
