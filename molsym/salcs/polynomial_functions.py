@@ -1,11 +1,10 @@
 import numpy as np
 from math import comb
-from .function_set import FunctionSet
+from .function_set import DenseFunctionSet
 from .salc_tools import format_salcs, polynomial_salc_to_string
-from molsym.molecule import global_tol
 
 
-class PolynomialFunctions(FunctionSet):
+class PolynomialFunctions(DenseFunctionSet):
     """
     FunctionSet for homogeneous Cartesian polynomial monomials.
     Basis functions are exponent tuples:
@@ -48,118 +47,6 @@ class PolynomialFunctions(FunctionSet):
 
         return fxn_map
     
-    def get_symmetry_equiv_functions(self):
-        """
-        Construct symmetry-equivalent seed sets for polynomial projection.
-
-        First identifies invariant mixing components under the polynomial
-        representation. Then selects enough seed monomials so that the
-        union of their group orbits spans the entire component.
-
-        This avoids missing irreducible subspaces in non-cyclic polynomial
-        blocks, such as the cubic planar block in C3v:
-            {x^3, x^2y, xy^2, y^3}
-
-        where x^3 alone cannot generate the A2 component.
-
-        :return: List of symmetry-equivalent seed sets
-        :rtype: list[list[int]]
-        """
-        nfxn = len(self.exponents)
-        done = set()
-        seed_sets = []
-    
-        for start in range(nfxn):
-            if start in done:
-                continue
-    
-            component = set([start])
-            frontier = [start]
-    
-            while frontier:
-                coord = frontier.pop()
-    
-                for sidx in range(len(self.symtext)):
-                    coeffs = self.fxn_map[sidx, coord, :]
-    
-                    mapped = [i for i, coeff in enumerate(coeffs) if abs(coeff) > global_tol]
-    
-                    for idx in mapped:
-                        if idx not in component:
-                            component.add(idx)
-                            frontier.append(idx)
-    
-            component = sorted(component)
-            done.update(component)
-    
-            component_pos = {idx: pos for pos, idx in enumerate(component)}
-    
-            current_basis = np.zeros((len(component), 0))
-    
-            for seed in component:
-                orbit_vectors = []
-    
-                for sidx in range(len(self.symtext)):
-                    coeffs = self.fxn_map[sidx, seed, :]
-    
-                    v = np.zeros(len(component))
-    
-                    for idx in component:
-                        v[component_pos[idx]] = coeffs[idx]
-    
-                    orbit_vectors.append(v)
-    
-                orbit_matrix = np.column_stack(orbit_vectors)
-    
-                if current_basis.shape[1] == 0:
-                    old_rank = 0
-                    trial = orbit_matrix
-                else:
-                    old_rank = np.linalg.matrix_rank(current_basis,tol=global_tol)
-                    trial = np.column_stack((current_basis, orbit_matrix))
-    
-                new_rank = np.linalg.matrix_rank(trial,tol=global_tol)
-    
-                if new_rank > old_rank:
-                    # ProjectionOp only uses min(se_fxn_set), so return
-                    # this seed as its own set.
-                    seed_sets.append([seed])
-                    current_basis = trial
-    
-                if new_rank == len(component):
-                    break
-    
-        return seed_sets
-
-    def special_function(self, salc, coord, sidx, irrmat):
-        """
-        Apply one symmetry operation to a polynomial monomial basis function
-        during projection-operator construction.
-
-        The transformed monomial is expanded in the polynomial basis and
-        accumulated into the SALC tensor with the appropriate irrep matrix
-        weighting.
-
-        :type salc: np.ndarray
-        :type coord: int
-        :type sidx: int
-        :type irrmat: np.ndarray
-        :return: Updated SALC tensor
-        :rtype: np.ndarray
-        """
-        coeffs = self.fxn_map[sidx, coord, :]
-
-        for out_idx, coeff in enumerate(coeffs):
-            if abs(coeff) < global_tol:
-                continue
-
-            if self.symtext.complex:
-                salc[:, :, out_idx] += np.conj(irrmat[sidx, :, :]) * coeff
-            else:
-                salc[:, :, out_idx] += irrmat[sidx, :, :] * coeff
-
-        return salc
-
 def monomial_exponents(degree):
     """
     Generate exponent tuples for homogeneous Cartesian monomials of

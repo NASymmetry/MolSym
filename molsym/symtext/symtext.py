@@ -38,6 +38,7 @@ class Symtext():
         self.irrep_mats = irrep_mats
         self.get_character_table()
         self.assign_dipole_irrep = self.dipole_components_to_irrep()
+        self.is_nonstandard = False
     def __len__(self):
         return len(self.symels)
 
@@ -56,6 +57,23 @@ class Symtext():
         irreps = []
         irrep_mats = []
         return Symtext(mol, rotate_to_std, reverse_rotate, pg, symels, atom_map, mult_table, irreps, irrep_mats)
+
+
+    @classmethod
+    def nonstandard_symtext(cls, symtext, max_degree=10):
+        """
+        Return the original-orientation Symtext.
+
+        :type symtext: molsym.Symtext
+        :param max_degree: maximum angular momentum l to search before giving up
+        :type max_degree: int
+        :rtype: molsym.Symtext
+        """
+        # deferred import: molsym.salcs already imports from molsym.symtext,
+        # so importing it back here at module level would invert that
+        # dependency direction.
+        from molsym.salcs.nonstandard_frame import build_nonstandard_symtext
+        return build_nonstandard_symtext(symtext, max_degree=max_degree)
 
     @classmethod
     def from_molecule(cls, mol):
@@ -155,7 +173,7 @@ class Symtext():
         :rtype: bool
         """
         p = np.multiply(dp_vector, self.class_orders)
-        return round(p.sum()/(self.order)) > 0
+        return round((p.sum()/(self.order)).real) > 0
 
     def reduction_coefficients(self, rrep_characters, by_class=True):
         """
@@ -187,8 +205,8 @@ class Symtext():
     
         for irrep_idx, irrep in enumerate(self.irreps):
             p = np.multiply(class_chars, self.class_orders)
-            p = np.multiply(p, self.character_table[irrep_idx, :])
-            out[irrep_idx] = round(p.sum() / self.order)
+            p = np.multiply(p, np.conj(self.character_table[irrep_idx, :]))
+            out[irrep_idx] = round((p.sum() / self.order).real)
     
         return out
 
@@ -203,7 +221,7 @@ class Symtext():
         proj_dipole = np.zeros((irrep.d, irrep.d, 3), dtype=dtype)
         for s, symel in enumerate(self.symels):
             irrmat = self.irrep_mats[irrep.symbol][s]
-            proj_dipole += irrmat[:, :, None] * np.dot(symel.rrep, dipole)[None, None, :]
+            proj_dipole += np.conj(irrmat[:, :, None]) * np.dot(symel.rrep, dipole)[None, None, :]
         proj_dipole *= irrep.d / len(self.symels)
         return proj_dipole 
     
@@ -233,7 +251,18 @@ class Symtext():
         #for irrep in self.irreps:
         #    if len(dipole_assignments_by_irrep[irrep.symbol]) > 0:
         #        assert len(dipole_assignments_by_irrep[irrep.symbol]) == irrep.d, "The number of dipole components assigned to an irrep must match the degeneracy!"
-        return dipole_assignments_by_irrep 
+        return dipole_assignments_by_irrep
+
+    def dipole_active_irreps(self):
+        """
+        Returns the set of irrep symbols with nonzero dipole (translational)
+        activity. Frame-independent, unlike dipole_components_to_irrep.
+
+        :rtype: set of str
+        """
+        trans_characters = np.array([np.trace(np.asarray(symel.rrep, dtype=float)) for symel in self.symels])
+        coeffs = self.reduction_coefficients(trans_characters, by_class=False)
+        return {irrep.symbol for irrep, c in zip(self.irreps, coeffs) if c > 0}
 
     @property
     def rotational_symmetry_number(self):
