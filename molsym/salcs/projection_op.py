@@ -104,7 +104,7 @@ def ProjectionOp(symtext, fxn_set, project_Eckart="both"):
             salc *= irrep.d/symtext.order
             # Project out Eckart conditions when constructing SALCs of Cartesian displacements
             if (isinstance(fxn_set, CartesianCoordinates) or isinstance(fxn_set, LinearCartesian)) and project_Eckart is not None:
-                if project_Eckart is "both":
+                if project_Eckart == "both":
                     eckart_cond = eckart_conditions(symtext)
                 elif project_Eckart == "translational":
                     eckart_cond = eckart_conditions(symtext, translational=True, rotational=False)
