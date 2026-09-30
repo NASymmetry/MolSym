@@ -198,6 +198,18 @@ def pg_to_symels(PG):
                           Irrep("G",1,None,4), Irrep("H",1,None,5)]
                 irrep_mats = irrm_I
                 return symels, irreps, irrep_mats
+        elif pg.family == "K":
+            symels = []
+            irreps = [
+                Irrep("S",None,None,1),
+                Irrep("P",None,None,3),
+                Irrep("D",None,None,5),
+                Irrep("F",None,None,7),
+                Irrep("G",None,None,9),
+                Irrep("H",None,None,11)
+                      ]
+            irrep_mats = {}
+            return symels, irreps, irrep_mats
         else:
             raise Exception(argerr)
     return 0

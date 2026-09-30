@@ -40,8 +40,9 @@ class Symtext():
             self.character_table = None
         else:
             self.get_character_table()
-            self.assign_dipole_irrep = self.dipole_components_to_irrep()
+        self.assign_dipole_irrep = self.dipole_components_to_irrep()
         self.is_nonstandard = False
+
     def __len__(self):
         return len(self.symels)
 
@@ -238,6 +239,13 @@ class Symtext():
         :rtype: dict 
         """
         dipole_assignments_by_irrep = {irrep.symbol: [] for irrep in self.irreps}
+        if self.pg.family == "K":
+            return {"P": (0,0), "P": (1,1), "P": (2,2)}
+        if self.pg.is_linear:
+            if self.symtext.pg.family == "C":
+                return {"Sigma^+": (2,0), "Pi": (0,0), "Pi": (1,1)}
+            else:
+                return {"Sigma_u^+": (2,0), "Pi_u": (0,0), "Pi_u": (1,1)}
         dip_xyz = np.eye(3)
         assignments = []
         for d, dip in enumerate(dip_xyz):

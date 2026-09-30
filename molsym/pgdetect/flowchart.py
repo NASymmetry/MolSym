@@ -16,6 +16,9 @@ def find_point_group(mol):
     :rtype: (str, NumPy array of shape (3,), NumPy array of shape (3,))
     """
 
+    if mol.natoms == 1:
+        return "Kh", ([0,0,1],[1,0,0])
+
     paxis = [0,0,0]
     saxis = [0,0,0]
     moit = calcmoit(mol)
@@ -114,6 +117,9 @@ def find_point_group(mol):
                 saxis = planar_mol_axis(mol)
             elif sigmav.any():
                 saxis = normalize(np.cross(paxis,sigmav))
+                #axis1 = normalize(np.cross(paxis,sigmav))
+                #axis2 = normalize(sigmav)
+                #saxis = more_planar_axis(mol, axis1, axis2)
         else:
             S2n = Sn(paxis, Cn*2)
             molB = mol.transform(S2n)

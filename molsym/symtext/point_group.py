@@ -59,6 +59,8 @@ class PointGroup():
                 allowed = [None, "h"]
                 if self.subfamily in allowed:
                     return 0
+            elif self.family == "K" and self.subfamily == "h":
+                return 0
         elif self.n == 0:
             if self.family == "D" and self.subfamily == "h":
                 return 0

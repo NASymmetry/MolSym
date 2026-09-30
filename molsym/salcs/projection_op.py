@@ -85,6 +85,11 @@ def ProjectionOp(symtext, fxn_set, project_Eckart="both"):
     :type project_Eckart: str or None
     :rtype: molsym.SALCs
     """
+
+    if symtext.mol.natoms == 1:
+        # Ignore rotational Eckart for single atoms
+        rotational = False
+
     numred = len(fxn_set)
     salcs = SALCs(symtext, fxn_set)
     orthogonalize = isinstance(fxn_set, CartesianCoordinates) or isinstance(fxn_set, LinearCartesian)

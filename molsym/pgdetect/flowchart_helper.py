@@ -416,6 +416,28 @@ def planar_mol_axis(mol):
                     #return normalize(np.cross(a,b))
     #return None
 
+def Natoms_in_plane(mol, axis):
+    """
+    Returns number of atoms in plane defined by axis
+    """
+    sigma = reflection_matrix(axis)
+    molB = mol.transform(sigma)
+    count = 0
+    for i in range(mol.natoms):
+        if np.isclose(mol.coords[i,:], molB.coords[i,:], atol=mol.tol).all():
+            count += 1
+    return count
+
+def more_planar_axis(mol, axis1, axis2):
+    """
+    Returns the axis whose plane contains the most atoms 
+        (yz reflection typically contains the most atoms).
+    Used for determining B1 vs B2 in C2v.
+    """
+    if Natoms_in_plane(mol, axis2) > Natoms_in_plane(mol, axis1):
+        return axis2
+    return axis1
+
 def find_C3s_for_Ih(mol):
     """
     Finds the twenty C3 axes for an Ih point group so the paxis and saxis can be defined.
