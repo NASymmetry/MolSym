@@ -52,7 +52,8 @@ def eckart_conditions(symtext, translational=True, rotational=True):
         rz[3 * i + 2] = (tval0 * evec[2,1] - tval1 * evec[2,0]) * smass
     t = np.vstack((x,y,z))
     t /= np.linalg.norm(t, axis=1)[:,None]
-    if symtext.pg.is_linear:
+    # A linear molecule has no rotation about its axis, also when described by a finite subgroup
+    if symtext.pg.is_linear or np.isclose(evals[0], 0.0, atol=symtext.mol.tol):
         dim = 5
         r = np.vstack((ry,rz)) # rx is zero
     else:
