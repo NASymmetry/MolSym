@@ -324,6 +324,11 @@ class Symtext():
         sgp = [self.symels[i[1]] for i in isomorphism]
         paxis, saxis = subgroup_axes(subgroup.str, sgp)
         new_mol, reverse_rotate, rotate_to_std = rotate_mol_to_symels(self.mol, paxis, saxis)
+        if not self.is_nonstandard:
+            # self.mol is already in self's standard frame, so the way back to the
+            # original frame passes through self's own rotation as well.
+            reverse_rotate = self.reverse_rotate @ reverse_rotate
+            rotate_to_std = rotate_to_std @ self.rotate_to_std
         new_mol.tol = self.mol.tol
         atom_map = get_atom_mapping(new_mol, subgroup_symels)
         return Symtext(new_mol, rotate_to_std, reverse_rotate, subgroup, subgroup_symels, atom_map, mult_table, subgroup_irreps, subgroup_irrep_mats)
