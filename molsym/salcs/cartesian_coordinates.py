@@ -15,8 +15,9 @@ class CartesianCoordinates(FunctionSet):
         # assumes symel.rrep is sparse, which only holds in the standard
         # orientation -- see get_symmetry_equiv_functions_nonstandard for why
         # that assumption silently undercounts SALCs once symel.rrep is dense
-        # (e.g. symtext.is_nonstandard).
-        if getattr(symtext, "is_nonstandard", False):
+        # (e.g. symtext.is_nonstandard). A group with no symmetry elements
+        # (Kh, a single atom) has no rrep to be dense, so it keeps the standard sets.
+        if getattr(symtext, "is_nonstandard", False) and len(symtext.symels) > 0:
             self.SE_fxns = self.get_symmetry_equiv_functions_nonstandard()
 
     def get_fxn_map(self):
