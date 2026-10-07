@@ -240,12 +240,16 @@ class Symtext():
         """
         dipole_assignments_by_irrep = {irrep.symbol: [] for irrep in self.irreps}
         if self.pg.family == "K":
-            return {"P": (0,0), "P": (1,1), "P": (2,2)}
+            dipole_assignments_by_irrep["P"] = [(0,0), (1,1), (2,2)]
+            return dipole_assignments_by_irrep
         if self.pg.is_linear:
-            if self.symtext.pg.family == "C":
-                return {"Sigma^+": (2,0), "Pi": (0,0), "Pi": (1,1)}
+            if self.pg.family == "C":
+                dipole_assignments_by_irrep["Sigma^+"] = [(2,0)]
+                dipole_assignments_by_irrep["Pi"] = [(0,0), (1,1)]
             else:
-                return {"Sigma_u^+": (2,0), "Pi_u": (0,0), "Pi_u": (1,1)}
+                dipole_assignments_by_irrep["Sigma_u^+"] = [(2,0)]
+                dipole_assignments_by_irrep["Pi_u"] = [(0,0), (1,1)]
+            return dipole_assignments_by_irrep
         dip_xyz = np.eye(3)
         assignments = []
         for d, dip in enumerate(dip_xyz):

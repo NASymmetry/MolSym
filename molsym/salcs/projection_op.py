@@ -87,8 +87,8 @@ def ProjectionOp(symtext, fxn_set, project_Eckart="both"):
     """
 
     if symtext.mol.natoms == 1:
-        # Ignore rotational Eckart for single atoms
-        rotational = False
+        # A single atom has no rotations to project out
+        project_Eckart = {"both": "translational", "rotational": None}.get(project_Eckart, project_Eckart)
 
     numred = len(fxn_set)
     salcs = SALCs(symtext, fxn_set)

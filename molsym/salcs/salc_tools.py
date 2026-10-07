@@ -2,6 +2,62 @@ import numpy as np
 import re
 from molsym.molecule import global_tol
 
+def linear_axis(symtext):
+    """
+    Unit vector along the molecular axis of a linear molecule.
+
+    :type symtext: molsym.Symtext
+    :rtype: NumPy array of shape (3,)
+    """
+    coords = np.asarray(symtext.mol.coords, dtype=float)
+    if len(coords) < 2:
+        raise ValueError("A molecular axis needs at least two atoms.")
+    seps = coords[:, None, :] - coords[None, :, :]
+    a, b = np.unravel_index(np.argmax(np.linalg.norm(seps, axis=2)), seps.shape[:2])
+    return seps[a, b] / np.linalg.norm(seps[a, b])
+
+def _map_atoms(symtext, R, tol):
+    coords = np.asarray(symtext.mol.coords, dtype=float)
+    new_coords = coords @ R.T
+    atom_map = np.empty(len(coords), dtype=int)
+    for a, xyz in enumerate(new_coords):
+        for b in range(len(coords)):
+            if symtext.mol.atoms[a] == symtext.mol.atoms[b] and np.allclose(xyz, coords[b], atol=tol):
+                atom_map[a] = b
+                break
+        else:
+            raise ValueError(f"Atom {a} has no image under the requested operation.")
+    return atom_map
+
+def finite_operations(symtext, tol=None):
+    """
+    Concrete symmetry operations as (Cartesian matrix, atom map) pairs.
+
+    Linear groups hold abstract symmetry elements without matrices, so for them this
+    returns the C2v (C_inf_v) or D2h (D_inf_h) subgroup about the molecular axis.
+    Every Cartesian SALC that some operation of the linear group sends to its negative
+    is also sent to its negative by one of these.
+
+    :type symtext: molsym.Symtext
+    :rtype: List[Tuple[NumPy array of shape (3,3), NumPy array of shape (natom,)]]
+    """
+    if tol is None:
+        tol = symtext.mol.tol
+    if not symtext.pg.is_linear:
+        return [(np.asarray(op.rrep), symtext.atom_map[:, k]) for k, op in enumerate(symtext.symels)]
+
+    axis = linear_axis(symtext)
+    perp1 = np.cross(axis, np.eye(3)[np.argmin(np.abs(axis))])
+    perp1 /= np.linalg.norm(perp1)
+    perp2 = np.cross(axis, perp1)
+    E = np.eye(3)
+    reflect = lambda n: E - 2 * np.outer(n, n)
+    rotate_c2 = lambda n: 2 * np.outer(n, n) - E
+    mats = [E, rotate_c2(axis), reflect(perp1), reflect(perp2)]
+    if symtext.pg.family == "D":
+        mats += [-E, reflect(axis), rotate_c2(perp1), rotate_c2(perp2)]
+    return [(R, _map_atoms(symtext, R, tol)) for R in mats]
+
 def generate_symmetric_partner(symtext, salc, neg_data, data_type="dipole", tol=None):
     """
     Use molecular symmetry to generate + displacements from - displacements
@@ -37,14 +93,14 @@ def generate_symmetric_partner(symtext, salc, neg_data, data_type="dipole", tol=
     # Find symmetry operation R such that R(Q) = -Q
     found_op = None
     R = None
-    for k, op in enumerate(symtext.symels):
+    for k, (op_mat, op_map) in enumerate(finite_operations(symtext, tol)):
         transformed = np.zeros_like(disp_matrix)
         for a in range(N):
-            b = symtext.atom_map[a, k]
-            transformed[b] = op.rrep @ disp_matrix[a]
-        if np.allclose(transformed.flatten(), -salc.coeffs, atol=symtext.mol.tol):
+            transformed[op_map[a]] = op_mat @ disp_matrix[a]
+        if np.allclose(transformed.flatten(), -salc.coeffs, atol=tol):
             found_op = k
-            R = op.rrep
+            R = op_mat
+            atom_map = op_map
             break
 
     if found_op is None:
@@ -57,8 +113,7 @@ def generate_symmetric_partner(symtext, salc, neg_data, data_type="dipole", tol=
     elif data_type == "gradient":
         pos_data = np.zeros_like(neg_data)
         for a in range(neg_data.shape[0]):
-            b = symtext.atom_map[a, found_op]
-            pos_data[b] = R @ neg_data[a]
+            pos_data[atom_map[a]] = R @ neg_data[a]
 
     else:
         raise ValueError(f"Unsupported data_type: {data_type}")
@@ -91,15 +146,12 @@ def maps_to_negative(symtext, salc, tol=None):
         tol = symtext.mol.tol
     N = salc.coeffs.size // 3
     disp_matrix = salc.coeffs.reshape(N, 3)
-    n_ops = symtext.atom_map.shape[1]
 
-    for k in range(n_ops):
-        op = symtext.symels[k]
+    for op_mat, op_map in finite_operations(symtext, tol):
         transformed = np.zeros_like(disp_matrix)
 
         for a in range(N):
-            b = symtext.atom_map[a,k]
-            transformed[b] = op.rrep @ disp_matrix[a]
+            transformed[op_map[a]] = op_mat @ disp_matrix[a]
         transformed_flat = transformed.flatten()
 
         if np.allclose(transformed_flat, -salc.coeffs, atol=tol):
