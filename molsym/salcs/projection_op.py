@@ -72,6 +72,31 @@ def eckart_conditions(symtext, translational=True, rotational=True):
     else:
         raise Exception("Calling this function is rather silly if you don't want either output...")
 
+def atom_cartesian_salcs(symtext, fxn_set, project_Eckart="both"):
+    """
+    SALCs of Cartesian displacements for a single atom (Kh).
+
+    Kh has no discrete symmetry elements to project with. An atom's x, y and z
+    displacements are the three components of P, and they are pure translations,
+    so projecting out translations leaves no SALCs.
+
+    :type symtext: molsym.Symtext
+    :type fxn_set: molsym.salcs.CartesianCoordinates or LinearCartesian
+    :type project_Eckart: str or None
+    :rtype: molsym.SALCs
+    """
+    if not isinstance(fxn_set, (CartesianCoordinates, LinearCartesian)):
+        raise NotImplementedError(f"Kh SALCs are only implemented for Cartesian coordinates, not {type(fxn_set).__name__}.")
+    if project_Eckart not in ("both", "translational", "rotational", None):
+        raise ValueError(f"Invalid value for project_Eckart: {project_Eckart!r}. Must be 'both', 'translational', 'rotational', or None.")
+    salcs = SALCs(symtext, fxn_set)
+    if project_Eckart not in ("both", "translational"):
+        p_idx = [irrep.symbol for irrep in symtext.irreps].index("P")
+        for xyz in range(3):
+            salcs.addnewSALC(SALC(np.eye(3)[xyz], symtext.irreps[p_idx], 0, xyz, 0, 1.0), p_idx)
+    salcs.finish_building()
+    return salcs
+
 def ProjectionOp(symtext, fxn_set, project_Eckart="both"):
     """
     Projection operator: projects the functions in fxn_set into SALCs.
@@ -85,6 +110,9 @@ def ProjectionOp(symtext, fxn_set, project_Eckart="both"):
     :type project_Eckart: str or None
     :rtype: molsym.SALCs
     """
+
+    if symtext.pg.family == "K":
+        return atom_cartesian_salcs(symtext, fxn_set, project_Eckart)
 
     if symtext.mol.natoms == 1:
         # A single atom has no rotations to project out
