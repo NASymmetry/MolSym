@@ -35,8 +35,12 @@ def mtable_check(k, irrm, mtable):
     l = mtable.shape[0]
     for i in range(l):
         for j in range(l):
-            if mtable[i,j] in multifly(irrm, i, j):
+            mtable_way = irrm[mtable[i,j]]
+            other_way = np.dot(irrm[i], irrm[j])
+            if np.isclose(mtable_way, other_way).all():
                 pass
+            #if mtable[i,j] in multifly(irrm, i, j):
+            #    pass
             else:
                 print(f"Irrep. {k}\nMat. 1: {irrm[i]}\nMat. 2: {irrm[j]}")
                 print(f"Multiplying {i} and {j}")

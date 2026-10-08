@@ -56,13 +56,20 @@ def pg_to_symels(PG):
     i = Symel("i", None, inversion_matrix(), 0, 0, "i")
     sh = Symel("sigma_h", np.array([0,0,1]), reflection_matrix(z), 0, 0, "sigma_h")
     if pg.is_linear:
+        y = np.array([0,1,0])
+        I = np.eye(3)
         if pg.family == "C":
             symels = [#Symel("E", None, None, None, None, None), E is included in C 
-                      Symel("C", z, None, None, None, None), 
-                      Symel("sigma_v", None, None, None, None, None)]
+                      Symel("C_inf", z, np.eye(3), None, None, "E"), 
+                      Symel("sigma_v", y, reflection_matrix(y), None, None, "sigma_v")]
             irreps = [Irrep("Sigma^+", None, None, 1), Irrep("Sigma^-", None, None, 1)]
             irreps += [Irrep(greek[i], i, None, 2) for i in range(len(greek))]
-            irrep_mats = None
+            irrep_mats = {
+                "Sigma^+": [[1],[1]],
+                "Sigma^-": [[1],[-1]]
+            }
+            for gidx, g in enumerate(greek):
+                irrep_mats[g] = [np.array([[1,0],[0,1]]), np.array([[1,0],[0,-1]])]
             return symels, irreps, irrep_mats
         elif pg.family == "D":
             symels = [#Symel("E", None, None, None, None, None), 
@@ -191,6 +198,18 @@ def pg_to_symels(PG):
                           Irrep("G",1,None,4), Irrep("H",1,None,5)]
                 irrep_mats = irrm_I
                 return symels, irreps, irrep_mats
+        elif pg.family == "K":
+            symels = []
+            irreps = [
+                Irrep("S",None,None,1),
+                Irrep("P",None,None,3),
+                Irrep("D",None,None,5),
+                Irrep("F",None,None,7),
+                Irrep("G",None,None,9),
+                Irrep("H",None,None,11)
+                      ]
+            irrep_mats = {}
+            return symels, irreps, irrep_mats
         else:
             raise Exception(argerr)
     return 0

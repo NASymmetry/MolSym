@@ -26,6 +26,14 @@ def build_nonstandard_symtext(symtext, max_degree=10):
             "Cartesian rotation to carry over to the original frame."
         )
 
+    if symtext.pg.family == "K":
+        # Kh has no discrete symmetry elements or irrep matrices to carry over;
+        # only the molecule moves back to its original frame.
+        nonstandard_symtext = deepcopy(symtext)
+        nonstandard_symtext.mol = symtext.mol.transform(symtext.reverse_rotate)
+        nonstandard_symtext.is_nonstandard = True
+        return nonstandard_symtext
+
     standard_symtext = symtext
     nonstandard_symtext = deepcopy(symtext)
 

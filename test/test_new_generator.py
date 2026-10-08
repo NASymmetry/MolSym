@@ -57,3 +57,39 @@ def test_Symel(pg):
     
     gchk = goat_chk(irrep_mats)
     assert gchk
+
+@pytest.mark.slow
+def test_symel_I():
+    symels, irreps, irrep_mats = pg_to_symels("I")
+    for sidx in range(len(symels)):
+        print(symels[sidx].rrep)
+        print(irrep_mats["T_1"][sidx])
+        assert np.isclose(symels[sidx].rrep, irrep_mats["T_1"][sidx]).all()
+    mtable = build_mult_table(symels)
+    mchk = True
+    for k in irrep_mats:
+        mtab_chk = mtable_check(k, irrep_mats[k], mtable)
+        if mtab_chk == False:
+            mchk = False
+    assert mchk
+    
+    gchk = goat_chk(irrep_mats)
+    assert gchk
+
+@pytest.mark.slow
+def test_symel_Ih():
+    symels, irreps, irrep_mats = pg_to_symels("Ih")
+    for sidx in range(len(symels)):
+        print(symels[sidx].rrep)
+        print(irrep_mats["T_1u"][sidx])
+        assert np.isclose(symels[sidx].rrep, irrep_mats["T_1u"][sidx]).all()
+    mtable = build_mult_table(symels)
+    mchk = True
+    for k in irrep_mats:
+        mtab_chk = mtable_check(k, irrep_mats[k], mtable)
+        if mtab_chk == False:
+            mchk = False
+    assert mchk
+    
+    gchk = goat_chk(irrep_mats)
+    assert gchk

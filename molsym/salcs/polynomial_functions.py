@@ -68,7 +68,6 @@ def monomial_exponents(degree):
         for b in range(degree - a, -1, -1):
             c = degree - a - b
             basis.append((a, b, c))
-
     return basis
 
 
@@ -193,3 +192,5 @@ def polynomial_transformation_matrix(A, basis):
             T[row, col] += coeff
 
     return T
+
+
