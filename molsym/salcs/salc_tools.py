@@ -1,6 +1,8 @@
 import numpy as np
 import re
 from molsym.molecule import global_tol
+from molsym.symtext.general_irrep_mats import Symel
+from molsym.symtext.symtext_helper import get_atom_mapping
 
 def linear_axis(symtext):
     """
@@ -16,20 +18,7 @@ def linear_axis(symtext):
     a, b = np.unravel_index(np.argmax(np.linalg.norm(seps, axis=2)), seps.shape[:2])
     return seps[a, b] / np.linalg.norm(seps[a, b])
 
-def _map_atoms(symtext, R, tol):
-    coords = np.asarray(symtext.mol.coords, dtype=float)
-    new_coords = coords @ R.T
-    atom_map = np.empty(len(coords), dtype=int)
-    for a, xyz in enumerate(new_coords):
-        for b in range(len(coords)):
-            if symtext.mol.atoms[a] == symtext.mol.atoms[b] and np.allclose(xyz, coords[b], atol=tol):
-                atom_map[a] = b
-                break
-        else:
-            raise ValueError(f"Atom {a} has no image under the requested operation.")
-    return atom_map
-
-def finite_operations(symtext, tol=None):
+def finite_operations(symtext):
     """
     Concrete symmetry operations as (Cartesian matrix, atom map) pairs.
 
@@ -41,8 +30,6 @@ def finite_operations(symtext, tol=None):
     :type symtext: molsym.Symtext
     :rtype: List[Tuple[NumPy array of shape (3,3), NumPy array of shape (natom,)]]
     """
-    if tol is None:
-        tol = symtext.mol.tol
     if not symtext.pg.is_linear:
         return [(np.asarray(op.rrep), symtext.atom_map[:, k]) for k, op in enumerate(symtext.symels)]
 
@@ -56,7 +43,8 @@ def finite_operations(symtext, tol=None):
     mats = [E, rotate_c2(axis), reflect(perp1), reflect(perp2)]
     if symtext.pg.family == "D":
         mats += [-E, reflect(axis), rotate_c2(perp1), rotate_c2(perp2)]
-    return [(R, _map_atoms(symtext, R, tol)) for R in mats]
+    atom_map = get_atom_mapping(symtext.mol, [Symel(f"op{k}", None, R, None, None, None) for k, R in enumerate(mats)])
+    return [(R, atom_map[:, k]) for k, R in enumerate(mats)]
 
 def generate_symmetric_partner(symtext, salc, neg_data, data_type="dipole", tol=None):
     """
@@ -93,7 +81,7 @@ def generate_symmetric_partner(symtext, salc, neg_data, data_type="dipole", tol=
     # Find symmetry operation R such that R(Q) = -Q
     found_op = None
     R = None
-    for k, (op_mat, op_map) in enumerate(finite_operations(symtext, tol)):
+    for k, (op_mat, op_map) in enumerate(finite_operations(symtext)):
         transformed = np.zeros_like(disp_matrix)
         for a in range(N):
             transformed[op_map[a]] = op_mat @ disp_matrix[a]
@@ -190,7 +178,7 @@ def maps_to_negative(symtext, salc, tol=None):
     N = salc.coeffs.size // 3
     disp_matrix = salc.coeffs.reshape(N, 3)
 
-    for op_mat, op_map in finite_operations(symtext, tol):
+    for op_mat, op_map in finite_operations(symtext):
         transformed = np.zeros_like(disp_matrix)
 
         for a in range(N):
