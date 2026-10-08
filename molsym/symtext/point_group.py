@@ -17,6 +17,8 @@ class PointGroup():
 
     @classmethod
     def from_string(cls, s):
+        # Accept any capitalization ("c2v", "C2V"): a Schoenflies symbol is one capital family letter, then lower case
+        s = s[:1].upper() + s[1:].lower()
         regex = r"([A-Z]+)(\d+)?([a-z]+)?"
         m = re.match(regex, s)
         family, n, subfamily = m.groups()
