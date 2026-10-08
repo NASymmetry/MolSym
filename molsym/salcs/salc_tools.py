@@ -120,6 +120,49 @@ def generate_symmetric_partner(symtext, salc, neg_data, data_type="dipole", tol=
 
     return pos_data, found_op
 
+def generate_degenerate_partner(symtext, salc, partner_salc, data, data_type="dipole", tol=None):
+    """
+    Use molecular symmetry to generate a quantity at a displacement along one component of a
+    degenerate SALC from the same quantity at the same displacement along another component.
+
+    Implemented for linear groups, where the partner of a Pi (Pi_g, Pi_u) component is that
+    component rotated 90 degrees about the molecular axis. Every atom lies on the axis, so the
+    rotation maps each atom onto itself.
+
+    Parameters
+    ----------
+    symtext : MolSym object
+        Symmetry context of a linear molecule.
+    salc, partner_salc : MolSym SALC objects
+        The displaced component and the component to generate data for.
+    data : np.ndarray
+        The quantity at the displacement(s) along `salc`, Cartesian components last:
+            (..., 3) for dipole vectors (e.g. one row per stencil point)
+            (N_atoms, 3) for gradients
+    data_type : str, optional
+        "dipole" or "gradient".
+
+    Returns
+    -------
+    partner_data : np.ndarray or None
+        The quantity at the same displacement(s) along `partner_salc`, or None if no 90 degree
+        rotation about the axis takes `salc` to `partner_salc`.
+    """
+    if not symtext.pg.is_linear:
+        raise NotImplementedError("generate_degenerate_partner is only implemented for linear point groups.")
+    if data_type not in ("dipole", "gradient"):
+        raise ValueError(f"Unsupported data_type: {data_type}")
+    if tol is None:
+        tol = symtext.mol.tol
+    axis = linear_axis(symtext)
+    cross = np.array([[0.0, -axis[2], axis[1]], [axis[2], 0.0, -axis[0]], [-axis[1], axis[0], 0.0]])
+    rot = np.outer(axis, axis) + cross  # 90 degrees about the axis
+    disp = salc.coeffs.reshape(-1, 3)
+    for R in (rot, rot.T):
+        if np.allclose((disp @ R.T).flatten(), partner_salc.coeffs, atol=tol):
+            return np.asarray(data) @ R.T
+    return None
+
 def maps_to_negative(symtext, salc, tol=None):
     """
     Test a SALC for +/- displacement equivalence.
