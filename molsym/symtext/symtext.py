@@ -1,6 +1,5 @@
 import numpy as np
 import re
-from copy import deepcopy
 from molsym.molecule import Molecule
 from molsym import find_point_group
 from .point_group import PointGroup
@@ -317,10 +316,6 @@ class Symtext():
         :rtype: molsym.Symtext
         """
         subgroup = PointGroup.from_string(subgroup_str)
-        if subgroup.str == self.pg.str:
-            # Re-deriving the group's own axes can pick a different but equivalent orientation
-            # (e.g. swap which mirror is sigma_v(0)), so keep this Symtext's.
-            return deepcopy(self)
         subgroup_symels, subgroup_irreps, subgroup_irrep_mats = pg_to_symels(subgroup.str)
         mult_table = build_mult_table(subgroup_symels)
         if self.pg.is_linear:
