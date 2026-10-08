@@ -119,9 +119,12 @@ def find_point_group(mol):
                 # Old way
                 #saxis = normalize(np.cross(paxis,sigmav))
                 # New way, gives same results for some molecules but technically better
-                axis1 = normalize(np.cross(paxis,sigmav))
-                axis2 = normalize(sigmav)
-                saxis = more_planar_axis(mol, axis1, axis2)
+                if Cn == 2:
+                    axis1 = normalize(np.cross(paxis,sigmav))
+                    axis2 = normalize(sigmav)
+                    saxis = more_planar_axis(mol, axis1, axis2)
+                elif Cn > 2:
+                    saxis = normalize(np.cross(paxis,sigmav))
         else:
             S2n = Sn(paxis, Cn*2)
             molB = mol.transform(S2n)
