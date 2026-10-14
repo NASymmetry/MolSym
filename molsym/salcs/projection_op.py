@@ -2,7 +2,7 @@ import numpy as np
 import molsym
 #from .SymmetryEquivalentIC import *
 from .salc import SALC, SALCs
-from .cartesian_coordinates import CartesianCoordinates
+from .cartesian_coordinates import CartesianCoordinates, LinearCartesian
 
 def project_out_Eckart(eckart_conditions, new_vector):
     """
@@ -52,10 +52,17 @@ def eckart_conditions(symtext, translational=True, rotational=True):
         rz[3 * i + 2] = (tval0 * evec[2,1] - tval1 * evec[2,0]) * smass
     t = np.vstack((x,y,z))
     t /= np.linalg.norm(t, axis=1)[:,None]
-    r = np.vstack((rx,ry,rz))
+    # A linear molecule has no rotation about its axis, also when described by a finite subgroup
+    if symtext.pg.is_linear or np.isclose(evals[0], 0.0, atol=symtext.mol.tol):
+        dim = 5
+        r = np.vstack((ry,rz)) # rx is zero
+    else:
+        dim = 6
+        r = np.vstack((rx,ry,rz))
     r /= np.linalg.norm(r, axis=1)[:,None]
     both = np.vstack((t,r))
-    if not np.isclose(both @ both.T,np.eye(6)).all():
+    if not np.isclose(both @ both.T,np.eye(dim)).all():
+        print(both)
         raise Exception("Eckart conditions not orthogonal")
     if translational and rotational:
         return np.vstack((t,r))
@@ -65,6 +72,31 @@ def eckart_conditions(symtext, translational=True, rotational=True):
         return r
     else:
         raise Exception("Calling this function is rather silly if you don't want either output...")
+
+def atom_cartesian_salcs(symtext, fxn_set, project_Eckart="both"):
+    """
+    SALCs of Cartesian displacements for a single atom (Kh).
+
+    Kh has no discrete symmetry elements to project with. An atom's x, y and z
+    displacements are the three components of P, and they are pure translations,
+    so projecting out translations leaves no SALCs.
+
+    :type symtext: molsym.Symtext
+    :type fxn_set: molsym.salcs.CartesianCoordinates or LinearCartesian
+    :type project_Eckart: str or None
+    :rtype: molsym.SALCs
+    """
+    if not isinstance(fxn_set, (CartesianCoordinates, LinearCartesian)):
+        raise NotImplementedError(f"Kh SALCs are only implemented for Cartesian coordinates, not {type(fxn_set).__name__}.")
+    if project_Eckart not in ("both", "translational", "rotational", None):
+        raise ValueError(f"Invalid value for project_Eckart: {project_Eckart!r}. Must be 'both', 'translational', 'rotational', or None.")
+    salcs = SALCs(symtext, fxn_set)
+    if project_Eckart not in ("both", "translational"):
+        p_idx = [irrep.symbol for irrep in symtext.irreps].index("P")
+        for xyz in range(3):
+            salcs.addnewSALC(SALC(np.eye(3)[xyz], symtext.irreps[p_idx], 0, xyz, 0, 1.0), p_idx)
+    salcs.finish_building()
+    return salcs
 
 def ProjectionOp(symtext, fxn_set, project_Eckart="both"):
     """
@@ -79,12 +111,21 @@ def ProjectionOp(symtext, fxn_set, project_Eckart="both"):
     :type project_Eckart: str or None
     :rtype: molsym.SALCs
     """
+
+    if symtext.pg.family == "K":
+        return atom_cartesian_salcs(symtext, fxn_set, project_Eckart)
+
+    if symtext.mol.natoms == 1:
+        # A single atom has no rotations to project out
+        project_Eckart = {"both": "translational", "rotational": None}.get(project_Eckart, project_Eckart)
+
     numred = len(fxn_set)
     salcs = SALCs(symtext, fxn_set)
-    orthogonalize = isinstance(fxn_set, CartesianCoordinates)
+    orthogonalize = isinstance(fxn_set, CartesianCoordinates) or isinstance(fxn_set, LinearCartesian)
     for ir, irrep in enumerate(symtext.irreps):
+        #print(f"HERE: {irrep}")
         if symtext.pg.is_linear:
-            irrmat = None
+            irrmat = irrep
         else:
             irrmat = symtext.irrep_mats[irrep.symbol]
         for se_fxn_set in fxn_set.SE_fxns:
@@ -96,7 +137,7 @@ def ProjectionOp(symtext, fxn_set, project_Eckart="both"):
                 salc = fxn_set.special_function(salc, equivcoord, sidx, irrmat)
             salc *= irrep.d/symtext.order
             # Project out Eckart conditions when constructing SALCs of Cartesian displacements
-            if isinstance(fxn_set, CartesianCoordinates) and project_Eckart is not None:
+            if (isinstance(fxn_set, CartesianCoordinates) or isinstance(fxn_set, LinearCartesian)) and project_Eckart is not None:
                 if project_Eckart == "both":
                     eckart_cond = eckart_conditions(symtext)
                 elif project_Eckart == "translational":

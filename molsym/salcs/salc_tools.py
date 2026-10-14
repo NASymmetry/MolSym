@@ -1,6 +1,50 @@
 import numpy as np
 import re
 from molsym.molecule import global_tol
+from molsym.symtext.general_irrep_mats import Symel
+from molsym.symtext.symtext_helper import get_atom_mapping
+
+def linear_axis(symtext):
+    """
+    Unit vector along the molecular axis of a linear molecule.
+
+    :type symtext: molsym.Symtext
+    :rtype: NumPy array of shape (3,)
+    """
+    coords = np.asarray(symtext.mol.coords, dtype=float)
+    if len(coords) < 2:
+        raise ValueError("A molecular axis needs at least two atoms.")
+    seps = coords[:, None, :] - coords[None, :, :]
+    a, b = np.unravel_index(np.argmax(np.linalg.norm(seps, axis=2)), seps.shape[:2])
+    return seps[a, b] / np.linalg.norm(seps[a, b])
+
+def finite_operations(symtext):
+    """
+    Concrete symmetry operations as (Cartesian matrix, atom map) pairs.
+
+    Linear groups hold abstract symmetry elements without matrices, so for them this
+    returns the C2v (C_inf_v) or D2h (D_inf_h) subgroup about the molecular axis.
+    Every Cartesian SALC that some operation of the linear group sends to its negative
+    is also sent to its negative by one of these.
+
+    :type symtext: molsym.Symtext
+    :rtype: List[Tuple[NumPy array of shape (3,3), NumPy array of shape (natom,)]]
+    """
+    if not symtext.pg.is_linear:
+        return [(np.asarray(op.rrep), symtext.atom_map[:, k]) for k, op in enumerate(symtext.symels)]
+
+    axis = linear_axis(symtext)
+    perp1 = np.cross(axis, np.eye(3)[np.argmin(np.abs(axis))])
+    perp1 /= np.linalg.norm(perp1)
+    perp2 = np.cross(axis, perp1)
+    E = np.eye(3)
+    reflect = lambda n: E - 2 * np.outer(n, n)
+    rotate_c2 = lambda n: 2 * np.outer(n, n) - E
+    mats = [E, rotate_c2(axis), reflect(perp1), reflect(perp2)]
+    if symtext.pg.family == "D":
+        mats += [-E, reflect(axis), rotate_c2(perp1), rotate_c2(perp2)]
+    atom_map = get_atom_mapping(symtext.mol, [Symel(f"op{k}", None, R, None, None, None) for k, R in enumerate(mats)])
+    return [(R, atom_map[:, k]) for k, R in enumerate(mats)]
 
 def generate_symmetric_partner(symtext, salc, neg_data, data_type="dipole", tol=None):
     """
@@ -37,14 +81,14 @@ def generate_symmetric_partner(symtext, salc, neg_data, data_type="dipole", tol=
     # Find symmetry operation R such that R(Q) = -Q
     found_op = None
     R = None
-    for k, op in enumerate(symtext.symels):
+    for k, (op_mat, op_map) in enumerate(finite_operations(symtext)):
         transformed = np.zeros_like(disp_matrix)
         for a in range(N):
-            b = symtext.atom_map[a, k]
-            transformed[b] = op.rrep @ disp_matrix[a]
-        if np.allclose(transformed.flatten(), -salc.coeffs, atol=symtext.mol.tol):
+            transformed[op_map[a]] = op_mat @ disp_matrix[a]
+        if np.allclose(transformed.flatten(), -salc.coeffs, atol=tol):
             found_op = k
-            R = op.rrep
+            R = op_mat
+            atom_map = op_map
             break
 
     if found_op is None:
@@ -57,13 +101,55 @@ def generate_symmetric_partner(symtext, salc, neg_data, data_type="dipole", tol=
     elif data_type == "gradient":
         pos_data = np.zeros_like(neg_data)
         for a in range(neg_data.shape[0]):
-            b = symtext.atom_map[a, found_op]
-            pos_data[b] = R @ neg_data[a]
+            pos_data[atom_map[a]] = R @ neg_data[a]
 
     else:
         raise ValueError(f"Unsupported data_type: {data_type}")
 
     return pos_data, found_op
+
+def generate_degenerate_partner(symtext, salc, partner_salc, data, data_type="dipole", tol=None):
+    """
+    Use molecular symmetry to generate a quantity at a displacement along one component of a
+    degenerate SALC from the same quantity at the same displacement along another component.
+
+    Implemented for linear groups, where the partner of a Pi (Pi_g, Pi_u) component is that
+    component rotated 90 degrees about the molecular axis. Every atom lies on the axis, so the
+    rotation maps each atom onto itself.
+
+    Parameters
+    ----------
+    symtext : MolSym object
+        Symmetry context of a linear molecule.
+    salc, partner_salc : MolSym SALC objects
+        The displaced component and the component to generate data for.
+    data : np.ndarray
+        The quantity at the displacement(s) along `salc`, Cartesian components last:
+            (..., 3) for dipole vectors (e.g. one row per stencil point)
+            (N_atoms, 3) for gradients
+    data_type : str, optional
+        "dipole" or "gradient".
+
+    Returns
+    -------
+    partner_data : np.ndarray or None
+        The quantity at the same displacement(s) along `partner_salc`, or None if no 90 degree
+        rotation about the axis takes `salc` to `partner_salc`.
+    """
+    if not symtext.pg.is_linear:
+        raise NotImplementedError("generate_degenerate_partner is only implemented for linear point groups.")
+    if data_type not in ("dipole", "gradient"):
+        raise ValueError(f"Unsupported data_type: {data_type}")
+    if tol is None:
+        tol = symtext.mol.tol
+    axis = linear_axis(symtext)
+    cross = np.array([[0.0, -axis[2], axis[1]], [axis[2], 0.0, -axis[0]], [-axis[1], axis[0], 0.0]])
+    rot = np.outer(axis, axis) + cross  # 90 degrees about the axis
+    disp = salc.coeffs.reshape(-1, 3)
+    for R in (rot, rot.T):
+        if np.allclose((disp @ R.T).flatten(), partner_salc.coeffs, atol=tol):
+            return np.asarray(data) @ R.T
+    return None
 
 def maps_to_negative(symtext, salc, tol=None):
     """
@@ -91,15 +177,12 @@ def maps_to_negative(symtext, salc, tol=None):
         tol = symtext.mol.tol
     N = salc.coeffs.size // 3
     disp_matrix = salc.coeffs.reshape(N, 3)
-    n_ops = symtext.atom_map.shape[1]
 
-    for k in range(n_ops):
-        op = symtext.symels[k]
+    for op_mat, op_map in finite_operations(symtext):
         transformed = np.zeros_like(disp_matrix)
 
         for a in range(N):
-            b = symtext.atom_map[a,k]
-            transformed[b] = op.rrep @ disp_matrix[a]
+            transformed[op_map[a]] = op_mat @ disp_matrix[a]
         transformed_flat = transformed.flatten()
 
         if np.allclose(transformed_flat, -salc.coeffs, atol=tol):

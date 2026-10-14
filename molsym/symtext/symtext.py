@@ -36,13 +36,19 @@ class Symtext():
             self.order = len(symels)
         self.irreps = irreps
         self.irrep_mats = irrep_mats
-        self.get_character_table()
+        if self.pg.is_linear:
+            self.character_table = None
+        else:
+            self.get_character_table()
         self.assign_dipole_irrep = self.dipole_components_to_irrep()
         self.is_nonstandard = False
+
     def __len__(self):
         return len(self.symels)
 
     def __repr__(self):
+        if self.pg.is_linear:
+            return f"\n{self.mol}\nAtom map:\n{self.atom_map}"
         return f"\n{self.mol}\n{self.character_table}\n{self.symels}\nAtom map:\n{self.atom_map}\nMultiplication Table\n{self.mult_table}"
 
     @classmethod
@@ -233,6 +239,17 @@ class Symtext():
         :rtype: dict 
         """
         dipole_assignments_by_irrep = {irrep.symbol: [] for irrep in self.irreps}
+        if self.pg.family == "K":
+            dipole_assignments_by_irrep["P"] = [(0,0), (1,1), (2,2)]
+            return dipole_assignments_by_irrep
+        if self.pg.is_linear:
+            if self.pg.family == "C":
+                dipole_assignments_by_irrep["Sigma^+"] = [(2,0)]
+                dipole_assignments_by_irrep["Pi"] = [(0,0), (1,1)]
+            else:
+                dipole_assignments_by_irrep["Sigma_u^+"] = [(2,0)]
+                dipole_assignments_by_irrep["Pi_u"] = [(0,0), (1,1)]
+            return dipole_assignments_by_irrep
         dip_xyz = np.eye(3)
         assignments = []
         for d, dip in enumerate(dip_xyz):
@@ -301,16 +318,50 @@ class Symtext():
         subgroup = PointGroup.from_string(subgroup_str)
         subgroup_symels, subgroup_irreps, subgroup_irrep_mats = pg_to_symels(subgroup.str)
         mult_table = build_mult_table(subgroup_symels)
-        isomorphism = subgroup_by_name(self.symels, self.mult_table, subgroup.str)
-        if isomorphism is None:
-            raise Exception(f"No {subgroup.str} subgroup found for {self.pg} group")
-        sgp = [self.symels[i[1]] for i in isomorphism]
-        paxis, saxis = subgroup_axes(subgroup.str, sgp)
+        if self.pg.is_linear:
+            paxis, saxis = self.linear_subgroup_axes(subgroup)
+        else:
+            isomorphism = subgroup_by_name(self.symels, self.mult_table, subgroup.str)
+            if isomorphism is None:
+                raise Exception(f"No {subgroup.str} subgroup found for {self.pg} group")
+            sgp = [self.symels[i[1]] for i in isomorphism]
+            paxis, saxis = subgroup_axes(subgroup.str, sgp)
         new_mol, reverse_rotate, rotate_to_std = rotate_mol_to_symels(self.mol, paxis, saxis)
+        if not self.is_nonstandard:
+            # self.mol is already in self's standard frame, so the way back to the
+            # original frame passes through self's own rotation as well.
+            reverse_rotate = self.reverse_rotate @ reverse_rotate
+            rotate_to_std = rotate_to_std @ self.rotate_to_std
         new_mol.tol = self.mol.tol
         atom_map = get_atom_mapping(new_mol, subgroup_symels)
         return Symtext(new_mol, rotate_to_std, reverse_rotate, subgroup, subgroup_symels, atom_map, mult_table, subgroup_irreps, subgroup_irrep_mats)
     
+    def linear_subgroup_axes(self, subgroup):
+        """
+        Primary and secondary axes for a finite subgroup of a linear point group.
+
+        Linear symmetry elements are abstract, so the subgroup is oriented from the
+        molecule instead: its principal axis is the molecular axis, and its secondary
+        axis is any direction perpendicular to it (rotation about the molecular axis
+        is a symmetry, so every perpendicular direction is equivalent). Cs is the
+        exception: its mirror is placed to contain the molecular axis (a sigma_v,
+        which every linear molecule has), so its normal is perpendicular to the axis.
+        A subgroup the molecule does not have fails in get_atom_mapping.
+
+        :type subgroup: molsym.symtext.point_group.PointGroup
+        :return: Primary and secondary axes
+        :rtype: (NumPy array of shape (3,), NumPy array of shape (3,))
+        """
+        from molsym.salcs.salc_tools import linear_axis
+        if subgroup.str in ("C1", "Ci"):
+            return np.zeros(3), np.zeros(3)
+        axis = linear_axis(self)
+        perp = np.cross(axis, np.eye(3)[np.argmin(np.abs(axis))])
+        perp /= np.linalg.norm(perp)
+        if subgroup.str == "Cs":
+            return perp, axis
+        return axis, perp
+
     def largest_D2h_subgroup(self):
         """
         Build a new Symtext for the largest subgroup of the parent Symtext that is also a subgroup of the D2h point group.

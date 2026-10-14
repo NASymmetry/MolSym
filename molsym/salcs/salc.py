@@ -169,6 +169,8 @@ class SALCs():
         
         :rtype: List[List[int]]
         """
+        if not self.salcs:
+            return []
         out = [[0]]
         for sidx, salc in enumerate(self.salcs[1:]):
             chk = False
