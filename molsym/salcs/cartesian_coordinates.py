@@ -156,9 +156,36 @@ class CartesianCoordinates(FunctionSet):
         return salc
 
 class LinearCartesian(FunctionSet):
+    """
+    FunctionSet for Cartesian coordinates of linear molecules.
+
+    SALCs are built in a local frame whose z axis is the molecular axis (index 3*i+2 is
+    atom i's displacement along the axis, 3*i and 3*i+1 the perpendicular pair), then
+    rotated into the molecule's own frame by to_molecular_frame. For a molecule already
+    along z the local frame is the molecular frame.
+    """
     def __init__(self, symtext):
         fxn_list = [i for i in range(3*len(symtext.mol))]
         super().__init__(symtext, fxn_list)
+        self.frame = np.eye(3)
+        if symtext.mol.natoms > 1:
+            from .salc_tools import linear_axis
+            axis = linear_axis(symtext)
+            if not np.isclose(abs(axis[2]), 1.0, atol=global_tol):
+                perp1 = np.cross(axis, np.eye(3)[np.argmin(np.abs(axis))])
+                perp1 /= np.linalg.norm(perp1)
+                # Rows are the local x, y, z axes in molecular coordinates (right-handed).
+                self.frame = np.vstack((perp1, np.cross(axis, perp1), axis))
+
+    def to_molecular_frame(self, salc):
+        """
+        Rotate SALC coefficients from the local (axis along z) frame into the molecular frame.
+
+        :type salc: NumPy array of shape (d,d,3*natoms)
+        :rtype: NumPy array of shape (d,d,3*natoms)
+        """
+        shape = salc.shape
+        return (salc.reshape(shape[:-1] + (-1, 3)) @ self.frame).reshape(shape)
 
     def get_fxn_map(self):
         return 0
