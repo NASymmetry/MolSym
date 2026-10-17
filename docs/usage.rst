@@ -144,9 +144,9 @@ The ``project_Eckart`` keyword controls which subspace is removed:
 
    * - ``project_Eckart``
      - Effect
-   * - ``True`` (default)
+   * - ``"both"`` (default)
      - Project out both translations and rotations; only vibrations remain.
-   * - ``False``
+   * - ``None``
      - Project out nothing; all ``3N`` Cartesian SALCs are kept.
    * - ``"translational"``
      - Project out only translations; rotations and vibrations remain.
@@ -176,9 +176,126 @@ degree centered on each atom:
     from molsym.salcs.polynomial_functions import PolynomialFunctions
 
     poly_fxn_set = PolynomialFunctions(symtext, degree=1)
-    poly_salcs = molsym.salcs.ProjectionOp(symtext, poly_fxn_set, project_Eckart=False)
+    poly_salcs = molsym.salcs.ProjectionOp(symtext, poly_fxn_set, project_Eckart=None)
 
 ``project_Eckart`` only has an effect for ``CartesianCoordinates``
-function sets, so it is conventionally set to ``False`` for internal
+function sets, so it is conventionally set to ``None`` for internal
 coordinate, spherical harmonic, and polynomial function sets to make
 that explicit.
+
+Subgroups
+---------
+
+``Symtext.subgroup_symtext`` builds a ``Symtext`` for a subgroup of the
+molecule's point group, for example to work in an Abelian group. The
+point-group name may be given in any capitalization (``"C2"``, ``"c2"``):
+
+.. code-block:: python
+
+    c2 = symtext.subgroup_symtext("c2")
+    c2.pg.str                               # 'C2'
+    [ir.symbol for ir in c2.irreps]         # ['A', 'B']
+
+    symtext.largest_D2h_subgroup().pg.str   # 'C2v', the largest subgroup of D2h
+
+Requesting a group the molecule does not have raises an exception.
+
+Symtexts in the input frame
+---------------------------
+
+``Symtext.from_molecule`` reorients the molecule into a standard frame for
+its point group, so ``symtext.mol`` (and every SALC built from it) is
+expressed in that frame rather than in the input coordinates.
+``molsym.Symtext.nonstandard_symtext`` returns the same ``Symtext``
+rotated back to the input orientation (centered on the center of mass),
+with symmetry elements and irreducible representation matrices derived for
+that orientation, so SALCs can be used directly with the input geometry:
+
+.. code-block:: python
+
+    symtext = molsym.Symtext.from_molecule(molsym.Molecule.from_file("water.xyz"))
+    in_frame = molsym.Symtext.nonstandard_symtext(symtext)
+    in_frame.is_nonstandard                 # True
+    cart = molsym.salcs.CartesianCoordinates(in_frame)
+    vib_salcs = molsym.salcs.ProjectionOp(in_frame, cart)   # displacements in the input frame
+
+A subgroup taken from a standard-frame ``Symtext`` can be returned to the
+input frame the same way: ``nonstandard_symtext(symtext.subgroup_symtext("C2"))``.
+
+Linear molecules
+----------------
+
+Linear molecules have the infinite point groups C∞v and D∞h. Their
+symmetry elements have no explicit matrices, so Cartesian SALCs are built
+with ``molsym.salcs.cartesian_coordinates.LinearCartesian`` instead of
+``CartesianCoordinates``. The molecule may lie along any axis, and only the
+``3N-5`` vibrations remain once translations and rotations are projected
+out:
+
+.. code-block:: python
+
+    import numpy as np
+    from molsym.salcs.cartesian_coordinates import LinearCartesian
+
+    co2 = molsym.Molecule(["C", "O", "O"],
+                          np.array([[0.0, 0.0, 0.0], [1.16, 0.0, 0.0], [-1.16, 0.0, 0.0]]),
+                          [12.0, 15.995, 15.995])
+    linear = molsym.Symtext.from_molecule(co2)
+    str(linear.pg)                          # 'Dinfh'
+    lin_salcs = molsym.salcs.ProjectionOp(linear, LinearCartesian(linear))
+    lin_salcs.sort_to("blocks")
+    [s.irrep.symbol for s in lin_salcs.salcs]   # ['Sigma_g^+', 'Sigma_u^+', 'Pi_u', 'Pi_u']
+
+A linear ``Symtext`` is already in the input frame, so ``nonstandard_symtext``
+is neither needed nor accepted for it. Finite subgroups of a linear group
+(``"D2h"``, ``"C2v"``, ``"D4h"``, ...) are oriented with their principal axis
+along the molecular axis, and a ``Cs`` mirror contains the axis:
+
+.. code-block:: python
+
+    linear.subgroup_symtext("D2h").pg.str   # 'D2h'
+
+Single atoms
+------------
+
+A single atom has the point group Kh. Its three Cartesian displacements
+are the components of the ``P`` irreducible representation and are pure
+translations, so projecting out translations leaves no SALCs:
+
+.. code-block:: python
+
+    atom = molsym.Symtext.from_molecule(molsym.Molecule(["He"], np.array([[0.0, 0.0, 0.0]]), [4.0026]))
+    atom.pg.str                             # 'Kh'
+    len(molsym.salcs.ProjectionOp(atom, molsym.salcs.CartesianCoordinates(atom)))   # 0
+    p = molsym.salcs.ProjectionOp(atom, molsym.salcs.CartesianCoordinates(atom), project_Eckart=None)
+    [s.irrep.symbol for s in p.salcs]       # ['P', 'P', 'P']
+
+Helpers for finite differences
+------------------------------
+
+``molsym.salcs.salc_tools`` provides the symmetry operations a
+finite-difference code needs to skip displacements, for Cartesian SALCs
+of any point group, including linear groups:
+
+* ``maps_to_negative(symtext, salc)`` is ``True`` when some symmetry
+  operation turns the displacement into its negative, so the + and -
+  displacements are equivalent and only one needs to be computed.
+* ``generate_symmetric_partner(symtext, salc, data, data_type)`` generates
+  a dipole (``data_type="dipole"``) or gradient (``"gradient"``) at the +
+  displacement from the one computed at the - displacement.
+* ``generate_degenerate_partner(symtext, salc, partner_salc, data, data_type)``
+  generates the same quantity for another component of a degenerate
+  linear-group (Pi) SALC.
+
+.. code-block:: python
+
+    from molsym.salcs.salc_tools import (maps_to_negative,
+        generate_symmetric_partner, generate_degenerate_partner)
+
+    vib_salcs.sort_to("blocks")
+    [maps_to_negative(in_frame, s) for s in vib_salcs.salcs]    # [False, False, True]
+    neg_gradient = np.zeros((3, 3))         # gradient at the - displacement, one row per atom
+    pos_gradient, op = generate_symmetric_partner(in_frame, vib_salcs.salcs[2], neg_gradient, data_type="gradient")
+
+    pi_x, pi_y = lin_salcs.salcs[2], lin_salcs.salcs[3]
+    generate_degenerate_partner(linear, pi_x, pi_y, np.array([0.0, 1.0, 0.0]))   # dipole for pi_y, +/- z

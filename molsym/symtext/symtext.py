@@ -243,12 +243,15 @@ class Symtext():
             dipole_assignments_by_irrep["P"] = [(0,0), (1,1), (2,2)]
             return dipole_assignments_by_irrep
         if self.pg.is_linear:
-            if self.pg.family == "C":
-                dipole_assignments_by_irrep["Sigma^+"] = [(2,0)]
-                dipole_assignments_by_irrep["Pi"] = [(0,0), (1,1)]
-            else:
-                dipole_assignments_by_irrep["Sigma_u^+"] = [(2,0)]
-                dipole_assignments_by_irrep["Pi_u"] = [(0,0), (1,1)]
+            # The component along the molecular axis is Sigma^+ (Sigma_u^+), the other two Pi (Pi_u).
+            # As for nonlinear groups, components are only assigned when that axis is x, y or z.
+            from molsym.salcs.salc_tools import linear_axis
+            axis = np.abs(linear_axis(self))
+            along = int(np.argmax(axis))
+            if np.isclose(axis[along], 1.0, atol=self.mol.tol):
+                sigma, pi = ("Sigma^+", "Pi") if self.pg.family == "C" else ("Sigma_u^+", "Pi_u")
+                dipole_assignments_by_irrep[sigma] = [(along, 0)]
+                dipole_assignments_by_irrep[pi] = [(xyz, i) for i, xyz in enumerate(k for k in range(3) if k != along)]
             return dipole_assignments_by_irrep
         dip_xyz = np.eye(3)
         assignments = []
@@ -261,7 +264,7 @@ class Symtext():
                    for i in range(irrep.d):
                        for j in range(irrep.d):
                            dipole = proj_dipole[i,j]
-                           if np.isclose(1, dipole[xyz], atol=1e-4):
+                           if np.isclose(1, dipole[xyz], atol=self.mol.tol):
                                assignments.append(xyz)
                                dipole_assignments_by_irrep[irrep.symbol].append((xyz, i))
 

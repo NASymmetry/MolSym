@@ -136,6 +136,8 @@ def ProjectionOp(symtext, fxn_set, project_Eckart="both"):
             for sidx in range(len(symtext)):
                 salc = fxn_set.special_function(salc, equivcoord, sidx, irrmat)
             salc *= irrep.d/symtext.order
+            if isinstance(fxn_set, LinearCartesian):
+                salc = fxn_set.to_molecular_frame(salc)
             # Project out Eckart conditions when constructing SALCs of Cartesian displacements
             if (isinstance(fxn_set, CartesianCoordinates) or isinstance(fxn_set, LinearCartesian)) and project_Eckart is not None:
                 if project_Eckart == "both":
@@ -187,6 +189,9 @@ def ProjectOnObject(symtext, fxn_set, manual_proj):
     index_for_irrep = []
     print("Projecting on user-specified SALCs to determine what irreps they belong to")
     for r, row in enumerate(manual_proj):
+        if isinstance(fxn_set, LinearCartesian):
+            # special_function works in the local (axis along z) frame
+            row = (np.reshape(row, (-1, 3)) @ fxn_set.frame.T).flatten()
         best_irrep = None
         best_norm = 0.0
 
