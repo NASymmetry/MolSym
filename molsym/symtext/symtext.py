@@ -248,7 +248,7 @@ class Symtext():
             from molsym.salcs.salc_tools import linear_axis
             axis = np.abs(linear_axis(self))
             along = int(np.argmax(axis))
-            if np.isclose(axis[along], 1.0, atol=1e-4):
+            if np.isclose(axis[along], 1.0, atol=self.mol.tol):
                 sigma, pi = ("Sigma^+", "Pi") if self.pg.family == "C" else ("Sigma_u^+", "Pi_u")
                 dipole_assignments_by_irrep[sigma] = [(along, 0)]
                 dipole_assignments_by_irrep[pi] = [(xyz, i) for i, xyz in enumerate(k for k in range(3) if k != along)]
@@ -264,7 +264,7 @@ class Symtext():
                    for i in range(irrep.d):
                        for j in range(irrep.d):
                            dipole = proj_dipole[i,j]
-                           if np.isclose(1, dipole[xyz], atol=1e-4):
+                           if np.isclose(1, dipole[xyz], atol=self.mol.tol):
                                assignments.append(xyz)
                                dipole_assignments_by_irrep[irrep.symbol].append((xyz, i))
 
