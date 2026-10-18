@@ -60,6 +60,8 @@ def find_rotation_sets(mol, SEAs):
         elif length == 2:
             sea.label = "Linear"
             sea.axis = normalize(mol[sea.subset[0]].coords)
+            re = RotationElement(sea.axis, 2)
+            out_per_SEA.append(re)
         else:
             sea_mol = mol[sea.subset]
             sea_mol.translate(sea_mol.find_com())
@@ -104,8 +106,8 @@ def find_rotation_sets(mol, SEAs):
                         if isfactor(k,i):
                             re = RotationElement(axis, i)
                             out_per_SEA.append(re)
-            if len(out_per_SEA) > 0:
-                out_all_SEAs.append(out_per_SEA)
+        if len(out_per_SEA) > 0:
+            out_all_SEAs.append(out_per_SEA)
     return out_all_SEAs
 
 def find_rotations(mol, rotation_set):
