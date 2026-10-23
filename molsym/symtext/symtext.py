@@ -70,6 +70,9 @@ class Symtext():
         """
         Return the original-orientation Symtext.
 
+        For linear groups and Kh, whose symmetry elements carry no matrices,
+        only the molecule is moved back to its original frame.
+
         :type symtext: molsym.Symtext
         :param max_degree: maximum angular momentum l to search before giving up
         :type max_degree: int
