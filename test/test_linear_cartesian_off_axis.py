@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import pytest
 import numpy as np
 import molsym
@@ -8,6 +10,9 @@ from molsym.salcs.salc_tools import generate_degenerate_partner, linear_axis, ma
 
 # LinearCartesian builds its SALCs with the molecular axis as z, then rotates them into the
 # molecule's own frame, so a linear molecule along any axis gets the on-z SALCs rotated with it.
+#
+# Symtext.from_molecule rotates linear molecules to z by default, so off-axis Symtexts here
+# are made by rotating symtext.mol directly after construction, not by rotating the input.
 
 LINEAR = {
     "CO2": (["C", "O", "O"], np.array([[0, 0, 0], [0, 0, 1.17], [0, 0, -1.17]]), [12.0, 15.995, 15.995],
@@ -29,7 +34,8 @@ def _rotation_z_to(axis):
 
 def _salcs(label, R=np.eye(3)):
     atoms, coords, masses, _, _ = LINEAR[label]
-    symtext = molsym.Symtext.from_molecule(molsym.Molecule(atoms, coords @ R.T, masses))
+    symtext = molsym.Symtext.from_molecule(molsym.Molecule(atoms, coords, masses))
+    symtext.mol = symtext.mol.transform(R)
     salcs = ProjectionOp(symtext, LinearCartesian(symtext), project_Eckart="both")
     salcs.sort_to("blocks")
     return symtext, salcs
@@ -70,9 +76,27 @@ def test_off_axis_degenerate_partner(label, axis):
 
 
 def test_dipole_components_follow_the_molecular_axis():
+    # assign_dipole_irrep is cached at construction, so call dipole_components_to_irrep()
+    # directly to reflect symtext.mol's orientation after it's rotated below.
     atoms, coords, masses, _, _ = LINEAR["CO2"]
-    along_x = molsym.Symtext.from_molecule(molsym.Molecule(atoms, coords[:, [2, 0, 1]], masses))
-    assert along_x.assign_dipole_irrep["Sigma_u^+"] == [(0, 0)]
-    assert along_x.assign_dipole_irrep["Pi_u"] == [(1, 0), (2, 1)]
-    tilted = molsym.Symtext.from_molecule(molsym.Molecule(atoms, coords @ _rotation_z_to([1, 1, 1]).T, masses))
-    assert not any(tilted.assign_dipole_irrep.values())
+    symtext = molsym.Symtext.from_molecule(molsym.Molecule(atoms, coords, masses))
+
+    along_x = deepcopy(symtext)
+    along_x.mol = along_x.mol.transform(_rotation_z_to([1, 0, 0]))
+    assign = along_x.dipole_components_to_irrep()
+    assert assign["Sigma_u^+"] == [(0, 0)]
+    assert assign["Pi_u"] == [(1, 0), (2, 1)]
+
+    tilted = deepcopy(symtext)
+    tilted.mol = tilted.mol.transform(_rotation_z_to([1, 1, 1]))
+    assert not any(tilted.dipole_components_to_irrep().values())
+
+
+@pytest.mark.parametrize("label", LINEAR)
+@pytest.mark.parametrize("axis", AXES)
+def test_linear_molecules_are_rotated_to_z_by_default(label, axis):
+    # Linear molecules are rotated to z, same as every other point group.
+    atoms, coords, masses, _, _ = LINEAR[label]
+    R = _rotation_z_to(axis)
+    symtext = molsym.Symtext.from_molecule(molsym.Molecule(atoms, coords @ R.T, masses))
+    assert np.allclose(np.abs(linear_axis(symtext)), [0, 0, 1])

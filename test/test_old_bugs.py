@@ -16,3 +16,13 @@ def test_formaldehyde():
     x,y,z = np.eye(3)
     assert (np.isclose(paxis, z).all() or np.isclose(paxis, -z).all())
     assert (np.isclose(saxis, x).all() or np.isclose(saxis, -x).all())
+
+# Test the principal axis of a linear molecule
+def test_nitrogen_rotated():
+    file_path = os.path.join(PATH, "xyz", f"nitrogen_rotated.xyz")
+    mol = molsym.Molecule.from_file(file_path)
+    pg, (paxis, saxis) = molsym.find_point_group(mol)
+
+    assert pg == "D0h"
+    bond = np.array([0.3, 0.4, 1.0]) / np.linalg.norm([0.3, 0.4, 1.0])
+    assert (np.isclose(paxis, bond).all() or np.isclose(paxis, -bond).all())

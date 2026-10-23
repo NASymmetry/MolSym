@@ -22,9 +22,11 @@ def find_point_group(mol):
     paxis = [0,0,0]
     saxis = [0,0,0]
     moit = calcmoit(mol)
-    Ia_mol, Ib_mol, Ic_mol = np.sort(np.linalg.eigh(moit)[0])
+    (Ia_mol, Ib_mol, Ic_mol), moit_evecs = np.linalg.eigh(moit)
     # Linear tops
     if np.isclose(Ia_mol, 0.0, atol=mol.tol):
+        # the principal axis is the molecular axis
+        paxis = moit_evecs[:,0]
         if isequivalent(mol, mol.transform(inversion_matrix())):
             pg = "D0h"
         else:
