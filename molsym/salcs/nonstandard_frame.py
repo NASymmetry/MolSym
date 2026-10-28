@@ -19,19 +19,14 @@ def build_nonstandard_symtext(symtext, max_degree=10):
             "applying reverse_rotate again would rotate by Q a second time."
         )
 
-    if symtext.pg.is_linear:
-        raise ValueError(
-            f"nonstandard_symtext does not support linear point groups (got {symtext.pg.str}): "
-            "their symmetry elements are abstract (rrep=None) and have no discrete "
-            "Cartesian rotation to carry over to the original frame."
-        )
-
-    if symtext.pg.family == "K":
-        # Kh has no discrete symmetry elements or irrep matrices to carry over;
-        # only the molecule moves back to its original frame.
+    if symtext.pg.is_linear or symtext.pg.family == "K":
+        # Linear groups and Kh have no symmetry-element or irrep matrices to carry over
+        # (linear symmetry elements are abstract); only the molecule moves back to its
+        # original frame, and with it the axis the dipole components are assigned by.
         nonstandard_symtext = deepcopy(symtext)
         nonstandard_symtext.mol = symtext.mol.transform(symtext.reverse_rotate)
         nonstandard_symtext.is_nonstandard = True
+        nonstandard_symtext.assign_dipole_irrep = nonstandard_symtext.dipole_components_to_irrep()
         return nonstandard_symtext
 
     standard_symtext = symtext

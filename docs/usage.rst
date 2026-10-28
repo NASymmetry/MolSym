@@ -246,10 +246,21 @@ out:
     lin_salcs.sort_to("blocks")
     [s.irrep.symbol for s in lin_salcs.salcs]   # ['Sigma_g^+', 'Sigma_u^+', 'Pi_u', 'Pi_u']
 
-A linear ``Symtext`` is already in the input frame, so ``nonstandard_symtext``
-is neither needed nor accepted for it. Finite subgroups of a linear group
-(``"D2h"``, ``"C2v"``, ``"D4h"``, ...) are oriented with their principal axis
-along the molecular axis, and a ``Cs`` mirror contains the axis:
+As for any other group, ``Symtext.from_molecule`` orients a linear molecule
+in a standard frame, with the molecular axis along z, so the SALCs above are
+in that frame. ``nonstandard_symtext`` returns a linear ``Symtext`` to the
+input frame, and ``LinearCartesian`` then builds SALCs along the molecule's
+actual axis:
+
+.. code-block:: python
+
+    in_frame_linear = molsym.Symtext.nonstandard_symtext(linear)
+    in_frame_linear.mol.coords[1].tolist()  # [1.16, 0.0, 0.0]
+    in_frame_salcs = molsym.salcs.ProjectionOp(in_frame_linear, LinearCartesian(in_frame_linear))
+
+Finite subgroups of a linear group (``"D2h"``, ``"C2v"``, ``"D4h"``, ...) are
+oriented with their principal axis along the molecular axis, and a ``Cs``
+mirror contains the axis:
 
 .. code-block:: python
 
